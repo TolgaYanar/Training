@@ -28,6 +28,18 @@ export type ChartType = 'line' | 'bar' | 'area' | 'pie' | 'scatter'
 
 export type AggregateOp = 'sum' | 'avg' | 'count' | 'min' | 'max' | 'none'
 
+export interface Filter {
+  column: string
+  in: Array<string | number>
+  datePart?: 'day' | 'weekday' | 'month' | 'quarter'
+}
+
+export interface Derived {
+  name: string
+  numerator: string
+  denominator: string
+}
+
 export interface ChartSpec {
   chartType: ChartType
   x: string
@@ -35,6 +47,9 @@ export interface ChartSpec {
   measures?: string[]
   series?: string
   aggregate: AggregateOp
+  filter?: Filter
+  bucket?: 'week' | 'month' | 'quarter' | 'year'
+  derived?: Derived
   title?: string
   sort?: 'value'
   order?: 'asc' | 'desc'

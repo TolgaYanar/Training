@@ -236,3 +236,162 @@ test('dense-symbol boundary: 30 keeps symbols, 31 hides', () => {
   assert.equal(buildChartOption({ chartType: 'line', x: 'd', measure: 'v', aggregate: 'sum' }, at30).series[0].showSymbol, undefined)
   assert.equal(buildChartOption({ chartType: 'line', x: 'd', measure: 'v', aggregate: 'sum' }, at31).series[0].showSymbol, false)
 })
+
+const frows = [
+  { date: '2024-01-10', cat: 'A', v: 1 },
+  { date: '2024-01-11', cat: 'B', v: 2 },
+  { date: '2024-02-10', cat: 'A', v: 3 },
+  { date: '2024-02-12', cat: 'B', v: 4 },
+]
+
+test('value filter keeps only matching rows', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'cat', in: ['A'] } }, frows)
+  assert.deepEqual(o.xAxis.data, ['2024-01-10', '2024-02-10'])
+  assert.deepEqual(o.series[0].data, [1, 3])
+})
+
+test('date-part filter: day of month (the 10th of each month)', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'date', datePart: 'day', in: [10] } }, frows)
+  assert.deepEqual(o.xAxis.data, ['2024-01-10', '2024-02-10'])
+  assert.deepEqual(o.series[0].data, [1, 3])
+})
+
+test('date-part filter: quarter (Q1 = Jan-Mar)', () => {
+  const qr = [
+    { date: '2024-01-15', v: 1 },
+    { date: '2024-03-20', v: 2 },
+    { date: '2024-04-10', v: 3 },
+    { date: '2024-12-01', v: 4 },
+  ]
+  const o = buildChartOption({ chartType: 'line', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'date', datePart: 'quarter', in: [1] } }, qr)
+  assert.deepEqual(o.xAxis.data, ['2024-01-15', '2024-03-20'])
+})
+
+test('date-part filter: month', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'date', datePart: 'month', in: [2] } }, frows)
+  assert.deepEqual(o.xAxis.data, ['2024-02-10', '2024-02-12'])
+})
+
+test('date-part filter: weekday (0=Sun..6=Sat) keeps the Saturday', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'date', datePart: 'weekday', in: [6] } }, frows)
+  assert.deepEqual(o.xAxis.data, ['2024-02-10'])
+})
+
+test('filter matching no rows throws', () => {
+  assert.throws(() => buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'cat', in: ['Z'] } }, frows), /matched no rows/)
+})
+
+test('filter on unknown column throws', () => {
+  assert.throws(() => buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'nope', in: ['A'] } }, frows), /unknown column/)
+})
+
+test('empty filter.in is ignored', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'cat', in: [] } }, frows)
+  assert.equal(o.xAxis.data.length, 4)
+})
+
+const drows = [
+  { date: '2024-03-10', v: 5 },
+  { date: '2024-01-10', v: 9 },
+  { date: '2024-02-10', v: 1 },
+]
+
+test('date x-axis stays chronological even when sort:value is set without a limit', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', sort: 'value', order: 'desc' }, drows)
+  assert.deepEqual(o.xAxis.data, ['2024-01-10', '2024-02-10', '2024-03-10'])
+})
+
+test('date x-axis with a limit still ranks by value (top-N)', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', sort: 'value', order: 'desc', limit: 2 }, drows)
+  assert.deepEqual(o.xAxis.data, ['2024-01-10', '2024-03-10'])
+})
+
+test('date x-axis honors order:desc (reverse chronological) when not value-sorted', () => {
+  const o = buildChartOption({ chartType: 'line', x: 'date', measure: 'v', aggregate: 'sum', order: 'desc' }, drows)
+  assert.deepEqual(o.xAxis.data, ['2024-03-10', '2024-02-10', '2024-01-10'])
+})
+
+const tdata = [
+  { date: '2024-01-05', v: 10 },
+  { date: '2024-01-20', v: 20 },
+  { date: '2024-02-03', v: 5 },
+  { date: '2024-03-15', v: 7 },
+]
+
+test('bucket month aggregates daily rows into months', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', bucket: 'month' }, tdata)
+  assert.deepEqual(o.xAxis.data, ['2024-01', '2024-02', '2024-03'])
+  assert.deepEqual(o.series[0].data, [30, 5, 7])
+})
+
+test('bucket week groups dates into 7-day weeks', () => {
+  const wk = [
+    { date: '2024-01-01', v: 1 },
+    { date: '2024-01-07', v: 2 },
+    { date: '2024-01-08', v: 3 },
+    { date: '2024-01-15', v: 4 },
+  ]
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', bucket: 'week' }, wk)
+  assert.deepEqual(o.xAxis.data, ['2024-W01', '2024-W02', '2024-W03'])
+  assert.deepEqual(o.series[0].data, [3, 3, 4])
+})
+
+test('bucket quarter and year roll daily rows up further', () => {
+  const q = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', bucket: 'quarter' }, tdata)
+  assert.deepEqual(q.xAxis.data, ['2024-Q1'])
+  assert.deepEqual(q.series[0].data, [42])
+  const y = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', bucket: 'year' }, tdata)
+  assert.deepEqual(y.xAxis.data, ['2024'])
+  assert.deepEqual(y.series[0].data, [42])
+})
+
+const cdata = [
+  { ch: 'A', s: 10, vis: 100 },
+  { ch: 'A', s: 20, vis: 300 },
+  { ch: 'B', s: 5, vis: 100 },
+]
+
+test('derived ratio = sum(numerator)/sum(denominator) per category', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'ch', aggregate: 'sum', derived: { name: 'conv rate', numerator: 's', denominator: 'vis' } }, cdata)
+  assert.deepEqual(o.xAxis.data, ['A', 'B'])
+  const d = o.series[0].data
+  assert.ok(Math.abs(d[0] - 0.075) < 1e-9 && Math.abs(d[1] - 0.05) < 1e-9)
+  assert.equal(o.series[0].name, 'conv rate')
+})
+
+test('derived satisfies the measure requirement and validates its columns', () => {
+  const o = buildChartOption({ chartType: 'line', x: 'ch', aggregate: 'sum', derived: { name: 'r', numerator: 's', denominator: 'vis' } }, cdata)
+  assert.equal(o.series.length, 1)
+  assert.throws(() => buildChartOption({ chartType: 'bar', x: 'ch', aggregate: 'sum', derived: { name: 'r', numerator: 's', denominator: 'nope' } }, cdata), /unknown column/)
+})
+
+test('derived with grouping = ratio per group', () => {
+  const g = [
+    { ch: 'A', region: 'N', s: 10, vis: 100 },
+    { ch: 'A', region: 'S', s: 30, vis: 100 },
+  ]
+  const o = buildChartOption({ chartType: 'bar', x: 'ch', series: 'region', aggregate: 'sum', derived: { name: 'r', numerator: 's', denominator: 'vis' } }, g)
+  assert.equal(o.series.length, 2)
+})
+
+test('bucket is ignored when filtering to a specific day (keeps the date label)', () => {
+  const tenths = [
+    { date: '2024-01-10', v: 1 },
+    { date: '2024-01-11', v: 9 },
+    { date: '2024-02-10', v: 3 },
+  ]
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'date', datePart: 'day', in: [10] }, bucket: 'month' }, tenths)
+  assert.deepEqual(o.xAxis.data, ['2024-01-10', '2024-02-10'])
+})
+
+test('bucket + derived: monthly conversion rate', () => {
+  const md = [
+    { date: '2024-01-05', s: 10, vis: 100 },
+    { date: '2024-01-25', s: 20, vis: 300 },
+    { date: '2024-02-10', s: 5, vis: 100 },
+  ]
+  const o = buildChartOption({ chartType: 'line', x: 'date', aggregate: 'sum', bucket: 'month', derived: { name: 'rate', numerator: 's', denominator: 'vis' } }, md)
+  assert.deepEqual(o.xAxis.data, ['2024-01', '2024-02'])
+  const d = o.series[0].data
+  assert.ok(Math.abs(d[0] - 0.075) < 1e-9 && Math.abs(d[1] - 0.05) < 1e-9)
+})

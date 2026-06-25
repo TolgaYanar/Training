@@ -1,4 +1,4 @@
-import type { ChartSpec, EChartsOption, Row } from './types'
+import type { ChartSpec, EChartsOption, Filter, Row } from './types'
 
 function present(v: unknown): v is string | number {
   return v !== null && v !== undefined && v !== ''
@@ -6,6 +6,40 @@ function present(v: unknown): v is string | number {
 
 function num(v: unknown): number | null {
   return typeof v === 'number' && Number.isFinite(v) ? v : null
+}
+
+function datePartOf(v: unknown, part: 'day' | 'weekday' | 'month' | 'quarter'): number | null {
+  if (typeof v !== 'string') return null
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v)
+  if (!m) return null
+  if (part === 'day') return Number(m[3])
+  if (part === 'month') return Number(m[2])
+  if (part === 'quarter') return Math.ceil(Number(m[2]) / 3)
+  return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))).getUTCDay()
+}
+
+function bucketOf(v: unknown, b: 'week' | 'month' | 'quarter' | 'year'): string | null {
+  if (typeof v !== 'string') return null
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v)
+  if (!m) return null
+  if (b === 'year') return m[1]
+  if (b === 'quarter') return `${m[1]}-Q${Math.ceil(Number(m[2]) / 3)}`
+  if (b === 'week') {
+    const doy = Math.floor((Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) - Date.UTC(Number(m[1]), 0, 1)) / 86400000) + 1
+    return `${m[1]}-W${String(Math.floor((doy - 1) / 7) + 1).padStart(2, '0')}`
+  }
+  return `${m[1]}-${m[2]}`
+}
+
+function applyFilter(rows: Row[], filter: Filter): Row[] {
+  const set = new Set(filter.in.map(String))
+  return rows.filter((r) => {
+    if (filter.datePart) {
+      const p = datePartOf(r[filter.column], filter.datePart)
+      return p !== null && set.has(String(p))
+    }
+    return set.has(String(r[filter.column]))
+  })
 }
 
 function uniqueInOrder(rows: Row[], key: string): Array<string | number> {
@@ -53,17 +87,31 @@ function cell(rows: Row[], measure: string, op: ChartSpec['aggregate']): number 
   }
 }
 
+function metric(rows: Row[], spec: ChartSpec): number | null {
+  if (spec.derived) {
+    const n = cell(rows, spec.derived.numerator, 'sum')
+    const d = cell(rows, spec.derived.denominator, 'sum')
+    return n !== null && d !== null && d !== 0 ? n / d : null
+  }
+  return cell(rows, spec.measure, spec.aggregate)
+}
+
 function grouped(spec: ChartSpec): boolean {
   return typeof spec.series === 'string' && spec.series.length > 0
 }
 
 function orderX(spec: ChartSpec, rows: Row[], byX: Map<string, Row[]>): Array<string | number> {
   let xVals = uniqueInOrder(rows, spec.x)
-  if (spec.sort === 'value') {
+  const isDate = xVals.length > 0 && xVals.every((v) => typeof v === 'string' && /^\d{4}(-|$)/.test(v))
+  const rank = spec.sort === 'value' && (!isDate || typeof spec.limit === 'number')
+  if (rank) {
     const m = typeof spec.measure === 'string' ? spec.measure : (Array.isArray(spec.measures) ? spec.measures[0] : '')
-    const total = (xv: string | number) => cell(byX.get(String(xv)) ?? [], m, spec.aggregate === 'count' ? 'count' : 'sum') ?? -Infinity
+    const total = (xv: string | number) => (spec.derived ? metric(byX.get(String(xv)) ?? [], spec) : cell(byX.get(String(xv)) ?? [], m, spec.aggregate === 'count' ? 'count' : 'sum')) ?? -Infinity
     xVals = [...xVals].sort((a, b) => total(a) - total(b))
     if (spec.order !== 'asc') xVals.reverse()
+  } else if (isDate) {
+    xVals = [...xVals].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+    if (spec.order === 'desc' && spec.sort !== 'value') xVals.reverse()
   } else if (spec.order === 'desc') {
     xVals = [...xVals].reverse()
   }
@@ -83,24 +131,28 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>)
   let series: unknown[]
   if (!measures && grouped(spec)) {
     const key = spec.series as string
-    series = uniqueInOrder(rows, key).map((sv) => {
-      const data = xVals.map((xv) => cell((byX.get(String(xv)) ?? []).filter((r) => String(r[key]) === String(sv)), spec.measure, spec.aggregate))
-      return { name: String(sv), type, data, ...extra }
-    })
-  } else {
-    series = (measures ?? [spec.measure]).map((m, i) => ({
-      name: !measures && spec.aggregate === 'count' ? 'count' : m,
+    series = uniqueInOrder(rows, key).map((sv) => ({
+      name: String(sv),
+      type,
+      data: xVals.map((xv) => metric((byX.get(String(xv)) ?? []).filter((r) => String(r[key]) === String(sv)), spec)),
+      ...extra,
+    }))
+  } else if (measures) {
+    series = measures.map((m, i) => ({
+      name: m,
       type,
       data: xVals.map((xv) => cell(byX.get(String(xv)) ?? [], m, spec.aggregate)),
       ...extra,
       ...(dual ? { yAxisIndex: i } : {}),
     }))
+  } else {
+    series = [{ name: spec.derived ? spec.derived.name : (spec.aggregate === 'count' ? 'count' : spec.measure), type, data: xVals.map((xv) => metric(byX.get(String(xv)) ?? [], spec)), ...extra }]
   }
   const option: Record<string, unknown> = {
     ...title,
     tooltip: { trigger: 'axis' },
     xAxis: { type: 'category', data: xVals },
-    yAxis: dual ? [{ type: 'value', name: measures![0] }, { type: 'value', name: measures![1] }] : { type: 'value' },
+    yAxis: measures && measures.length === 2 ? [{ type: 'value', name: measures[0] }, { type: 'value', name: measures[1] }] : { type: 'value' },
     series,
   }
   if (series.length > 1) option.legend = {}
@@ -110,7 +162,7 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>)
 function pie(spec: ChartSpec, rows: Row[], title: Record<string, unknown>): EChartsOption {
   const byX = indexBy(rows, spec.x)
   const data = orderX(spec, rows, byX)
-    .map((xv) => ({ name: String(xv), value: cell(byX.get(String(xv)) ?? [], spec.measure, spec.aggregate) }))
+    .map((xv) => ({ name: String(xv), value: metric(byX.get(String(xv)) ?? [], spec) }))
     .filter((d) => typeof d.value === 'number' && d.value > 0)
   const option: Record<string, unknown> = {
     ...title,
@@ -166,16 +218,30 @@ function scatter(spec: ChartSpec, rows: Row[], title: Record<string, unknown>): 
 export function buildChartOption(spec: ChartSpec, rows: Row[]): EChartsOption {
   const columns = new Set(Object.keys(rows[0] ?? {}))
   const hasMeasures = Array.isArray(spec.measures) && spec.measures.length > 0
-  if (typeof spec.measure !== 'string' && !hasMeasures) throw new Error('Spec must specify a measure')
+  const hasDerived = !!spec.derived && typeof spec.derived.numerator === 'string' && typeof spec.derived.denominator === 'string'
+  if (typeof spec.measure !== 'string' && !hasMeasures && !hasDerived) throw new Error('Spec must specify a measure')
   const required: string[] = [spec.x]
   if (typeof spec.measure === 'string') required.push(spec.measure)
   if (hasMeasures) required.push(...(spec.measures as string[]))
+  if (hasDerived) required.push(spec.derived!.numerator, spec.derived!.denominator)
   if (grouped(spec)) required.push(spec.series as string)
+  if (spec.filter && typeof spec.filter.column === 'string') required.push(spec.filter.column)
   for (const key of required) {
     if (typeof key !== 'string' || !columns.has(key)) throw new Error(`Spec refers to unknown column "${key}"`)
   }
+  let data = rows
+  if (spec.filter && typeof spec.filter.column === 'string' && Array.isArray(spec.filter.in) && spec.filter.in.length > 0) {
+    data = applyFilter(rows, spec.filter)
+    if (data.length === 0) throw new Error('Filter matched no rows')
+  }
+  if (spec.bucket && spec.filter?.datePart !== 'day') {
+    data = data.map((r) => {
+      const b = bucketOf(r[spec.x], spec.bucket as 'week' | 'month' | 'quarter' | 'year')
+      return b === null ? r : { ...r, [spec.x]: b }
+    })
+  }
   const title: Record<string, unknown> = spec.title ? { title: { text: spec.title } } : {}
-  if (spec.chartType === 'scatter') return scatter(spec, rows, title)
-  if (spec.chartType === 'pie') return pie(spec, rows, title)
-  return cartesian(spec, rows, title)
+  if (spec.chartType === 'scatter') return scatter(spec, data, title)
+  if (spec.chartType === 'pie') return pie(spec, data, title)
+  return cartesian(spec, data, title)
 }
