@@ -87,13 +87,38 @@ function cell(rows: Row[], measure: string, op: ChartSpec['aggregate']): number 
   }
 }
 
+function derivedItem(rows: Row[], spec: ChartSpec): { value: number | null; [k: string]: number | null } {
+  const n = cell(rows, spec.derived!.numerator, 'sum')
+  const d = cell(rows, spec.derived!.denominator, 'sum')
+  return { value: n !== null && d !== null && d !== 0 ? n / d : null, [spec.derived!.numerator]: n, [spec.derived!.denominator]: d }
+}
+
 function metric(rows: Row[], spec: ChartSpec): number | null {
-  if (spec.derived) {
-    const n = cell(rows, spec.derived.numerator, 'sum')
-    const d = cell(rows, spec.derived.denominator, 'sum')
-    return n !== null && d !== null && d !== 0 ? n / d : null
-  }
+  if (spec.derived) return derivedItem(rows, spec).value
   return cell(rows, spec.measure, spec.aggregate)
+}
+
+function cellValue(rows: Row[], spec: ChartSpec): number | { value: number | null } | null {
+  return spec.derived ? derivedItem(rows, spec) : cell(rows, spec.measure, spec.aggregate)
+}
+
+function derivedTooltip(spec: ChartSpec): Record<string, unknown> {
+  if (!spec.derived) return { trigger: 'axis' }
+  const { numerator, denominator } = spec.derived
+  const fmt = (n: unknown) => (typeof n === 'number' ? String(Math.round(n * 10000) / 10000) : '-')
+  return {
+    trigger: 'axis',
+    formatter: (ps: Array<{ axisValueLabel?: string; axisValue?: string; marker?: string; seriesName: string; data: Record<string, unknown> }>) => {
+      const head = ps[0]?.axisValueLabel ?? ps[0]?.axisValue ?? ''
+      const body = ps
+        .map((p) => {
+          const d = p.data || {}
+          return `${p.marker ?? ''}${p.seriesName}: ${fmt(d.value)} (${numerator} ${fmt(d[numerator])} / ${denominator} ${fmt(d[denominator])})`
+        })
+        .join('<br/>')
+      return `${head}<br/>${body}`
+    },
+  }
 }
 
 function grouped(spec: ChartSpec): boolean {
@@ -134,7 +159,7 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>)
     series = uniqueInOrder(rows, key).map((sv) => ({
       name: String(sv),
       type,
-      data: xVals.map((xv) => metric((byX.get(String(xv)) ?? []).filter((r) => String(r[key]) === String(sv)), spec)),
+      data: xVals.map((xv) => cellValue((byX.get(String(xv)) ?? []).filter((r) => String(r[key]) === String(sv)), spec)),
       ...extra,
     }))
   } else if (measures) {
@@ -146,11 +171,11 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>)
       ...(dual ? { yAxisIndex: i } : {}),
     }))
   } else {
-    series = [{ name: spec.derived ? spec.derived.name : (spec.aggregate === 'count' ? 'count' : spec.measure), type, data: xVals.map((xv) => metric(byX.get(String(xv)) ?? [], spec)), ...extra }]
+    series = [{ name: spec.derived ? spec.derived.name : (spec.aggregate === 'count' ? 'count' : spec.measure), type, data: xVals.map((xv) => cellValue(byX.get(String(xv)) ?? [], spec)), ...extra }]
   }
   const option: Record<string, unknown> = {
     ...title,
-    tooltip: { trigger: 'axis' },
+    tooltip: derivedTooltip(spec),
     xAxis: { type: 'category', data: xVals },
     yAxis: measures && measures.length === 2 ? [{ type: 'value', name: measures[0] }, { type: 'value', name: measures[1] }] : { type: 'value' },
     series,

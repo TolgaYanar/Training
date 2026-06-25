@@ -351,12 +351,16 @@ const cdata = [
   { ch: 'B', s: 5, vis: 100 },
 ]
 
-test('derived ratio = sum(numerator)/sum(denominator) per category', () => {
+test('derived ratio = sum/sum, carries numerator/denominator, labels them in tooltip', () => {
   const o = buildChartOption({ chartType: 'bar', x: 'ch', aggregate: 'sum', derived: { name: 'conv rate', numerator: 's', denominator: 'vis' } }, cdata)
   assert.deepEqual(o.xAxis.data, ['A', 'B'])
-  const d = o.series[0].data
-  assert.ok(Math.abs(d[0] - 0.075) < 1e-9 && Math.abs(d[1] - 0.05) < 1e-9)
+  const a = o.series[0].data[0]
+  assert.ok(Math.abs(a.value - 0.075) < 1e-9)
+  assert.equal(a.s, 30)
+  assert.equal(a.vis, 400)
   assert.equal(o.series[0].name, 'conv rate')
+  const txt = o.tooltip.formatter([{ axisValue: 'A', seriesName: 'conv rate', data: a }])
+  assert.ok(txt.includes('s 30') && txt.includes('vis 400'))
 })
 
 test('derived satisfies the measure requirement and validates its columns', () => {
@@ -393,5 +397,5 @@ test('bucket + derived: monthly conversion rate', () => {
   const o = buildChartOption({ chartType: 'line', x: 'date', aggregate: 'sum', bucket: 'month', derived: { name: 'rate', numerator: 's', denominator: 'vis' } }, md)
   assert.deepEqual(o.xAxis.data, ['2024-01', '2024-02'])
   const d = o.series[0].data
-  assert.ok(Math.abs(d[0] - 0.075) < 1e-9 && Math.abs(d[1] - 0.05) < 1e-9)
+  assert.ok(Math.abs(d[0].value - 0.075) < 1e-9 && Math.abs(d[1].value - 0.05) < 1e-9)
 })
