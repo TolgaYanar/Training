@@ -98,6 +98,9 @@ function Main() {
             placeholder="e.g. monthly revenue by region as a line chart"
             autoSize={{ minRows: 3, maxRows: 6 }}
           />
+          <Typography.Text type="secondary" style={{ fontSize: 12, lineHeight: 1.4 }}>
+            🔒 Column names, category values, exact dates and long numbers are replaced with placeholders before your request is sent to the AI — your data never leaves this device. Other free text you type (names, IDs, notes in a sentence) is sent as written, so avoid putting sensitive details there.
+          </Typography.Text>
           <Button type="primary" loading={status === 'loading'} onClick={run}>Generate chart</Button>
           <Card size="small" title={`Data (${active.rows.length} rows)`}>
             <Table<Row>

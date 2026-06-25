@@ -20,6 +20,16 @@ test('line ungrouped sum: present values only, first-appearance x order', () => 
   assert.equal(o.series[0].name, 'score')
 })
 
+test('cartesian charts label the axes: x = x column, y = measure (or count / derived name)', () => {
+  const o = buildChartOption({ chartType: 'line', x: 'day', measure: 'score', aggregate: 'sum' }, rows)
+  assert.equal(o.xAxis.name, 'day')
+  assert.equal(o.xAxis.nameLocation, 'middle')
+  assert.equal(o.yAxis.name, 'score')
+  assert.equal(buildChartOption({ chartType: 'bar', x: 'day', measure: 'score', aggregate: 'count' }, rows).yAxis.name, 'count')
+  const d = buildChartOption({ chartType: 'bar', x: 'ch', aggregate: 'sum', derived: { name: 'conv rate', numerator: 's', denominator: 'vis' } }, [{ ch: 'A', s: 10, vis: 100 }])
+  assert.equal(d.yAxis.name, 'conv rate')
+})
+
 test('grouped none: one series per team, nulls preserved, aligned, has legend', () => {
   const o = buildChartOption({ chartType: 'line', x: 'day', series: 'team', measure: 'score', aggregate: 'none' }, rows)
   assert.equal(o.series.length, 2)
@@ -38,6 +48,12 @@ test('aggregate avg / min / max / count', () => {
   const c = buildChartOption({ chartType: 'bar', x: 'day', measure: 'score', aggregate: 'count' }, rows)
   assert.deepEqual(c.series[0].data, [2, 2, 2])
   assert.equal(c.series[0].name, 'count')
+})
+
+test('min/max fold instead of spread: no stack overflow on a large single group', () => {
+  const big = Array.from({ length: 130000 }, (_, i) => ({ k: 'A', v: (i % 1000) + 1 }))
+  assert.equal(buildChartOption({ chartType: 'bar', x: 'k', measure: 'v', aggregate: 'min' }, big).series[0].data[0], 1)
+  assert.equal(buildChartOption({ chartType: 'bar', x: 'k', measure: 'v', aggregate: 'max' }, big).series[0].data[0], 1000)
 })
 
 test('x with all-null measure becomes a null gap', () => {

@@ -21,7 +21,7 @@ Output exactly this shape (omit any optional field you do not need):
 
 Rules:
 - Use EXACT column names from the schema below. Do not invent columns.
-- You never see the data itself — only column names, types (number / date / categorical), and counts. For a "filter", copy the category value(s) exactly as the user wrote them in the request into "in"; the app matches them to the real values (case-insensitive). Never guess or invent category values; if the user names no value, use "datePart" or omit the filter.
+- You never see the data itself — only opaque tokens: "col_N" for columns and "val_N" for category values, plus each column's type and a coarse size. Small categorical columns also list their value tokens (for example "values: val_3, val_4"). When the request mentions a value token, the column whose list contains it is the one to use: put that token in "filter".in to keep only those rows, and to compare several named values set "series" to that same column as well. The app maps tokens back to the real values. If the user names no specific value, use "datePart" or omit the filter.
 - Choose chartType to fit the request and data: line or area for trends over a time or ordered column; bar to compare across categories; pie for parts of a whole; scatter for the relationship between two numeric columns (set x and measure to the two numeric columns and aggregate "none").
 - aggregate is how to combine rows that share the same x (and series): "sum", "avg", "min", "max", or "none" when each x already has a single row. Use "count" to count rows (measure is ignored then).
 - Use "series" when the request compares groups across the x column (for example one line per channel or per region).
@@ -30,13 +30,24 @@ Rules:
 - For totals over a coarser time period than the rows (for example "monthly" or "quarterly" from daily data), set "bucket" to "week", "month", "quarter", or "year" with "x" as the date column; the app groups the dates into those periods. Use bucket only to aggregate many rows into a period total — to chart one specific day per month (like "the 10th of each month"), use only a day filter and leave bucket out so the x-axis keeps the actual dates.
 - For a ratio of two numeric columns (for example conversion rate = signups / visits, or click-through rate), set "derived": {name, numerator, denominator} INSTEAD of "measure"; the app plots sum(numerator) / sum(denominator) per category. Do not also set "measure" or "measures".
 - Use sort "value" only for explicit ranking or "top N" requests; leave it out otherwise so the x-axis keeps its natural order (date axes stay chronological). For "top N" set sort "value", order "desc", and limit to N.
-- Output only the JSON spec.`
+- Output only the JSON spec. Never refuse, apologise, or write any prose: if the request is ambiguous or underspecified, make the most reasonable choice and still return one valid spec.`
+
+// Coarse bands instead of exact counts: keeps the signal the model needs to
+// choose a chart (is this column high-cardinality? does it have gaps?) without
+// disclosing exact dataset shape.
+function cardinalityBand(n: number): string {
+  if (n <= 1) return 'constant'
+  if (n <= 10) return 'low-cardinality'
+  if (n <= 50) return 'medium-cardinality'
+  return 'high-cardinality'
+}
 
 function profileLines(summary: DataSummary): string {
   return summary.columns
     .map((c) => {
-      const nulls = c.nullCount > 0 ? `, ${c.nullCount} missing` : ''
-      return `- ${c.name} (${c.type}, ${c.cardinality} distinct${nulls})`
+      const missing = c.nullCount > 0 ? ', some missing' : ''
+      const values = c.values && c.values.length > 0 ? `; values: ${c.values.join(', ')}` : ''
+      return `- ${c.name} (${c.type}, ${cardinalityBand(c.cardinality)}${missing}${values})`
     })
     .join('\n')
 }
@@ -44,7 +55,7 @@ function profileLines(summary: DataSummary): string {
 export function buildSpecMessage(prompt: string, summary: DataSummary): string {
   return `Request: ${prompt}
 
-Dataset schema (${summary.rowCount} rows):
+Dataset columns:
 ${profileLines(summary)}
 
 Return the chart spec JSON now. JSON only, no code fences.`

@@ -13,6 +13,7 @@ export interface ColumnProfile {
   type: ColumnType
   cardinality: number
   nullCount: number
+  values?: string[]
 }
 
 export interface DataSummary {

@@ -93,8 +93,8 @@ function cell(rows: Row[], measure: string, op: ChartSpec['aggregate']): number 
   switch (op) {
     case 'sum': return nums.reduce((a, b) => a + b, 0)
     case 'avg': return nums.reduce((a, b) => a + b, 0) / nums.length
-    case 'min': return Math.min(...nums)
-    case 'max': return Math.max(...nums)
+    case 'min': return nums.reduce((a, b) => (b < a ? b : a), Infinity)
+    case 'max': return nums.reduce((a, b) => (b > a ? b : a), -Infinity)
     default: return nums[0]
   }
 }
@@ -185,11 +185,15 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>)
   } else {
     series = [{ name: spec.derived ? spec.derived.name : (spec.aggregate === 'count' ? 'count' : spec.measure), type, data: xVals.map((xv) => cellValue(byX.get(String(xv)) ?? [], spec)), ...extra }]
   }
+  const yName = !measures ? (spec.derived ? spec.derived.name : spec.aggregate === 'count' ? 'count' : spec.measure) : undefined
   const option: Record<string, unknown> = {
     ...title,
     tooltip: derivedTooltip(spec),
-    xAxis: { type: 'category', data: xVals },
-    yAxis: measures && measures.length === 2 ? [{ type: 'value', name: measures[0] }, { type: 'value', name: measures[1] }] : { type: 'value' },
+    grid: { bottom: 48 },
+    xAxis: { type: 'category', data: xVals, name: spec.x, nameLocation: 'middle', nameGap: 30 },
+    yAxis: measures && measures.length === 2
+      ? [{ type: 'value', name: measures[0] }, { type: 'value', name: measures[1] }]
+      : { type: 'value', name: yName },
     series,
   }
   if (series.length > 1) option.legend = {}

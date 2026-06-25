@@ -3,11 +3,10 @@ import { summarizeData } from './data'
 import { SYSTEM_PROMPT, buildRepairMessage, buildSpecMessage } from './prompt'
 import { buildChartOption } from './chart'
 import { checkOption, extractJson } from './validate'
-import { detokenizeSpec, tokenizeSchema, tokenizeText } from './tokens'
+import { buildTokens, detokenizeSpec, redactLiterals, tokenizeText } from './tokens'
 
 const GEMINI_MODEL = 'gemini-2.5-flash'
 const CLAUDE_MODEL = 'claude-haiku-4-5'
-const TOKENIZE_SCHEMA = false
 
 function envKey(provider: ProviderId): string {
   const key = provider === 'gemini' ? import.meta.env.VITE_GEMINI_API_KEY : import.meta.env.VITE_CLAUDE_API_KEY
@@ -58,6 +57,7 @@ async function claudeComplete(system: string, user: string, key: string): Promis
     body: JSON.stringify({
       model: CLAUDE_MODEL,
       max_tokens: 1024,
+      temperature: 0,
       system,
       messages: [{ role: 'user', content: user }],
     }),
@@ -97,9 +97,14 @@ export async function generateOption(req: GenerateRequest): Promise<GenerateResu
     const name = req.provider === 'gemini' ? 'VITE_GEMINI_API_KEY' : 'VITE_CLAUDE_API_KEY'
     return { status: 'failed', error: `Missing ${name} in .env`, raw: '' }
   }
+  // De-identify everything that leaves the device: the schema, the user's
+  // prompt, and any category values it mentions. The cloud model only sees
+  // tokens; toReal stays local to map the returned spec back to real names.
   const summary = summarizeData(req.rows)
-  const { summary: schema, toReal } = TOKENIZE_SCHEMA ? tokenizeSchema(summary) : { summary, toReal: {} as Record<string, string> }
-  const message = buildSpecMessage(req.prompt, schema)
+  const { summary: schema, toReal } = buildTokens(summary, req.rows)
+  // Mask names/values first, then redact numeric/date literals in what remains.
+  const safePrompt = redactLiterals(tokenizeText(req.prompt, toReal), toReal)
+  const message = buildSpecMessage(safePrompt, schema)
 
   let raw: string
   try {
@@ -112,7 +117,7 @@ export async function generateOption(req: GenerateRequest): Promise<GenerateResu
 
   let raw2: string
   try {
-    raw2 = await complete(req.provider, SYSTEM_PROMPT, buildRepairMessage(raw, tokenizeText(first.error, toReal)), key)
+    raw2 = await complete(req.provider, SYSTEM_PROMPT, buildRepairMessage(tokenizeText(raw, toReal), tokenizeText(first.error, toReal)), key)
   } catch (e) {
     return { status: 'failed', error: (e as Error).message, raw }
   }

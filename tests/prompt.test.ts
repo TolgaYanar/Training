@@ -10,13 +10,16 @@ const summary = {
   ],
 }
 
-test('buildSpecMessage includes prompt, row count, columns, and missing counts but no data values', () => {
+test('buildSpecMessage includes prompt and columns but no exact counts or data values', () => {
   const m = buildSpecMessage('total revenue by month', summary)
   assert.ok(m.includes('Request: total revenue by month'))
-  assert.ok(m.includes('144 rows'))
   assert.ok(m.includes('month (categorical'))
   assert.ok(m.includes('revenue (number'))
-  assert.ok(m.includes('3 missing'))
+  assert.ok(/some missing/.test(m))
+  // coarse bands only — exact dataset shape (row/distinct/missing counts) stays on-device
+  assert.ok(!m.includes('144'))
+  assert.ok(!m.includes('12 distinct'))
+  assert.ok(!m.includes('3 missing'))
   assert.ok(!/range|e\.g\.|Jan|9000/.test(m))
 })
 

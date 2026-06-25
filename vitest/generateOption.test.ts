@@ -78,3 +78,36 @@ test('spec wrapped in code fences is still parsed', async () => {
   const r = await generateOption({ prompt: 'x', provider: 'gemini', rows })
   expect(r.status).toBe('ok')
 })
+
+test('outbound payload is de-identified: no real column names or values leave the device', async () => {
+  const sensitive = [{ department: 'Engineering', salary: 100 }, { department: 'Sales', salary: 200 }]
+  let body = ''
+  vi.stubGlobal('fetch', vi.fn(async (_url: string, init: RequestInit) => {
+    body = String(init.body)
+    return gemini(specOf({ chartType: 'bar', x: 'col_0', measure: 'col_1', aggregate: 'sum' }))
+  }))
+  const r = await generateOption({ prompt: 'salary by department for Engineering', provider: 'gemini', rows: sensitive })
+  expect(r.status).toBe('ok')
+  const userMsg = JSON.parse(body).contents[0].parts[0].text as string
+  expect(userMsg).not.toMatch(/salary|department|Engineering|Sales/)
+  expect(userMsg).toMatch(/col_0|col_1/)
+  // and the real names still come back for rendering
+  if (r.status === 'ok') {
+    const series = (r.option as { series: Array<{ name?: string }> }).series
+    expect(series[0].name).toBe('salary')
+  }
+})
+
+test('numeric and date literals typed in the prompt are redacted before egress', async () => {
+  const rows = [{ region: 'North', revenue: 100 }]
+  let body = ''
+  vi.stubGlobal('fetch', vi.fn(async (_url: string, init: RequestInit) => {
+    body = String(init.body)
+    return gemini(specOf({ chartType: 'bar', x: 'col_0', measure: 'col_1', aggregate: 'sum' }))
+  }))
+  await generateOption({ prompt: 'revenue over 99999 on 2024-01-15, top 5', provider: 'gemini', rows })
+  const userMsg = JSON.parse(body).contents[0].parts[0].text as string
+  expect(userMsg).not.toContain('99999')
+  expect(userMsg).not.toContain('2024-01-15')
+  expect(userMsg).toContain('top 5') // small control numbers survive
+})
