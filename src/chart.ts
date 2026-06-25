@@ -81,29 +81,26 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>)
   const measures = Array.isArray(spec.measures) && spec.measures.length > 0 ? spec.measures : null
   const dual = measures !== null && measures.length === 2
   let series: unknown[]
-  if (measures) {
-    series = measures.map((m, i) => ({
-      name: m,
-      type,
-      data: xVals.map((xv) => cell(byX.get(String(xv)) ?? [], m, spec.aggregate)),
-      ...extra,
-      ...(dual ? { yAxisIndex: i } : {}),
-    }))
-  } else if (grouped(spec)) {
+  if (!measures && grouped(spec)) {
     const key = spec.series as string
     series = uniqueInOrder(rows, key).map((sv) => {
       const data = xVals.map((xv) => cell((byX.get(String(xv)) ?? []).filter((r) => String(r[key]) === String(sv)), spec.measure, spec.aggregate))
       return { name: String(sv), type, data, ...extra }
     })
   } else {
-    const data = xVals.map((xv) => cell(byX.get(String(xv)) ?? [], spec.measure, spec.aggregate))
-    series = [{ name: spec.aggregate === 'count' ? 'count' : spec.measure, type, data, ...extra }]
+    series = (measures ?? [spec.measure]).map((m, i) => ({
+      name: !measures && spec.aggregate === 'count' ? 'count' : m,
+      type,
+      data: xVals.map((xv) => cell(byX.get(String(xv)) ?? [], m, spec.aggregate)),
+      ...extra,
+      ...(dual ? { yAxisIndex: i } : {}),
+    }))
   }
   const option: Record<string, unknown> = {
     ...title,
     tooltip: { trigger: 'axis' },
     xAxis: { type: 'category', data: xVals },
-    yAxis: measures && measures.length === 2 ? [{ type: 'value', name: measures[0] }, { type: 'value', name: measures[1] }] : { type: 'value' },
+    yAxis: dual ? [{ type: 'value', name: measures![0] }, { type: 'value', name: measures![1] }] : { type: 'value' },
     series,
   }
   if (series.length > 1) option.legend = {}
