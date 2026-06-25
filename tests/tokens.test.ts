@@ -33,6 +33,17 @@ test('detokenizeSpec maps every column-bearing field back; user filter value unt
   assert.deepEqual(spec.filter.in, ['Jan'])
 })
 
+test('detokenizeSpec maps a filters[] list — every column and value back to real', () => {
+  const spec = detokenizeSpec(
+    { chartType: 'bar', x: 'col_0', measure: 'col_1', aggregate: 'sum', filters: [{ column: 'col_2', in: ['val_3'] }, { column: 'col_0', datePart: 'month', in: [1] }] },
+    { col_0: 'date', col_1: 'visits', col_2: 'channel', val_3: 'Organic' },
+  )
+  assert.equal(spec.filters[0].column, 'channel')
+  assert.deepEqual(spec.filters[0].in, ['Organic'])
+  assert.equal(spec.filters[1].column, 'date')
+  assert.deepEqual(spec.filters[1].in, [1]) // numeric date-part value passes through
+})
+
 test('detokenizeSpec maps measures[] and derived numerator/denominator', () => {
   const { toReal } = tokenizeSchema(summary)
   const spec = detokenizeSpec(

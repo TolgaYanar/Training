@@ -1,4 +1,4 @@
-import type { ChartSpec, DataSummary, Row } from './types'
+import type { ChartSpec, DataSummary, Filter, Row } from './types'
 
 // The only cap is a budget on how many distinct values we enumerate, to bound
 // regex/prompt size. Protection is NOT gated on a column's cardinality or a
@@ -72,13 +72,13 @@ export function detokenizeSpec(spec: ChartSpec, toReal: Record<string, string>):
   if (typeof spec.measure === 'string') out.measure = real(spec.measure)
   if (Array.isArray(spec.measures)) out.measures = spec.measures.map((m) => (typeof m === 'string' ? real(m) : m))
   if (typeof spec.series === 'string') out.series = real(spec.series)
-  if (spec.filter && typeof spec.filter.column === 'string') {
-    out.filter = {
-      ...spec.filter,
-      column: real(spec.filter.column),
-      in: Array.isArray(spec.filter.in) ? spec.filter.in.map((v) => (typeof v === 'string' ? real(v) : v)) : spec.filter.in,
-    }
-  }
+  const realFilter = (f: Filter): Filter => ({
+    ...f,
+    column: typeof f.column === 'string' ? real(f.column) : f.column,
+    in: Array.isArray(f.in) ? f.in.map((v) => (typeof v === 'string' ? real(v) : v)) : f.in,
+  })
+  if (spec.filter && typeof spec.filter.column === 'string') out.filter = realFilter(spec.filter)
+  if (Array.isArray(spec.filters)) out.filters = spec.filters.map((f) => (f && typeof f.column === 'string' ? realFilter(f) : f))
   if (typeof spec.title === 'string') out.title = detokenizeText(spec.title, toReal)
   if (spec.derived) {
     out.derived = {

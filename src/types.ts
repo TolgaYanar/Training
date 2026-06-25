@@ -45,6 +45,7 @@ export interface ChartSpec {
   series?: string
   aggregate: AggregateOp
   filter?: Filter
+  filters?: Filter[]
   bucket?: 'week' | 'month' | 'quarter' | 'year'
   derived?: Derived
   title?: string

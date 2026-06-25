@@ -54,6 +54,15 @@ function applyFilter(rows: Row[], filter: Filter): Row[] {
   })
 }
 
+// Both the legacy single `filter` and the `filters` list are accepted; all valid
+// conditions are applied together (AND). A condition with no values is ignored.
+function allFilters(spec: ChartSpec): Filter[] {
+  const list: Filter[] = []
+  if (Array.isArray(spec.filters)) list.push(...spec.filters)
+  if (spec.filter) list.push(spec.filter)
+  return list.filter((f) => f && typeof f.column === 'string' && Array.isArray(f.in) && f.in.length > 0)
+}
+
 function uniqueInOrder(rows: Row[], key: string): Array<string | number> {
   const seen = new Set<string>()
   const out: Array<string | number> = []
@@ -164,7 +173,10 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>)
   if (type === 'line' && xVals.length > 30) extra.showSymbol = false
   if (spec.chartType === 'area') extra.areaStyle = {}
   const measures = Array.isArray(spec.measures) && spec.measures.length > 0 ? spec.measures : null
-  const dual = measures !== null && measures.length === 2
+  // A dual y-axis is readable for two LINES (each clearly tracks its own axis) but
+  // deceptive for bars/areas — two bars on different scales render at similar
+  // heights and look equal. So only lines get the second axis; bars/areas share one.
+  const dual = measures !== null && measures.length === 2 && spec.chartType === 'line'
   let series: unknown[]
   if (!measures && grouped(spec)) {
     const key = spec.series as string
@@ -191,8 +203,8 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>)
     tooltip: derivedTooltip(spec),
     grid: { bottom: 48 },
     xAxis: { type: 'category', data: xVals, name: spec.x, nameLocation: 'middle', nameGap: 30 },
-    yAxis: measures && measures.length === 2
-      ? [{ type: 'value', name: measures[0] }, { type: 'value', name: measures[1] }]
+    yAxis: dual
+      ? [{ type: 'value', name: measures![0] }, { type: 'value', name: measures![1] }]
       : { type: 'value', name: yName },
     series,
   }
@@ -257,6 +269,9 @@ function scatter(spec: ChartSpec, rows: Row[], title: Record<string, unknown>): 
 }
 
 export function buildChartOption(spec: ChartSpec, rows: Row[]): EChartsOption {
+  // The model sometimes omits "aggregate"; default it to sum so rows that share an
+  // x (e.g. a weekly bucket) are totalled rather than silently showing the first row.
+  if (!spec.aggregate) spec = { ...spec, aggregate: 'sum' }
   const columns = new Set(Object.keys(rows[0] ?? {}))
   const hasMeasures = Array.isArray(spec.measures) && spec.measures.length > 0
   const hasDerived = !!spec.derived && typeof spec.derived.numerator === 'string' && typeof spec.derived.denominator === 'string'
@@ -266,16 +281,17 @@ export function buildChartOption(spec: ChartSpec, rows: Row[]): EChartsOption {
   if (hasMeasures) required.push(...(spec.measures as string[]))
   if (hasDerived) required.push(spec.derived!.numerator, spec.derived!.denominator)
   if (grouped(spec)) required.push(spec.series as string)
-  if (spec.filter && typeof spec.filter.column === 'string') required.push(spec.filter.column)
+  const filters = allFilters(spec)
+  for (const f of filters) required.push(f.column)
   for (const key of required) {
     if (typeof key !== 'string' || !columns.has(key)) throw new Error(`Spec refers to unknown column "${key}"`)
   }
   let data = rows
-  if (spec.filter && typeof spec.filter.column === 'string' && Array.isArray(spec.filter.in) && spec.filter.in.length > 0) {
-    data = applyFilter(rows, spec.filter)
+  for (const f of filters) {
+    data = applyFilter(data, f)
     if (data.length === 0) throw new Error('Filter matched no rows')
   }
-  if (spec.bucket && spec.filter?.datePart !== 'day') {
+  if (spec.bucket && !filters.some((f) => f.datePart === 'day')) {
     data = data.map((r) => {
       const b = bucketOf(r[spec.x], spec.bucket as 'week' | 'month' | 'quarter' | 'year')
       return b === null ? r : { ...r, [spec.x]: b }

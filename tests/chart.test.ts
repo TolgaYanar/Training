@@ -134,8 +134,8 @@ const mm = [
   { ch: 'B', s: 3, v: 300 },
 ]
 
-test('multi-measure: one series per measure, dual y-axis + yAxisIndex for two', () => {
-  const o = buildChartOption({ chartType: 'bar', x: 'ch', measures: ['s', 'v'], aggregate: 'sum' }, mm)
+test('two measures on a LINE: dual y-axis + yAxisIndex (each line tracks its own scale)', () => {
+  const o = buildChartOption({ chartType: 'line', x: 'ch', measures: ['s', 'v'], aggregate: 'sum' }, mm)
   assert.equal(o.series.length, 2)
   assert.deepEqual(o.series.map((s) => s.name), ['s', 'v'])
   assert.deepEqual(o.series[0].data, [3, 3])
@@ -143,6 +143,15 @@ test('multi-measure: one series per measure, dual y-axis + yAxisIndex for two', 
   assert.ok(Array.isArray(o.yAxis) && o.yAxis.length === 2)
   assert.equal(o.series[0].yAxisIndex, 0)
   assert.equal(o.series[1].yAxisIndex, 1)
+  assert.ok('legend' in o)
+})
+
+test('two measures on a BAR: single shared y-axis (no dual-axis deception)', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'ch', measures: ['s', 'v'], aggregate: 'sum' }, mm)
+  assert.equal(o.series.length, 2)
+  assert.ok(!Array.isArray(o.yAxis)) // one honest axis, so a small measure reads as small
+  assert.equal(o.series[0].yAxisIndex, undefined)
+  assert.equal(o.series[1].yAxisIndex, undefined)
   assert.ok('legend' in o)
 })
 
@@ -221,6 +230,12 @@ test('grouped bar: one bar series per group', () => {
   assert.equal(o.series.length, 2)
   assert.ok(o.series.every((s) => s.type === 'bar'))
   assert.ok('legend' in o)
+})
+
+test('a MISSING aggregate defaults to sum, so bucketed/grouped rows total (not first-row)', () => {
+  const r = [{ k: 'A', v: 10 }, { k: 'A', v: 20 }, { k: 'B', v: 5 }]
+  const o = buildChartOption({ chartType: 'bar', x: 'k', measure: 'v' } as unknown as Parameters<typeof buildChartOption>[0], r)
+  assert.deepEqual(o.series[0].data, [30, 5]) // A summed to 30, not 10 (first row)
 })
 
 test('aggregate none with multiple rows per x returns the first present value', () => {
@@ -320,6 +335,34 @@ test('filter on unknown column throws', () => {
 test('empty filter.in is ignored', () => {
   const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'cat', in: [] } }, frows)
   assert.equal(o.xAxis.data.length, 4)
+})
+
+test('filters[] are AND-combined (category value AND date-part)', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filters: [{ column: 'cat', in: ['A'] }, { column: 'date', datePart: 'month', in: [1] }] }, frows)
+  assert.deepEqual(o.xAxis.data, ['2024-01-10']) // cat A AND January only
+  assert.deepEqual(o.series[0].data, [1])
+})
+
+test('filters[] validate every column; an unknown one throws', () => {
+  assert.throws(() => buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filters: [{ column: 'cat', in: ['A'] }, { column: 'nope', in: ['x'] }] }, frows), /unknown column/)
+})
+
+test('filters[] that narrow to zero rows throw', () => {
+  assert.throws(() => buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filters: [{ column: 'cat', in: ['A'] }, { column: 'cat', in: ['B'] }] }, frows), /matched no rows/)
+})
+
+test('legacy single filter still applies and combines with filters[]', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'cat', in: ['A'] }, filters: [{ column: 'date', datePart: 'month', in: [1] }] }, frows)
+  assert.deepEqual(o.xAxis.data, ['2024-01-10'])
+})
+
+test('bucket is skipped when ANY filter pins a specific day', () => {
+  const tenths = [
+    { date: '2024-01-10', cat: 'A', v: 1 },
+    { date: '2024-02-10', cat: 'A', v: 3 },
+  ]
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', bucket: 'month', filters: [{ column: 'cat', in: ['A'] }, { column: 'date', datePart: 'day', in: [10] }] }, tenths)
+  assert.deepEqual(o.xAxis.data, ['2024-01-10', '2024-02-10']) // real dates kept, not month buckets
 })
 
 const drows = [
