@@ -250,6 +250,22 @@ test('value filter keeps only matching rows', () => {
   assert.deepEqual(o.series[0].data, [1, 3])
 })
 
+test('value filter is case-insensitive (model echoes the user wording)', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'cat', in: ['a'] } }, frows)
+  assert.deepEqual(o.xAxis.data, ['2024-01-10', '2024-02-10'])
+  assert.deepEqual(o.series[0].data, [1, 3])
+})
+
+test('value filter matches by contained substring', () => {
+  const wrows = [
+    { day: 'Mon', channel: 'Organic Search', v: 1 },
+    { day: 'Tue', channel: 'Paid Social', v: 2 },
+  ]
+  const o = buildChartOption({ chartType: 'bar', x: 'day', measure: 'v', aggregate: 'sum', filter: { column: 'channel', in: ['organic'] } }, wrows)
+  assert.deepEqual(o.xAxis.data, ['Mon'])
+  assert.deepEqual(o.series[0].data, [1])
+})
+
 test('date-part filter: day of month (the 10th of each month)', () => {
   const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'date', datePart: 'day', in: [10] } }, frows)
   assert.deepEqual(o.xAxis.data, ['2024-01-10', '2024-02-10'])

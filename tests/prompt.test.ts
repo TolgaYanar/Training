@@ -5,20 +5,23 @@ import { SYSTEM_PROMPT, buildSpecMessage, buildRepairMessage } from '../src/prom
 const summary = {
   rowCount: 144,
   columns: [
-    { name: 'month', type: 'categorical', cardinality: 12, nullCount: 0, sampleValues: ['Jan', 'Feb'] },
-    { name: 'revenue', type: 'number', cardinality: 100, nullCount: 3, sampleValues: [], min: 100, max: 9000 },
+    { name: 'month', type: 'categorical', cardinality: 12, nullCount: 0 },
+    { name: 'revenue', type: 'number', cardinality: 100, nullCount: 3 },
   ],
-  sampleRows: [],
 }
 
-test('buildSpecMessage includes prompt, row count, columns, ranges, and missing counts', () => {
+test('buildSpecMessage includes prompt, row count, columns, and missing counts but no data values', () => {
   const m = buildSpecMessage('total revenue by month', summary)
   assert.ok(m.includes('Request: total revenue by month'))
   assert.ok(m.includes('144 rows'))
   assert.ok(m.includes('month (categorical'))
   assert.ok(m.includes('revenue (number'))
-  assert.ok(m.includes('range 100..9000'))
   assert.ok(m.includes('3 missing'))
+  assert.ok(!/range|e\.g\.|Jan|9000/.test(m))
+})
+
+test('SYSTEM_PROMPT states the model never sees the data', () => {
+  assert.ok(/never see the data/i.test(SYSTEM_PROMPT))
 })
 
 test('buildRepairMessage carries the exact error and truncates long raw', () => {

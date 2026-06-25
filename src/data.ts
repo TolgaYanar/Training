@@ -67,27 +67,25 @@ export const datasets: Dataset[] = [
   { id: 'traffic', label: 'Daily traffic — large, with gaps', rows: buildTraffic() },
 ]
 
+const PROFILE_SAMPLE = 5000
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}/
+
 export function summarizeData(rows: Row[]): DataSummary {
   const keys = Object.keys(rows[0] ?? {})
+  const sample = rows.length > PROFILE_SAMPLE ? rows.slice(0, PROFILE_SAMPLE) : rows
   const columns: ColumnProfile[] = keys.map((name) => {
-    const all = rows.map((row) => row[name])
-    const present = all.filter((v): v is string | number => v !== null && v !== undefined && v !== '')
-    const nullCount = all.length - present.length
+    const present = sample
+      .map((row) => row[name])
+      .filter((v): v is string | number => v !== null && v !== undefined && v !== '')
     const nums = present.filter((v): v is number => typeof v === 'number' && Number.isFinite(v))
     const numeric = present.length > 0 && nums.length === present.length
-    const distinct = Array.from(new Set(present))
-    const column: ColumnProfile = {
+    const isDate = !numeric && present.length > 0 && present.every((v) => typeof v === 'string' && ISO_DATE.test(v))
+    return {
       name,
-      type: numeric ? 'number' : 'categorical',
-      cardinality: distinct.length,
-      nullCount,
-      sampleValues: distinct.slice(0, 6),
+      type: numeric ? 'number' : isDate ? 'date' : 'categorical',
+      cardinality: new Set(present).size,
+      nullCount: sample.length - present.length,
     }
-    if (numeric && nums.length > 0) {
-      column.min = Math.min(...nums)
-      column.max = Math.max(...nums)
-    }
-    return column
   })
-  return { rowCount: rows.length, columns, sampleRows: rows.slice(0, 5) }
+  return { rowCount: rows.length, columns }
 }

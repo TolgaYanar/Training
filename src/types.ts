@@ -6,22 +6,18 @@ export type ProviderId = 'gemini' | 'claude'
 
 export type Row = Record<string, string | number | null>
 
-export type ColumnType = 'number' | 'categorical'
+export type ColumnType = 'number' | 'date' | 'categorical'
 
 export interface ColumnProfile {
   name: string
   type: ColumnType
   cardinality: number
   nullCount: number
-  sampleValues: Array<string | number>
-  min?: number
-  max?: number
 }
 
 export interface DataSummary {
   rowCount: number
   columns: ColumnProfile[]
-  sampleRows: Row[]
 }
 
 export type ChartType = 'line' | 'bar' | 'area' | 'pie' | 'scatter'

@@ -3,9 +3,11 @@ import { summarizeData } from './data'
 import { SYSTEM_PROMPT, buildRepairMessage, buildSpecMessage } from './prompt'
 import { buildChartOption } from './chart'
 import { checkOption, extractJson } from './validate'
+import { detokenizeSpec, tokenizeSchema, tokenizeText } from './tokens'
 
 const GEMINI_MODEL = 'gemini-2.5-flash'
 const CLAUDE_MODEL = 'claude-haiku-4-5'
+const TOKENIZE_SCHEMA = false
 
 function envKey(provider: ProviderId): string {
   const key = provider === 'gemini' ? import.meta.env.VITE_GEMINI_API_KEY : import.meta.env.VITE_CLAUDE_API_KEY
@@ -70,17 +72,17 @@ function complete(provider: ProviderId, system: string, user: string, key: strin
   return provider === 'gemini' ? geminiComplete(system, user, key) : claudeComplete(system, user, key)
 }
 
-function buildFrom(raw: string, rows: Row[]): { option: EChartsOption } | { error: string } {
-  let spec: unknown
+function buildFrom(raw: string, rows: Row[], toReal: Record<string, string>): { option: EChartsOption } | { error: string } {
+  let parsed: unknown
   try {
-    spec = JSON.parse(extractJson(raw))
+    parsed = JSON.parse(extractJson(raw))
   } catch (e) {
     return { error: `Spec JSON parse failed: ${(e as Error).message}` }
   }
-  if (typeof spec !== 'object' || spec === null || Array.isArray(spec)) return { error: 'Spec is not a JSON object' }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return { error: 'Spec is not a JSON object' }
   let option: EChartsOption
   try {
-    option = buildChartOption(spec as ChartSpec, rows)
+    option = buildChartOption(detokenizeSpec(parsed as ChartSpec, toReal), rows)
   } catch (e) {
     return { error: (e as Error).message }
   }
@@ -96,7 +98,8 @@ export async function generateOption(req: GenerateRequest): Promise<GenerateResu
     return { status: 'failed', error: `Missing ${name} in .env`, raw: '' }
   }
   const summary = summarizeData(req.rows)
-  const message = buildSpecMessage(req.prompt, summary)
+  const { summary: schema, toReal } = TOKENIZE_SCHEMA ? tokenizeSchema(summary) : { summary, toReal: {} as Record<string, string> }
+  const message = buildSpecMessage(req.prompt, schema)
 
   let raw: string
   try {
@@ -104,16 +107,16 @@ export async function generateOption(req: GenerateRequest): Promise<GenerateResu
   } catch (e) {
     return { status: 'failed', error: (e as Error).message, raw: '' }
   }
-  const first = buildFrom(raw, req.rows)
+  const first = buildFrom(raw, req.rows, toReal)
   if ('option' in first) return { status: 'ok', option: first.option, repaired: false, raw }
 
   let raw2: string
   try {
-    raw2 = await complete(req.provider, SYSTEM_PROMPT, buildRepairMessage(raw, first.error), key)
+    raw2 = await complete(req.provider, SYSTEM_PROMPT, buildRepairMessage(raw, tokenizeText(first.error, toReal)), key)
   } catch (e) {
     return { status: 'failed', error: (e as Error).message, raw }
   }
-  const second = buildFrom(raw2, req.rows)
+  const second = buildFrom(raw2, req.rows, toReal)
   if ('option' in second) return { status: 'ok', option: second.option, repaired: true, raw: raw2 }
   return { status: 'failed', error: second.error, raw: raw2 }
 }

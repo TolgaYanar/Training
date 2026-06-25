@@ -31,14 +31,26 @@ function bucketOf(v: unknown, b: 'week' | 'month' | 'quarter' | 'year'): string 
   return `${m[1]}-${m[2]}`
 }
 
+function matchesTerm(actual: string, term: string): boolean {
+  if (actual === term) return true
+  const a = actual.toLowerCase().trim()
+  const t = term.toLowerCase().trim()
+  if (a === t) return true
+  return t.length >= 3 && (a.includes(t) || t.includes(a))
+}
+
 function applyFilter(rows: Row[], filter: Filter): Row[] {
-  const set = new Set(filter.in.map(String))
-  return rows.filter((r) => {
-    if (filter.datePart) {
-      const p = datePartOf(r[filter.column], filter.datePart)
+  if (filter.datePart) {
+    const set = new Set(filter.in.map(String))
+    return rows.filter((r) => {
+      const p = datePartOf(r[filter.column], filter.datePart!)
       return p !== null && set.has(String(p))
-    }
-    return set.has(String(r[filter.column]))
+    })
+  }
+  const terms = filter.in.map(String)
+  return rows.filter((r) => {
+    const v = r[filter.column]
+    return present(v) && terms.some((t) => matchesTerm(String(v), t))
   })
 }
 

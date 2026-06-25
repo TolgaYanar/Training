@@ -21,6 +21,7 @@ Output exactly this shape (omit any optional field you do not need):
 
 Rules:
 - Use EXACT column names from the schema below. Do not invent columns.
+- You never see the data itself — only column names, types (number / date / categorical), and counts. For a "filter", copy the category value(s) exactly as the user wrote them in the request into "in"; the app matches them to the real values (case-insensitive). Never guess or invent category values; if the user names no value, use "datePart" or omit the filter.
 - Choose chartType to fit the request and data: line or area for trends over a time or ordered column; bar to compare across categories; pie for parts of a whole; scatter for the relationship between two numeric columns (set x and measure to the two numeric columns and aggregate "none").
 - aggregate is how to combine rows that share the same x (and series): "sum", "avg", "min", "max", or "none" when each x already has a single row. Use "count" to count rows (measure is ignored then).
 - Use "series" when the request compares groups across the x column (for example one line per channel or per region).
@@ -34,9 +35,8 @@ Rules:
 function profileLines(summary: DataSummary): string {
   return summary.columns
     .map((c) => {
-      const range = c.type === 'number' ? `, range ${c.min}..${c.max}` : `, e.g. ${JSON.stringify(c.sampleValues)}`
       const nulls = c.nullCount > 0 ? `, ${c.nullCount} missing` : ''
-      return `- ${c.name} (${c.type}, ${c.cardinality} distinct${range}${nulls})`
+      return `- ${c.name} (${c.type}, ${c.cardinality} distinct${nulls})`
     })
     .join('\n')
 }
