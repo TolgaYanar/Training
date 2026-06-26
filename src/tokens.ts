@@ -33,6 +33,8 @@ const GROUPED_NUMBER = new RegExp(`(?<![${WORD}.])\\d{1,3}(?:,\\d{3})+(?:\\.\\d+
 const SEPARATED_DIGITS = new RegExp(`(?<![${WORD}.])\\d{2,}(?:[-.]\\d{2,})+(?![${WORD}.])`, 'g')
 const DECIMAL = new RegExp(`(?<![${WORD}.])\\d+\\.\\d+(?![${WORD}.])`, 'g')
 const LONG_NUMBER = new RegExp(`(?<![${WORD}.])\\d{4,}(?![${WORD}])`, 'g')
+const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g
+const URL = /(?:https?:\/\/|www\.)[^\s]+/gi
 
 export function redactLiterals(text: string, toReal: Record<string, string>): string {
   let next = Object.keys(toReal).filter((k) => k.startsWith('lit_')).length
@@ -44,10 +46,12 @@ export function redactLiterals(text: string, toReal: Record<string, string>): st
     toReal[token] = literal
     return token
   }
-  // Order matters: whole dates, then comma-grouped, then hyphen/dot-separated,
-  // then decimals, then bare long runs — each consumes its digits before a looser
-  // pattern can split them.
+  // Order matters: emails and links first (they embed dots & digits), then whole
+  // dates, comma-grouped, hyphen/dot-separated, decimals, bare long runs — each
+  // consumes its characters before a looser pattern can split them.
   return text
+    .replace(EMAIL, tokenFor)
+    .replace(URL, tokenFor)
     .replace(ISO_DATE, tokenFor)
     .replace(GROUPED_NUMBER, tokenFor)
     .replace(SEPARATED_DIGITS, tokenFor)
@@ -76,6 +80,7 @@ export function detokenizeSpec(spec: ChartSpec, toReal: Record<string, string>):
     ...f,
     column: typeof f.column === 'string' ? real(f.column) : f.column,
     in: Array.isArray(f.in) ? f.in.map((v) => (typeof v === 'string' ? real(v) : v)) : f.in,
+    value: typeof f.value === 'string' ? Number(real(f.value)) : f.value,
   })
   if (spec.filter && typeof spec.filter.column === 'string') out.filter = realFilter(spec.filter)
   if (Array.isArray(spec.filters)) out.filters = spec.filters.map((f) => (f && typeof f.column === 'string' ? realFilter(f) : f))

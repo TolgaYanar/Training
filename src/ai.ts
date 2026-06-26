@@ -1,17 +1,11 @@
-import type { ChartSpec, EChartsOption, GenerateRequest, GenerateResult, ProviderId, Row } from './types'
+import type { ChartSpec, EChartsOption, GenerateRequest, GenerateResult, Outbound, Row } from './types'
 import { summarizeData } from './data'
-import { SYSTEM_PROMPT, buildRepairMessage, buildSpecMessage } from './prompt'
+import { CHART_SPEC_SCHEMA, SYSTEM_PROMPT, buildRepairMessage, buildSpecMessage } from './prompt'
 import { buildChartOption } from './chart'
 import { checkOption, extractJson } from './validate'
 import { buildTokens, detokenizeSpec, redactLiterals, tokenizeText } from './tokens'
 
-const GEMINI_MODEL = 'gemini-2.5-flash'
 const CLAUDE_MODEL = 'claude-haiku-4-5'
-
-function envKey(provider: ProviderId): string {
-  const key = provider === 'gemini' ? import.meta.env.VITE_GEMINI_API_KEY : import.meta.env.VITE_CLAUDE_API_KEY
-  return key ?? ''
-}
 
 async function fetchRetry(url: string, init: RequestInit): Promise<Response> {
   let res = await fetch(url, init)
@@ -22,30 +16,7 @@ async function fetchRetry(url: string, init: RequestInit): Promise<Response> {
   return res
 }
 
-async function geminiComplete(system: string, user: string, key: string): Promise<string> {
-  const res = await fetchRetry(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: system }] },
-      contents: [{ role: 'user', parts: [{ text: user }] }],
-      generationConfig: { responseMimeType: 'application/json', temperature: 0 },
-    }),
-  })
-  if (!res.ok) {
-    const body = await res.text()
-    if (res.status === 429) {
-      const wait = body.match(/"retryDelay":\s*"([^"]+)"/)
-      throw new Error(`Gemini free-tier quota reached (429).${wait ? ` Retry in ${wait[1]}.` : ''} Wait and retry, or switch GEMINI_MODEL in ai.ts.`)
-    }
-    throw new Error(`Gemini ${res.status}: ${body}`)
-  }
-  const data = await res.json()
-  const parts: Array<{ text?: string }> = data?.candidates?.[0]?.content?.parts ?? []
-  return parts.map((p) => p.text ?? '').join('')
-}
-
-async function claudeComplete(system: string, user: string, key: string): Promise<string> {
+async function claudeComplete(system: string, user: Outbound, key: string): Promise<string> {
   const res = await fetchRetry('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -60,16 +31,13 @@ async function claudeComplete(system: string, user: string, key: string): Promis
       temperature: 0,
       system,
       messages: [{ role: 'user', content: user }],
+      output_config: { format: { type: 'json_schema', schema: CHART_SPEC_SCHEMA } },
     }),
   })
   if (!res.ok) throw new Error(`Claude ${res.status}: ${await res.text()}`)
   const data = await res.json()
   const blocks: Array<{ type: string; text?: string }> = data?.content ?? []
   return blocks.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('')
-}
-
-function complete(provider: ProviderId, system: string, user: string, key: string): Promise<string> {
-  return provider === 'gemini' ? geminiComplete(system, user, key) : claudeComplete(system, user, key)
 }
 
 function buildFrom(raw: string, rows: Row[], toReal: Record<string, string>): { option: EChartsOption } | { error: string } {
@@ -91,24 +59,21 @@ function buildFrom(raw: string, rows: Row[], toReal: Record<string, string>): { 
   return { option }
 }
 
+export function deidentify(prompt: string, rows: Row[]): { message: Outbound; toReal: Record<string, string> } {
+  const summary = summarizeData(rows)
+  const { summary: schema, toReal } = buildTokens(summary, rows)
+  const safePrompt = redactLiterals(tokenizeText(prompt, toReal), toReal)
+  return { message: buildSpecMessage(safePrompt, schema), toReal }
+}
+
 export async function generateOption(req: GenerateRequest): Promise<GenerateResult> {
-  const key = envKey(req.provider)
-  if (!key) {
-    const name = req.provider === 'gemini' ? 'VITE_GEMINI_API_KEY' : 'VITE_CLAUDE_API_KEY'
-    return { status: 'failed', error: `Missing ${name} in .env`, raw: '' }
-  }
-  // De-identify everything that leaves the device: the schema, the user's
-  // prompt, and any category values it mentions. The cloud model only sees
-  // tokens; toReal stays local to map the returned spec back to real names.
-  const summary = summarizeData(req.rows)
-  const { summary: schema, toReal } = buildTokens(summary, req.rows)
-  // Mask names/values first, then redact numeric/date literals in what remains.
-  const safePrompt = redactLiterals(tokenizeText(req.prompt, toReal), toReal)
-  const message = buildSpecMessage(safePrompt, schema)
+  const key = import.meta.env.VITE_CLAUDE_API_KEY ?? ''
+  if (!key) return { status: 'failed', error: 'Missing VITE_CLAUDE_API_KEY in .env', raw: '' }
+  const { message, toReal } = deidentify(req.prompt, req.rows)
 
   let raw: string
   try {
-    raw = await complete(req.provider, SYSTEM_PROMPT, message, key)
+    raw = await claudeComplete(SYSTEM_PROMPT, message, key)
   } catch (e) {
     return { status: 'failed', error: (e as Error).message, raw: '' }
   }
@@ -117,7 +82,7 @@ export async function generateOption(req: GenerateRequest): Promise<GenerateResu
 
   let raw2: string
   try {
-    raw2 = await complete(req.provider, SYSTEM_PROMPT, buildRepairMessage(tokenizeText(raw, toReal), tokenizeText(first.error, toReal)), key)
+    raw2 = await claudeComplete(SYSTEM_PROMPT, buildRepairMessage(tokenizeText(raw, toReal), tokenizeText(first.error, toReal)), key)
   } catch (e) {
     return { status: 'failed', error: (e as Error).message, raw }
   }

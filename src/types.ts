@@ -2,7 +2,7 @@ import type { EChartsOption } from 'echarts'
 
 export type { EChartsOption }
 
-export type ProviderId = 'gemini' | 'claude'
+export type Outbound = string & { readonly __outbound: unique symbol }
 
 export type Row = Record<string, string | number | null>
 
@@ -27,8 +27,10 @@ export type AggregateOp = 'sum' | 'avg' | 'count' | 'min' | 'max' | 'none'
 
 export interface Filter {
   column: string
-  in: Array<string | number>
+  in?: Array<string | number>
   datePart?: 'day' | 'weekday' | 'month' | 'quarter'
+  op?: '>' | '>=' | '<' | '<=' | '==' | '!='
+  value?: number
 }
 
 export interface Derived {
@@ -56,10 +58,22 @@ export interface ChartSpec {
 
 export interface GenerateRequest {
   prompt: string
-  provider: ProviderId
   rows: Row[]
 }
 
 export type GenerateResult =
   | { status: 'ok'; option: EChartsOption; repaired: boolean; raw: string }
   | { status: 'failed'; error: string; raw: string }
+
+export interface ChartRequest {
+  source: string
+  prompt: string
+}
+
+export type ChartResponse =
+  | { status: 'ok'; option: EChartsOption; repaired: boolean }
+  | { status: 'failed'; error: string; raw: string }
+
+export interface ChartService {
+  getChart(req: ChartRequest): Promise<ChartResponse>
+}

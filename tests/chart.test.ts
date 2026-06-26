@@ -2,6 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { buildChartOption } from '../src/chart.ts'
 import { datasets } from '../src/data.ts'
+import type { ChartSpec } from '../src/types.ts'
 
 const rows = [
   { day: 'Mon', team: 'A', score: 10 },
@@ -345,6 +346,36 @@ test('filters[] are AND-combined (category value AND date-part)', () => {
 
 test('filters[] validate every column; an unknown one throws', () => {
   assert.throws(() => buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filters: [{ column: 'cat', in: ['A'] }, { column: 'nope', in: ['x'] }] }, frows), /unknown column/)
+})
+
+test('comparison filter + count: days a channel exceeds a threshold, one bar, no measure needed', () => {
+  const tr = [
+    { ch: 'Organic', visits: 700 },
+    { ch: 'Organic', visits: 500 },
+    { ch: 'Organic', visits: 800 },
+    { ch: 'Paid', visits: 900 },
+  ]
+  const spec = { chartType: 'bar', x: 'ch', aggregate: 'count', filters: [{ column: 'ch', in: ['Organic'] }, { column: 'visits', op: '>', value: 605 }] } as unknown as ChartSpec
+  const o = buildChartOption(spec, tr)
+  assert.deepEqual(o.xAxis.data, ['Organic']) // only Organic kept
+  assert.deepEqual(o.series[0].data, [2]) // 700 and 800 exceed 605; 500 and Paid excluded
+  assert.equal(o.series[0].name, 'count')
+})
+
+test('comparison operators <, <=, ==, != filter a numeric column', () => {
+  const tr = [{ k: 'A', v: 1 }, { k: 'A', v: 2 }, { k: 'A', v: 3 }, { k: 'A', v: 4 }]
+  assert.deepEqual(buildChartOption({ chartType: 'bar', x: 'k', measure: 'v', aggregate: 'count', filter: { column: 'v', op: '<', value: 3 } }, tr).series[0].data, [2])
+  assert.deepEqual(buildChartOption({ chartType: 'bar', x: 'k', measure: 'v', aggregate: 'count', filter: { column: 'v', op: '<=', value: 3 } }, tr).series[0].data, [3])
+  assert.deepEqual(buildChartOption({ chartType: 'bar', x: 'k', measure: 'v', aggregate: 'count', filter: { column: 'v', op: '!=', value: 2 } }, tr).series[0].data, [3])
+})
+
+test('comparison works for a very large threshold and tolerates it arriving in `in`', () => {
+  const tr = [{ k: 'A', v: 605000 }, { k: 'A', v: 700000 }, { k: 'A', v: 100 }]
+  // value path
+  assert.deepEqual(buildChartOption({ chartType: 'bar', x: 'k', measure: 'v', aggregate: 'count', filter: { column: 'v', op: '>', value: 605000 } }, tr).series[0].data, [1])
+  // model put the (detokenized) threshold in `in` instead of value — still filters
+  const viaIn = { chartType: 'bar', x: 'k', aggregate: 'count', filter: { column: 'v', op: '>=', in: [605000] } } as unknown as ChartSpec
+  assert.deepEqual(buildChartOption(viaIn, tr).series[0].data, [2])
 })
 
 test('filters[] that narrow to zero rows throw', () => {

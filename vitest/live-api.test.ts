@@ -101,7 +101,7 @@ test.skipIf(!LIVE)('LIVE: Claude picks the right spec through the de-identificat
   for (const c of CASES) {
     let line: string
     try {
-      const r = await generateOption({ prompt: c.prompt, provider: 'claude', rows: rowsOf(c.dataset) })
+      const r = await generateOption({ prompt: c.prompt, rows: rowsOf(c.dataset) })
       if (r.status !== 'ok') {
         pipelineFails++
         line = `PIPELINE-FAIL  ${c.name}  ::  ${r.error}`

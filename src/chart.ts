@@ -40,14 +40,33 @@ function matchesTerm(actual: string, term: string): boolean {
 }
 
 function applyFilter(rows: Row[], filter: Filter): Row[] {
+  if (filter.op) {
+    const raw = filter.value ?? (Array.isArray(filter.in) ? filter.in[0] : undefined)
+    const t = Number(raw)
+    if (!Number.isFinite(t)) return rows
+    const op = filter.op
+    return rows.filter((r) => {
+      const n = num(r[filter.column])
+      if (n === null) return false
+      switch (op) {
+        case '>': return n > t
+        case '>=': return n >= t
+        case '<': return n < t
+        case '<=': return n <= t
+        case '==': return n === t
+        case '!=': return n !== t
+        default: return false
+      }
+    })
+  }
   if (filter.datePart) {
-    const set = new Set(filter.in.map(String))
+    const set = new Set((filter.in ?? []).map(String))
     return rows.filter((r) => {
       const p = datePartOf(r[filter.column], filter.datePart!)
       return p !== null && set.has(String(p))
     })
   }
-  const terms = filter.in.map(String)
+  const terms = (filter.in ?? []).map(String)
   return rows.filter((r) => {
     const v = r[filter.column]
     return present(v) && terms.some((t) => matchesTerm(String(v), t))
@@ -55,12 +74,13 @@ function applyFilter(rows: Row[], filter: Filter): Row[] {
 }
 
 // Both the legacy single `filter` and the `filters` list are accepted; all valid
-// conditions are applied together (AND). A condition with no values is ignored.
+// conditions are applied together (AND). A membership condition with no values, or
+// a comparison with no op/value, is ignored.
 function allFilters(spec: ChartSpec): Filter[] {
   const list: Filter[] = []
   if (Array.isArray(spec.filters)) list.push(...spec.filters)
   if (spec.filter) list.push(spec.filter)
-  return list.filter((f) => f && typeof f.column === 'string' && Array.isArray(f.in) && f.in.length > 0)
+  return list.filter((f) => f && typeof f.column === 'string' && ((typeof f.op === 'string' && typeof f.value === 'number') || (Array.isArray(f.in) && f.in.length > 0)))
 }
 
 function uniqueInOrder(rows: Row[], key: string): Array<string | number> {
@@ -275,7 +295,7 @@ export function buildChartOption(spec: ChartSpec, rows: Row[]): EChartsOption {
   const columns = new Set(Object.keys(rows[0] ?? {}))
   const hasMeasures = Array.isArray(spec.measures) && spec.measures.length > 0
   const hasDerived = !!spec.derived && typeof spec.derived.numerator === 'string' && typeof spec.derived.denominator === 'string'
-  if (typeof spec.measure !== 'string' && !hasMeasures && !hasDerived) throw new Error('Spec must specify a measure')
+  if (spec.aggregate !== 'count' && typeof spec.measure !== 'string' && !hasMeasures && !hasDerived) throw new Error('Spec must specify a measure')
   const required: string[] = [spec.x]
   if (typeof spec.measure === 'string') required.push(spec.measure)
   if (hasMeasures) required.push(...(spec.measures as string[]))

@@ -198,12 +198,12 @@ test('DETOKENIZE COVERAGE — every identifier-bearing field comes back real', (
 })
 
 // ── FULL PIPELINE with a mocked model: each chart type wires end-to-end ─────
-function geminiReturning(spec: object) {
+function claudeReturning(spec: object) {
   const text = JSON.stringify(spec)
-  return { ok: true, status: 200, text: async () => text, json: async () => ({ candidates: [{ content: { parts: [{ text }] } }] }) }
+  return { ok: true, status: 200, text: async () => text, json: async () => ({ content: [{ type: 'text', text }] }) }
 }
 
-beforeEach(() => vi.stubEnv('VITE_GEMINI_API_KEY', 'test-key'))
+beforeEach(() => vi.stubEnv('VITE_CLAUDE_API_KEY', 'test-key'))
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals() })
 
 test('FULL PIPELINE — model answers in tokens, app renders real charts for every type', async () => {
@@ -221,8 +221,8 @@ test('FULL PIPELINE — model answers in tokens, app renders real charts for eve
   ]
   const outcomes: string[] = []
   for (const { name, spec } of tokenSpecs) {
-    vi.stubGlobal('fetch', vi.fn(async () => geminiReturning(spec)))
-    const r = await generateOption({ prompt: 'chart it', provider: 'gemini', rows: sales })
+    vi.stubGlobal('fetch', vi.fn(async () => claudeReturning(spec)))
+    const r = await generateOption({ prompt: 'chart it', rows: sales })
     outcomes.push(`${name}: ${r.status}`)
     expect(r.status).toBe('ok')
   }

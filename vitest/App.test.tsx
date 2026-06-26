@@ -1,8 +1,8 @@
 import { test, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
 
-const { generateOption } = vi.hoisted(() => ({ generateOption: vi.fn() }))
-vi.mock('../src/ai', () => ({ generateOption }))
+const { generateOption, deidentify } = vi.hoisted(() => ({ generateOption: vi.fn(), deidentify: vi.fn(() => ({ message: 'preview', toReal: {} })) }))
+vi.mock('../src/ai', () => ({ generateOption, deidentify }))
 vi.mock('echarts-for-react', () => ({ default: () => <div data-testid="chart" /> }))
 
 import App from '../src/App.tsx'
@@ -29,7 +29,6 @@ test('generate -> ok renders the chart and passes the 144 sales rows', async () 
   fireEvent.click(screen.getByText('Generate chart'))
   await waitFor(() => expect(screen.getByTestId('chart')).toBeTruthy())
   const arg = generateOption.mock.calls[0][0]
-  expect(arg.provider).toBe('gemini')
   expect(arg.rows.length).toBe(144)
 })
 

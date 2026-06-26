@@ -70,7 +70,7 @@ test.skipIf(!LIVE)('LIVE matrix: Claude picks the right spec through de-identifi
     const c = cases[i]
     const idx = offset + i
     try {
-      const r = await generateOption({ prompt: c.prompt, provider: 'claude', rows: rowsOf(c.dataset) })
+      const r = await generateOption({ prompt: c.prompt, rows: rowsOf(c.dataset) })
       if (r.status !== 'ok') {
         pipelineFails++
         lines.push(`#${idx} PIPELINE-FAIL  [${c.dataset}] ${c.name}  ::  ${r.error}`)

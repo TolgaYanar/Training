@@ -1,10 +1,11 @@
-import { useState } from 'react'
-import { App as AntApp, Button, Card, Collapse, ConfigProvider, Empty, Input, Layout, Result, Segmented, Select, Spin, Table, Tag, Typography } from 'antd'
+import { useMemo, useState } from 'react'
+import { App as AntApp, Button, Card, Collapse, ConfigProvider, Empty, Input, Layout, Result, Select, Spin, Table, Tag, Typography } from 'antd'
 import type { TableColumnsType } from 'antd'
 import ReactECharts from 'echarts-for-react'
-import type { EChartsOption, ProviderId, Row } from './types'
+import type { EChartsOption, Row } from './types'
 import { datasets } from './data'
-import { generateOption } from './ai'
+import { deidentify } from './ai'
+import { chartService } from './service'
 
 const { Header, Content } = Layout
 const { Title } = Typography
@@ -44,7 +45,6 @@ function ChartStage(props: { status: Status; option: EChartsOption | null; repai
 function Main() {
   const { message } = AntApp.useApp()
   const [datasetId, setDatasetId] = useState(datasets[0].id)
-  const [provider, setProvider] = useState<ProviderId>('gemini')
   const [prompt, setPrompt] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [option, setOption] = useState<EChartsOption | null>(null)
@@ -54,6 +54,7 @@ function Main() {
 
   const active = datasets.find((d) => d.id === datasetId) ?? datasets[0]
   const dataColumns: TableColumnsType<Row> = Object.keys(active.rows[0]).map((key) => ({ title: key, dataIndex: key, key }))
+  const preview = useMemo(() => (prompt.trim() ? deidentify(prompt.trim(), active.rows).message : ''), [prompt, active.rows])
 
   async function run() {
     if (!prompt.trim()) {
@@ -61,7 +62,7 @@ function Main() {
       return
     }
     setStatus('loading')
-    const result = await generateOption({ prompt: prompt.trim(), provider, rows: active.rows })
+    const result = await chartService.getChart({ source: datasetId, prompt: prompt.trim() })
     if (result.status === 'ok') {
       setOption(result.option)
       setRepaired(result.repaired)
@@ -86,12 +87,6 @@ function Main() {
             options={datasets.map((d) => ({ label: d.label, value: d.id }))}
             style={{ width: '100%' }}
           />
-          <Segmented
-            block
-            value={provider}
-            onChange={(value) => setProvider(value as ProviderId)}
-            options={[{ label: 'Gemini', value: 'gemini' }, { label: 'Claude', value: 'claude' }]}
-          />
           <TextArea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
@@ -99,8 +94,13 @@ function Main() {
             autoSize={{ minRows: 3, maxRows: 6 }}
           />
           <Typography.Text type="secondary" style={{ fontSize: 12, lineHeight: 1.4 }}>
-            🔒 Column names, category values, exact dates and long numbers are replaced with placeholders before your request is sent to the AI — your data never leaves this device. Other free text you type (names, IDs, notes in a sentence) is sent as written, so avoid putting sensitive details there.
+            🔒 Column names, category values, dates, long numbers, emails and links are replaced with placeholders before your request is sent — your data stays on this device. Other free text (names, notes in a sentence) is sent as written, so review the exact payload below before generating.
           </Typography.Text>
+          {preview ? (
+            <Card size="small" title="🔍 Sent to the AI (de-identified)" styles={{ body: { padding: 8 } }}>
+              <pre style={{ margin: 0, maxHeight: 160, overflow: 'auto', fontSize: 12, whiteSpace: 'pre-wrap' }}>{preview}</pre>
+            </Card>
+          ) : null}
           <Button type="primary" loading={status === 'loading'} onClick={run}>Generate chart</Button>
           <Card size="small" title={`Data (${active.rows.length} rows)`}>
             <Table<Row>

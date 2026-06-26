@@ -186,11 +186,35 @@ test('redactLiterals leaves existing col_/val_ tokens untouched', () => {
   assert.equal(redactLiterals('chart col_0 with val_1234', toReal), 'chart col_0 with val_1234')
 })
 
+test('redactLiterals masks emails and links whole, round-tripping the real value', () => {
+  const toReal: Record<string, string> = {}
+  const out = redactLiterals('mail jane@acme.com and see https://acme.com/report?id=42', toReal)
+  assert.ok(!/jane@acme\.com/.test(out))
+  assert.ok(!/acme\.com/.test(out))
+  assert.ok(!out.includes('https://'))
+  assert.ok(Object.values(toReal).includes('jane@acme.com'))
+})
+
+test('redactLiterals masks a www link and an email containing digits', () => {
+  const toReal: Record<string, string> = {}
+  const out = redactLiterals('visit www.site.io/x and mail bob1234@x.org', toReal)
+  assert.ok(!out.includes('www.site.io/x'))
+  assert.ok(!out.includes('bob1234@x.org'))
+})
+
 test('a redacted literal echoed back as a filter value detokenizes to the real value', () => {
   const toReal: Record<string, string> = { col_0: 'date' }
   redactLiterals('only 2024-01-15', toReal) // assigns lit_0 -> '2024-01-15'
   const spec = detokenizeSpec({ chartType: 'bar', x: 'col_0', measure: 'col_0', aggregate: 'count', filter: { column: 'col_0', in: ['lit_0'] } }, toReal)
   assert.deepEqual(spec.filter.in, ['2024-01-15'])
+})
+
+test('a redacted numeric threshold (4+ digits) round-trips to a number for op comparison', () => {
+  const toReal: Record<string, string> = { col_0: 'visits' }
+  redactLiterals('visits over 6050', toReal) // 6050 -> lit_0
+  const lit = Object.keys(toReal).find((k) => k.startsWith('lit_')) as string
+  const spec = detokenizeSpec({ chartType: 'bar', x: 'col_0', measure: 'col_0', aggregate: 'count', filter: { column: 'col_0', op: '>', value: lit as unknown as number } }, toReal)
+  assert.equal(spec.filter.value, 6050)
 })
 
 test('round-trip: a real prompt tokenizes away, and the returned spec maps fully back', () => {
