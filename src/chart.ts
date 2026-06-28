@@ -31,6 +31,25 @@ function bucketOf(v: unknown, b: 'week' | 'month' | 'quarter' | 'year'): string 
   return `${m[1]}-${m[2]}`
 }
 
+const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+function cyclicLabel(v: unknown, part: 'day' | 'weekday' | 'month' | 'quarter'): string | null {
+  const p = datePartOf(v, part)
+  if (p === null) return null
+  if (part === 'weekday') return WEEKDAY_LABELS[p]
+  if (part === 'month') return MONTH_LABELS[p - 1]
+  if (part === 'quarter') return `Q${p}`
+  return String(p)
+}
+
+function partRank(label: string, part: 'day' | 'weekday' | 'month' | 'quarter'): number {
+  if (part === 'weekday') return WEEKDAY_LABELS.indexOf(label)
+  if (part === 'month') return MONTH_LABELS.indexOf(label)
+  if (part === 'quarter') return Number(label.slice(1))
+  return Number(label)
+}
+
 function matchesTerm(actual: string, term: string): boolean {
   if (actual === term) return true
   const a = actual.toLowerCase().trim()
@@ -40,9 +59,20 @@ function matchesTerm(actual: string, term: string): boolean {
 }
 
 function applyFilter(rows: Row[], filter: Filter): Row[] {
+  if (filter.from !== undefined || filter.to !== undefined) {
+    const { from, to } = filter
+    return rows.filter((r) => {
+      const v = r[filter.column]
+      if (typeof v !== 'string') return false
+      const d = v.slice(0, 10)
+      if (from !== undefined && d < from) return false
+      if (to !== undefined && d > to) return false
+      return true
+    })
+  }
   if (filter.op) {
     const raw = filter.value ?? (Array.isArray(filter.in) ? filter.in[0] : undefined)
-    const t = Number(raw)
+    const t = typeof raw === 'string' ? Number(raw.replace(/,/g, '')) : Number(raw)
     if (!Number.isFinite(t)) return rows
     const op = filter.op
     return rows.filter((r) => {
@@ -73,14 +103,11 @@ function applyFilter(rows: Row[], filter: Filter): Row[] {
   })
 }
 
-// Both the legacy single `filter` and the `filters` list are accepted; all valid
-// conditions are applied together (AND). A membership condition with no values, or
-// a comparison with no op/value, is ignored.
 function allFilters(spec: ChartSpec): Filter[] {
   const list: Filter[] = []
   if (Array.isArray(spec.filters)) list.push(...spec.filters)
   if (spec.filter) list.push(spec.filter)
-  return list.filter((f) => f && typeof f.column === 'string' && ((typeof f.op === 'string' && typeof f.value === 'number') || (Array.isArray(f.in) && f.in.length > 0)))
+  return list.filter((f) => f && typeof f.column === 'string' && ((typeof f.op === 'string' && Number.isFinite(f.value)) || (Array.isArray(f.in) && f.in.length > 0) || typeof f.from === 'string' || typeof f.to === 'string'))
 }
 
 function uniqueInOrder(rows: Row[], key: string): Array<string | number> {
@@ -163,11 +190,25 @@ function derivedTooltip(spec: ChartSpec): Record<string, unknown> {
 }
 
 function grouped(spec: ChartSpec): boolean {
-  return typeof spec.series === 'string' && spec.series.length > 0
+  return typeof spec.series === 'string' && spec.series.length > 0 && spec.series !== spec.x
 }
 
-function orderX(spec: ChartSpec, rows: Row[], byX: Map<string, Row[]>): Array<string | number> {
-  let xVals = uniqueInOrder(rows, spec.x)
+function orderX(spec: ChartSpec, rows: Row[], byX: Map<string, Row[]>, baseVals?: Array<string | number>): Array<string | number> {
+  let xVals = baseVals ? [...baseVals] : uniqueInOrder(rows, spec.x)
+  if (spec.groupByPart) {
+    const part = spec.groupByPart
+    if (spec.sort === 'value') {
+      const m = typeof spec.measure === 'string' ? spec.measure : (Array.isArray(spec.measures) ? spec.measures[0] : '')
+      const total = (xv: string | number) => (spec.derived ? metric(byX.get(String(xv)) ?? [], spec) : cell(byX.get(String(xv)) ?? [], m, spec.aggregate === 'count' ? 'count' : 'sum')) ?? -Infinity
+      xVals = [...xVals].sort((a, b) => total(a) - total(b))
+      if (spec.order !== 'asc') xVals.reverse()
+    } else {
+      xVals = [...xVals].sort((a, b) => partRank(String(a), part) - partRank(String(b), part))
+      if (spec.order === 'desc') xVals.reverse()
+    }
+    if (typeof spec.limit === 'number' && spec.limit > 0) xVals = xVals.slice(0, spec.limit)
+    return xVals
+  }
   const isDate = xVals.length > 0 && xVals.every((v) => typeof v === 'string' && /^\d{4}(-|$)/.test(v))
   const rank = spec.sort === 'value' && (!isDate || typeof spec.limit === 'number')
   if (rank) {
@@ -185,25 +226,34 @@ function orderX(spec: ChartSpec, rows: Row[], byX: Map<string, Row[]>): Array<st
   return xVals
 }
 
-function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>): EChartsOption {
+function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>, domainX?: Array<string | number>): EChartsOption {
   const byX = indexBy(rows, spec.x)
-  const xVals = orderX(spec, rows, byX)
+  const xVals = orderX(spec, rows, byX, domainX)
+  const fill = (grp: Row[]) => (domainX !== undefined && grp.length === 0 ? 0 : cellValue(grp, spec))
   const type = spec.chartType === 'bar' ? 'bar' : 'line'
   const extra: Record<string, unknown> = type === 'line' ? { smooth: true } : {}
   if (type === 'line' && xVals.length > 30) extra.showSymbol = false
   if (spec.chartType === 'area') extra.areaStyle = {}
   const measures = Array.isArray(spec.measures) && spec.measures.length > 0 ? spec.measures : null
-  // A dual y-axis is readable for two LINES (each clearly tracks its own axis) but
-  // deceptive for bars/areas — two bars on different scales render at similar
-  // heights and look equal. So only lines get the second axis; bars/areas share one.
   const dual = measures !== null && measures.length === 2 && spec.chartType === 'line'
   let series: unknown[]
-  if (!measures && grouped(spec)) {
+  if (measures && grouped(spec)) {
+    const key = spec.series as string
+    series = uniqueInOrder(rows, key).flatMap((sv) =>
+      measures.map((m, i) => ({
+        name: `${String(sv)} · ${m}`,
+        type,
+        data: xVals.map((xv) => cell((byX.get(String(xv)) ?? []).filter((r) => String(r[key]) === String(sv)), m, spec.aggregate)),
+        ...extra,
+        ...(dual ? { yAxisIndex: i } : {}),
+      })),
+    )
+  } else if (!measures && grouped(spec)) {
     const key = spec.series as string
     series = uniqueInOrder(rows, key).map((sv) => ({
       name: String(sv),
       type,
-      data: xVals.map((xv) => cellValue((byX.get(String(xv)) ?? []).filter((r) => String(r[key]) === String(sv)), spec)),
+      data: xVals.map((xv) => fill((byX.get(String(xv)) ?? []).filter((r) => String(r[key]) === String(sv)))),
       ...extra,
     }))
   } else if (measures) {
@@ -215,7 +265,7 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>)
       ...(dual ? { yAxisIndex: i } : {}),
     }))
   } else {
-    series = [{ name: spec.derived ? spec.derived.name : (spec.aggregate === 'count' ? 'count' : spec.measure), type, data: xVals.map((xv) => cellValue(byX.get(String(xv)) ?? [], spec)), ...extra }]
+    series = [{ name: spec.derived ? spec.derived.name : (spec.aggregate === 'count' ? 'count' : spec.measure), type, data: xVals.map((xv) => fill(byX.get(String(xv)) ?? [])), ...extra }]
   }
   const yName = !measures ? (spec.derived ? spec.derived.name : spec.aggregate === 'count' ? 'count' : spec.measure) : undefined
   const option: Record<string, unknown> = {
@@ -288,9 +338,35 @@ function scatter(spec: ChartSpec, rows: Row[], title: Record<string, unknown>): 
   return option as EChartsOption
 }
 
-export function buildChartOption(spec: ChartSpec, rows: Row[]): EChartsOption {
-  // The model sometimes omits "aggregate"; default it to sum so rows that share an
-  // x (e.g. a weekly bucket) are totalled rather than silently showing the first row.
+function emptyOption(spec: ChartSpec): EChartsOption {
+  const title: Record<string, unknown> = { title: { text: spec.title ? `${spec.title} — no matching data` : 'No matching data', left: 'center' } }
+  if (spec.chartType === 'pie') return { ...title, series: [{ type: 'pie', data: [] }] } as EChartsOption
+  if (spec.chartType === 'scatter') return { ...title, xAxis: { type: 'value' }, yAxis: { type: 'value' }, series: [{ type: 'scatter', data: [] }] } as EChartsOption
+  const type = spec.chartType === 'bar' ? 'bar' : 'line'
+  return { ...title, xAxis: { type: 'category', data: [] }, yAxis: { type: 'value' }, series: [{ type, data: [] }] } as EChartsOption
+}
+
+function categoricalDomain(spec: ChartSpec, rows: Row[], filters: Filter[]): Array<string | number> | undefined {
+  if (spec.chartType === 'pie' || spec.chartType === 'scatter') return undefined
+  if (spec.groupByPart || spec.bucket) return undefined
+  if (spec.aggregate !== 'count') return undefined
+  if (spec.derived || (Array.isArray(spec.measures) && spec.measures.length > 0)) return undefined
+  if (typeof spec.x !== 'string') return undefined
+  let categorical = false
+  for (const r of rows) {
+    const v = r[spec.x]
+    if (!present(v)) continue
+    categorical = !(typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v))
+    break
+  }
+  if (!categorical) return undefined
+  let domainRows = rows
+  for (const f of filters) if (f.column === spec.x || f.column === spec.series) domainRows = applyFilter(domainRows, f)
+  const dom = uniqueInOrder(domainRows, spec.x)
+  return dom.length > 0 ? dom : undefined
+}
+
+export function buildChartOption(spec: ChartSpec, rows: Row[], emptyOk = false): EChartsOption {
   if (!spec.aggregate) spec = { ...spec, aggregate: 'sum' }
   const columns = new Set(Object.keys(rows[0] ?? {}))
   const hasMeasures = Array.isArray(spec.measures) && spec.measures.length > 0
@@ -307,11 +383,18 @@ export function buildChartOption(spec: ChartSpec, rows: Row[]): EChartsOption {
     if (typeof key !== 'string' || !columns.has(key)) throw new Error(`Spec refers to unknown column "${key}"`)
   }
   let data = rows
-  for (const f of filters) {
-    data = applyFilter(data, f)
-    if (data.length === 0) throw new Error('Filter matched no rows')
+  for (const f of filters) data = applyFilter(data, f)
+  if (data.length === 0) {
+    if (emptyOk) return emptyOption(spec)
+    throw new Error('Filter matched no rows')
   }
-  if (spec.bucket && !filters.some((f) => f.datePart === 'day')) {
+  if (spec.groupByPart) {
+    const part = spec.groupByPart
+    data = data.map((r) => {
+      const lbl = cyclicLabel(r[spec.x], part)
+      return lbl === null ? r : { ...r, [spec.x]: lbl }
+    })
+  } else if (spec.bucket && !filters.some((f) => f.datePart === 'day')) {
     data = data.map((r) => {
       const b = bucketOf(r[spec.x], spec.bucket as 'week' | 'month' | 'quarter' | 'year')
       return b === null ? r : { ...r, [spec.x]: b }
@@ -320,5 +403,5 @@ export function buildChartOption(spec: ChartSpec, rows: Row[]): EChartsOption {
   const title: Record<string, unknown> = spec.title ? { title: { text: spec.title } } : {}
   if (spec.chartType === 'scatter') return scatter(spec, data, title)
   if (spec.chartType === 'pie') return pie(spec, data, title)
-  return cartesian(spec, data, title)
+  return cartesian(spec, data, title, categoricalDomain(spec, rows, filters))
 }

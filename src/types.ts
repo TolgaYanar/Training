@@ -31,6 +31,8 @@ export interface Filter {
   datePart?: 'day' | 'weekday' | 'month' | 'quarter'
   op?: '>' | '>=' | '<' | '<=' | '==' | '!='
   value?: number
+  from?: string
+  to?: string
 }
 
 export interface Derived {
@@ -49,11 +51,17 @@ export interface ChartSpec {
   filter?: Filter
   filters?: Filter[]
   bucket?: 'week' | 'month' | 'quarter' | 'year'
+  groupByPart?: 'day' | 'weekday' | 'month' | 'quarter'
   derived?: Derived
   title?: string
   sort?: 'value'
   order?: 'asc' | 'desc'
   limit?: number
+}
+
+export interface SentRequest {
+  system: string
+  user: string
 }
 
 export interface GenerateRequest {
@@ -62,8 +70,8 @@ export interface GenerateRequest {
 }
 
 export type GenerateResult =
-  | { status: 'ok'; option: EChartsOption; repaired: boolean; raw: string }
-  | { status: 'failed'; error: string; raw: string }
+  | { status: 'ok'; option: EChartsOption; repaired: boolean; raw: string; sent: SentRequest[] }
+  | { status: 'failed'; error: string; raw: string; sent: SentRequest[] }
 
 export interface ChartRequest {
   source: string
@@ -71,8 +79,8 @@ export interface ChartRequest {
 }
 
 export type ChartResponse =
-  | { status: 'ok'; option: EChartsOption; repaired: boolean }
-  | { status: 'failed'; error: string; raw: string }
+  | { status: 'ok'; option: EChartsOption; repaired: boolean; sent: SentRequest[] }
+  | { status: 'failed'; error: string; raw: string; sent: SentRequest[] }
 
 export interface ChartService {
   getChart(req: ChartRequest): Promise<ChartResponse>

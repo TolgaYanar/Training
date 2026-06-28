@@ -40,6 +40,22 @@ test('generate -> repaired shows the auto-repaired tag', async () => {
   await waitFor(() => expect(screen.getByText(/auto-repaired/i)).toBeTruthy())
 })
 
+test('after a run the Sent-to-AI card shows every transmitted request including the repair', async () => {
+  generateOption.mockResolvedValue({
+    status: 'ok', option: { series: [] }, repaired: true, raw: '{}',
+    sent: [
+      { system: 'SYS PROMPT', user: 'first user payload' },
+      { system: 'SYS PROMPT', user: 'repair user payload' },
+    ],
+  })
+  render(<App />)
+  fireEvent.change(screen.getByPlaceholderText(/monthly revenue/i), { target: { value: 'x' } })
+  fireEvent.click(screen.getByText('Generate chart'))
+  await waitFor(() => expect(screen.getByText('repair user payload')).toBeTruthy())
+  expect(screen.getByText('first user payload')).toBeTruthy()
+  expect(screen.getByText(/Request 2 of 2/)).toBeTruthy()
+})
+
 test('generate -> failed shows the error result', async () => {
   generateOption.mockResolvedValue({ status: 'failed', error: 'boom-error', raw: '' })
   render(<App />)

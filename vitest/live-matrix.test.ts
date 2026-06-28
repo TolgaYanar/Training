@@ -3,11 +3,6 @@ import { readFileSync } from 'node:fs'
 import { generateOption } from '../src/ai'
 import { datasets } from '../src/data'
 
-// Exhaustive LIVE matrix: every generated prompt run through the FULL pipeline
-// (de-identify -> real Claude -> detokenize -> render) with machine-checkable
-// expectations. Opt-in only:
-//   set -a; . ./.env; set +a; RUN_LIVE_API=1 LIVE_CASES=<path> npx vitest run vitest/live-matrix.test.ts
-// Slice a big matrix with LIVE_OFFSET / LIVE_LIMIT. Never runs in normal `npm test`.
 const KEY = process.env.VITE_CLAUDE_API_KEY ?? ''
 const CASES_PATH = process.env.LIVE_CASES ?? ''
 const LIVE = process.env.RUN_LIVE_API === '1' && KEY.length > 0 && CASES_PATH.length > 0
@@ -49,7 +44,6 @@ function evaluate(e: Expect, f: ReturnType<typeof facts>): string[] {
   if (e.xLenMax != null && !(f.xLen <= e.xLenMax)) fails.push(`xLen ${f.xLen}>${e.xLenMax}`)
   if (e.seriesCount != null && f.seriesCount !== e.seriesCount) fails.push(`series ${f.seriesCount}≠${e.seriesCount}`)
   if (e.pieSlices != null && f.pieSlices !== e.pieSlices) fails.push(`slices ${f.pieSlices}≠${e.pieSlices}`)
-  // pie has no x-axis (the split column lives in the slice names), so xName is N/A
   if (e.xNameAnyOf && !isPie && !e.xNameAnyOf.map((s) => s.toLowerCase()).includes(String(f.xName ?? '').toLowerCase())) fails.push(`xName "${f.xName}"∉${e.xNameAnyOf}`)
   if (e.yNameAnyOf && !isPie && !yNames.some((y) => e.yNameAnyOf!.map((s) => s.toLowerCase()).includes(y))) fails.push(`yName "${f.yName}"∉${e.yNameAnyOf}`)
   return fails

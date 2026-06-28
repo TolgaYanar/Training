@@ -16,7 +16,6 @@ test('buildSpecMessage includes prompt and columns but no exact counts or data v
   assert.ok(m.includes('month (categorical'))
   assert.ok(m.includes('revenue (number'))
   assert.ok(/some missing/.test(m))
-  // coarse bands only — exact dataset shape (row/distinct/missing counts) stays on-device
   assert.ok(!m.includes('144'))
   assert.ok(!m.includes('12 distinct'))
   assert.ok(!m.includes('3 missing'))
@@ -32,6 +31,12 @@ test('buildRepairMessage carries the exact error and truncates long raw', () => 
   assert.ok(m.includes('Spec refers to unknown column "foo"'))
   assert.ok(m.includes('corrected chart spec'))
   assert.ok(m.length < 4000)
+})
+
+test('SYSTEM_PROMPT explains that a month name maps to a datePart month filter', () => {
+  assert.ok(/month NAME or abbreviation/i.test(SYSTEM_PROMPT))
+  assert.ok(/January\/Jan=1/.test(SYSTEM_PROMPT))
+  assert.ok(/datePart/.test(SYSTEM_PROMPT))
 })
 
 test('SYSTEM_PROMPT lists every chart type and demands JSON only', () => {

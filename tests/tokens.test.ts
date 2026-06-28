@@ -41,7 +41,7 @@ test('detokenizeSpec maps a filters[] list — every column and value back to re
   assert.equal(spec.filters[0].column, 'channel')
   assert.deepEqual(spec.filters[0].in, ['Organic'])
   assert.equal(spec.filters[1].column, 'date')
-  assert.deepEqual(spec.filters[1].in, [1]) // numeric date-part value passes through
+  assert.deepEqual(spec.filters[1].in, [1])
 })
 
 test('detokenizeSpec maps measures[] and derived numerator/denominator', () => {
@@ -84,7 +84,6 @@ test('buildTokens tokenizes column names and categorical values, not numbers', (
   const reals = Object.values(toReal)
   assert.ok(reals.includes('region') && reals.includes('revenue'))
   assert.ok(reals.includes('North') && reals.includes('South'))
-  // every key is an opaque token; no real string leaks as a key
   assert.ok(Object.keys(toReal).every((k) => /^(col|val)_\d+$/.test(k)))
 })
 
@@ -97,24 +96,20 @@ test('tokenizeText masks values case-insensitively (matching how the app filters
 
 test('VALUES match exactly: a longer word that merely contains a value is left intact', () => {
   const { toReal } = buildTokens(sales, rows)
-  // value 'North' inside 'Northwest' must NOT be half-masked (would leak "west")
   assert.ok(tokenizeText('the Northwest area', toReal).includes('Northwest'))
 })
 
 test('COLUMN NAMES match morphological variants, mapped cleanly to the whole word', () => {
-  const { toReal } = buildTokens(sales, rows) // region -> col_0, revenue -> col_1
-  // 'regions' refers to the region column; maps to the whole token, no leftover fragment
+  const { toReal } = buildTokens(sales, rows)
   assert.equal(tokenizeText('compare regions', toReal), 'compare col_0')
 })
 
 test('morphological matching is bounded: it does not capture unrelated prose words', () => {
   const cols = (names: string[]) => Object.fromEntries(names.map((n, i) => [`col_${i}`, n]))
   const salesCols = cols(['month', 'region', 'product', 'units', 'revenue'])
-  assert.equal(tokenizeText('forecast production volume', salesCols), 'forecast production volume') // product ≠ production
+  assert.equal(tokenizeText('forecast production volume', salesCols), 'forecast production volume')
   const aggCols = cols(['count', 'sum', 'order', 'rate'])
-  // the aggregate/ordering words prompt.ts tells users to type are NOT swallowed
   assert.equal(tokenizeText('show a summary of the country by ordering', aggCols), 'show a summary of the country by ordering')
-  // legitimate inflections still map cleanly
   assert.equal(tokenizeText('compare products monthly', cols(['product', 'month'])), 'compare col_0 col_1')
 })
 
@@ -128,8 +123,7 @@ test('redactLiterals masks comma-grouped, decimal and separator-formatted number
   assert.ok(!/1234\.56/.test(run('amount 1234.56 total')))
   assert.ok(!/3\.14/.test(run('ratio 3.14 here')))
   const phone = run('call 555-123-4567 now')
-  assert.ok(!/555/.test(phone) && !/123/.test(phone) && !/4567/.test(phone)) // no group leaks
-  // small control numbers still pass through (top-N, date parts)
+  assert.ok(!/555/.test(phone) && !/123/.test(phone) && !/4567/.test(phone))
   assert.ok(/top 5/.test(run('top 5')) && /day 15/.test(run('day 15')))
 })
 
@@ -143,7 +137,6 @@ test('a "monthly" reference resolves to the month column so the model picks the 
     ],
   }
   const { toReal } = buildTokens(schema, [{ month: 'Jan', region: 'North', revenue: 10 }])
-  // month -> col_0, region -> col_1, revenue -> col_2
   assert.equal(tokenizeText('monthly revenue by region', toReal), 'col_0 col_2 by col_1')
 })
 
@@ -159,7 +152,6 @@ test('buildTokens masks EVERY categorical value, including word-like ISO codes (
   const codes = [{ code: 'NY' }, { code: 'ON' }, { code: 'IN' }, { code: 'No' }, { code: 'A' }]
   const schema = { rowCount: 5, columns: [{ name: 'code', type: 'categorical' as const, cardinality: 5, nullCount: 0 }] }
   const { toReal } = buildTokens(schema, codes)
-  // values that collide with English stopwords used to leak verbatim — now they don't
   for (const c of ['NY', 'ON', 'IN', 'No', 'A']) assert.ok(Object.values(toReal).includes(c), c)
   assert.ok(!/\bON\b/i.test(tokenizeText('revenue for ON only', toReal)))
 })
@@ -172,11 +164,10 @@ test('detokenizeText drops a stray out-of-range token instead of rendering it', 
 test('redactLiterals masks ISO dates and 4+ digit numbers but keeps small control numbers', () => {
   const toReal: Record<string, string> = {}
   const out = redactLiterals('top 5 days over 99999 since 2024-01-15, the 10th', toReal)
-  assert.ok(/top 5 /.test(out)) // top-N kept
-  assert.ok(/the 10th/.test(out)) // day part kept
-  assert.ok(!out.includes('99999')) // precise amount masked
-  assert.ok(!out.includes('2024-01-15')) // exact date masked
-  // and they round-trip back to the real literal for filtering
+  assert.ok(/top 5 /.test(out))
+  assert.ok(/the 10th/.test(out))
+  assert.ok(!out.includes('99999'))
+  assert.ok(!out.includes('2024-01-15'))
   assert.ok(Object.values(toReal).includes('99999'))
   assert.ok(Object.values(toReal).includes('2024-01-15'))
 })
@@ -204,17 +195,26 @@ test('redactLiterals masks a www link and an email containing digits', () => {
 
 test('a redacted literal echoed back as a filter value detokenizes to the real value', () => {
   const toReal: Record<string, string> = { col_0: 'date' }
-  redactLiterals('only 2024-01-15', toReal) // assigns lit_0 -> '2024-01-15'
+  redactLiterals('only 2024-01-15', toReal)
   const spec = detokenizeSpec({ chartType: 'bar', x: 'col_0', measure: 'col_0', aggregate: 'count', filter: { column: 'col_0', in: ['lit_0'] } }, toReal)
   assert.deepEqual(spec.filter.in, ['2024-01-15'])
 })
 
 test('a redacted numeric threshold (4+ digits) round-trips to a number for op comparison', () => {
   const toReal: Record<string, string> = { col_0: 'visits' }
-  redactLiterals('visits over 6050', toReal) // 6050 -> lit_0
+  redactLiterals('visits over 6050', toReal)
   const lit = Object.keys(toReal).find((k) => k.startsWith('lit_')) as string
   const spec = detokenizeSpec({ chartType: 'bar', x: 'col_0', measure: 'col_0', aggregate: 'count', filter: { column: 'col_0', op: '>', value: lit as unknown as number } }, toReal)
   assert.equal(spec.filter.value, 6050)
+})
+
+test('a comma-grouped threshold round-trips to a finite number, not NaN', () => {
+  const toReal: Record<string, string> = { col_0: 'revenue' }
+  redactLiterals('revenue at least 1,200', toReal)
+  const lit = Object.keys(toReal).find((k) => k.startsWith('lit_')) as string
+  assert.equal(toReal[lit], '1,200')
+  const spec = detokenizeSpec({ chartType: 'bar', x: 'col_0', measure: 'col_0', aggregate: 'count', filter: { column: 'col_0', op: '>=', value: lit as unknown as number } }, toReal)
+  assert.equal(spec.filter.value, 1200)
 })
 
 test('round-trip: a real prompt tokenizes away, and the returned spec maps fully back', () => {
@@ -224,7 +224,6 @@ test('round-trip: a real prompt tokenizes away, and the returned spec maps fully
   const safePrompt = tokenizeText('revenue by region in North', toReal)
   assert.ok(!/revenue|region|North/.test(safePrompt))
 
-  // the model answers in tokens — including filter values and the title
   const spec = detokenizeSpec(
     {
       chartType: 'bar',

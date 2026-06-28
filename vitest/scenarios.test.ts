@@ -6,13 +6,6 @@ import { generateOption } from '../src/ai'
 import { buildTokens, tokenizeText, detokenizeSpec, redactLiterals } from '../src/tokens'
 import type { ChartSpec, Row } from '../src/types'
 
-// Exhaustive end-to-end verification of the DETERMINISTIC pipeline:
-//   spec -> buildChartOption -> checkOption (real ECharts render in jsdom)
-//   prompt -> tokenizeText/redactLiterals -> (token spec) -> detokenizeSpec
-// The one part NOT covered here is the cloud model's judgement (which spec it
-// picks for a natural-language prompt) — that needs live API calls. Everything
-// the app does locally, before and after the model, is swept below.
-
 const sales = datasets.find((d) => d.id === 'sales')!.rows
 const readings = datasets.find((d) => d.id === 'readings')!.rows
 const traffic = datasets.find((d) => d.id === 'traffic')!.rows
@@ -56,52 +49,45 @@ function scen(name: string, rows: Row[], spec: any, want: Want = 'render'): void
   results.push({ name, want, got, detail })
 }
 
-// ── chartType × aggregate (cartesian) ──────────────────────────────────────
 for (const ct of ['line', 'bar', 'area'] as const)
   for (const agg of ['sum', 'avg', 'min', 'max', 'count', 'none'] as const)
     scen(`${ct}/${agg} region→units`, sales, { chartType: ct, x: 'region', measure: 'units', aggregate: agg })
 
-// ── grouped (series) ───────────────────────────────────────────────────────
 for (const ct of ['line', 'bar', 'area'] as const)
   for (const agg of ['sum', 'none'] as const)
     scen(`${ct}/${agg} grouped month×region→revenue`, sales, { chartType: ct, x: 'month', series: 'region', measure: 'revenue', aggregate: agg })
 
-// ── pie ────────────────────────────────────────────────────────────────────
 for (const agg of ['sum', 'avg', 'count', 'min', 'max'] as const)
   scen(`pie/${agg} region→units`, sales, { chartType: 'pie', x: 'region', measure: 'units', aggregate: agg })
 scen('pie with negatives/zeros filtered out', negatives, { chartType: 'pie', x: 'k', measure: 'v', aggregate: 'sum' })
 scen('pie all non-positive → empty but renders', allNull, { chartType: 'pie', x: 'k', measure: 'v', aggregate: 'sum' })
 
-// ── scatter ────────────────────────────────────────────────────────────────
 scen('scatter units→revenue', sales, { chartType: 'scatter', x: 'units', measure: 'revenue', aggregate: 'none' })
 scen('scatter grouped by region', sales, { chartType: 'scatter', x: 'units', measure: 'revenue', series: 'region', aggregate: 'none' })
 scen('scatter readings temp→humidity (nulls dropped)', readings, { chartType: 'scatter', x: 'temperature', measure: 'humidity', aggregate: 'none' })
 
-// ── measures[] ─────────────────────────────────────────────────────────────
 scen('measures[1] single y', sales, { chartType: 'bar', x: 'region', measures: ['units'], aggregate: 'sum' })
 scen('measures[2] dual y', sales, { chartType: 'bar', x: 'region', measures: ['units', 'revenue'], aggregate: 'sum' })
 scen('measures[3] shared y', sales, { chartType: 'line', x: 'month', measures: ['units', 'revenue', 'units'], aggregate: 'sum' })
+scen('series + measures cross (bar, 6 series)', sales, { chartType: 'bar', x: 'month', series: 'product', measures: ['units', 'revenue'], aggregate: 'sum' })
+scen('series + measures cross (line, dual axis)', sales, { chartType: 'line', x: 'month', series: 'product', measures: ['units', 'revenue'], aggregate: 'sum' })
 
-// ── derived ratio ──────────────────────────────────────────────────────────
 scen('derived conv by channel', traffic, { chartType: 'bar', x: 'channel', aggregate: 'sum', derived: { name: 'conv', numerator: 'signups', denominator: 'visits' } })
 scen('derived grouped date×channel', traffic, { chartType: 'line', x: 'date', series: 'channel', aggregate: 'sum', derived: { name: 'conv', numerator: 'signups', denominator: 'visits' } })
 scen('derived + bucket month', traffic, { chartType: 'line', x: 'date', aggregate: 'sum', bucket: 'month', derived: { name: 'conv', numerator: 'signups', denominator: 'visits' } })
 
-// ── filters ────────────────────────────────────────────────────────────────
 scen('filter value North', sales, { chartType: 'bar', x: 'product', measure: 'units', aggregate: 'sum', filter: { column: 'region', in: ['North'] } })
 scen('filter value ci "north"', sales, { chartType: 'bar', x: 'product', measure: 'units', aggregate: 'sum', filter: { column: 'region', in: ['north'] } })
 scen('filter substring "Org"', traffic, { chartType: 'bar', x: 'date', measure: 'visits', aggregate: 'sum', filter: { column: 'channel', in: ['Org'] } })
 for (const [dp, vals] of [['day', [10]], ['weekday', [6]], ['month', [1]], ['quarter', [1]]] as const)
   scen(`filter datePart ${dp}`, traffic, { chartType: 'line', x: 'date', measure: 'visits', aggregate: 'sum', filter: { column: 'date', datePart: dp, in: vals } })
-scen('filter no match → error', sales, { chartType: 'bar', x: 'region', measure: 'units', aggregate: 'sum', filter: { column: 'region', in: ['Atlantis'] } }, 'error')
+scen('filter no match → error by default', sales, { chartType: 'bar', x: 'region', measure: 'units', aggregate: 'sum', filter: { column: 'region', in: ['Atlantis'] } }, 'error')
 scen('filter empty in → ignored', sales, { chartType: 'bar', x: 'region', measure: 'units', aggregate: 'sum', filter: { column: 'region', in: [] } })
 
-// ── bucket ─────────────────────────────────────────────────────────────────
 for (const b of ['week', 'month', 'quarter', 'year'] as const)
   scen(`bucket ${b}`, traffic, { chartType: 'bar', x: 'date', measure: 'visits', aggregate: 'sum', bucket: b })
 scen('bucket ignored under day filter', dated, { chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', bucket: 'month', filter: { column: 'date', datePart: 'day', in: [5] } })
 
-// ── sort / order / limit ───────────────────────────────────────────────────
 scen('top-N value desc limit', sales, { chartType: 'bar', x: 'product', measure: 'units', aggregate: 'sum', sort: 'value', order: 'desc', limit: 2 })
 scen('value asc', sales, { chartType: 'bar', x: 'product', measure: 'units', aggregate: 'sum', sort: 'value', order: 'asc' })
 scen('order desc no sort', sales, { chartType: 'line', x: 'month', measure: 'revenue', aggregate: 'sum', order: 'desc' })
@@ -109,7 +95,6 @@ scen('date axis stays chronological (sort, no limit)', traffic, { chartType: 'li
 scen('date axis top-N (sort + limit)', traffic, { chartType: 'bar', x: 'date', measure: 'visits', aggregate: 'sum', sort: 'value', order: 'desc', limit: 5 })
 scen('limit larger than category count', sales, { chartType: 'bar', x: 'region', measure: 'units', aggregate: 'sum', sort: 'value', limit: 99 })
 
-// ── edge-shaped data ───────────────────────────────────────────────────────
 scen('single row', single, { chartType: 'bar', x: 'k', measure: 'v', aggregate: 'sum' })
 scen('all-null measure → null series', allNull, { chartType: 'line', x: 'k', measure: 'v', aggregate: 'sum' })
 scen('numeric x column', numericX, { chartType: 'bar', x: 'yr', measure: 'v', aggregate: 'sum' })
@@ -118,12 +103,10 @@ scen('high-cardinality bar (120)', highCard, { chartType: 'bar', x: 'id', measur
 scen('high-cardinality pie (120)', highCard, { chartType: 'pie', x: 'id', measure: 'v', aggregate: 'sum' })
 scen('dense line (40) hides symbols', dense, { chartType: 'line', x: 'd', measure: 'v', aggregate: 'sum' })
 
-// ── full-size built-in datasets ────────────────────────────────────────────
 scen('traffic 365 daily line', traffic, { chartType: 'line', x: 'date', measure: 'signups', aggregate: 'sum' })
 scen('traffic 4×365 grouped', traffic, { chartType: 'line', x: 'date', series: 'channel', measure: 'signups', aggregate: 'none' })
 scen('readings temp by sensor (nulls)', readings, { chartType: 'line', x: 'date', series: 'sensor', measure: 'temperature', aggregate: 'none' })
 
-// ── negative cases (must error cleanly, never crash) ───────────────────────
 scen('unknown x → error', sales, { chartType: 'bar', x: 'nope', measure: 'units', aggregate: 'sum' }, 'error')
 scen('unknown measure → error', sales, { chartType: 'bar', x: 'region', measure: 'nope', aggregate: 'sum' }, 'error')
 scen('unknown series → error', sales, { chartType: 'line', x: 'month', series: 'ghost', measure: 'units', aggregate: 'none' }, 'error')
@@ -141,7 +124,6 @@ test('CHART SCENARIO MATRIX — every spec renders or errors exactly as expected
   expect(fails).toEqual([])
 })
 
-// ── PRIVACY: real names/values never survive in the masked prompt ──────────
 test('PRIVACY ROUND-TRIP — no real column name or category value leaves in the prompt', () => {
   const wholeWord = (s: string) => new RegExp(`\\b${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
   const probes = [
@@ -166,7 +148,6 @@ test('PRIVACY ROUND-TRIP — no real column name or category value leaves in the
   expect(leaks).toEqual([])
 })
 
-// ── ROUND-TRIP: a fully-tokenized spec maps every field back to real names ─
 test('DETOKENIZE COVERAGE — every identifier-bearing field comes back real', () => {
   const summary = summarizeData(sales)
   const { toReal } = buildTokens(summary, sales)
@@ -197,7 +178,6 @@ test('DETOKENIZE COVERAGE — every identifier-bearing field comes back real', (
   expect(spec.title).toBe('revenue by month')
 })
 
-// ── FULL PIPELINE with a mocked model: each chart type wires end-to-end ─────
 function claudeReturning(spec: object) {
   const text = JSON.stringify(spec)
   return { ok: true, status: 200, text: async () => text, json: async () => ({ content: [{ type: 'text', text }] }) }
@@ -211,7 +191,6 @@ test('FULL PIPELINE — model answers in tokens, app renders real charts for eve
   const { toReal } = buildTokens(summary, sales)
   const tok = (real: string) => Object.keys(toReal).find((k) => toReal[k] === real) as string
 
-  // Each entry is what the (mocked) model returns, in token space.
   const tokenSpecs: Array<{ name: string; spec: object }> = [
     { name: 'line', spec: { chartType: 'line', x: tok('month'), series: tok('region'), measure: tok('revenue'), aggregate: 'sum' } },
     { name: 'bar', spec: { chartType: 'bar', x: tok('region'), measure: tok('units'), aggregate: 'sum' } },

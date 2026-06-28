@@ -1,0 +1,2251 @@
+[
+  {
+    "name": "001 line revenue by month",
+    "dataset": "sales",
+    "prompt": "Draw a line chart of total revenue across the months.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 12,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "002 bar units per region",
+    "dataset": "sales",
+    "prompt": "Show me a bar chart comparing total units sold in each region.",
+    "expect": {
+      "typesAnyOf": [
+        "bar"
+      ],
+      "xLen": 4,
+      "xNameAnyOf": [
+        "region"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "003 pie revenue share by region",
+    "dataset": "sales",
+    "prompt": "What's the revenue split across regions? Give me a pie chart.",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 4,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "004 pie units by product",
+    "dataset": "sales",
+    "prompt": "Break down units by product as a pie.",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 3,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "005 area revenue over months",
+    "dataset": "sales",
+    "prompt": "Plot revenue over the months as an area chart.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 12,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "006 scatter units vs revenue",
+    "dataset": "sales",
+    "prompt": "Make a scatter plot of units against revenue to see the relationship.",
+    "expect": {
+      "typesAnyOf": [
+        "scatter"
+      ]
+    }
+  },
+  {
+    "name": "007 line daily visits traffic",
+    "dataset": "traffic",
+    "prompt": "Give me a line graph of visits per day over the year.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 365,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "008 bar visits by channel",
+    "dataset": "traffic",
+    "prompt": "Total visits by channel, please render it as a bar chart.",
+    "expect": {
+      "typesAnyOf": [
+        "bar"
+      ],
+      "xLen": 4,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "009 pie visits share by channel",
+    "dataset": "traffic",
+    "prompt": "How is traffic distributed across the channels? A pie chart would be great.",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 4,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "010 scatter visits vs signups",
+    "dataset": "traffic",
+    "prompt": "I want a scatter chart of visits versus signups.",
+    "expect": {
+      "typesAnyOf": [
+        "scatter"
+      ]
+    }
+  },
+  {
+    "name": "011 line temperature by sensor",
+    "dataset": "readings",
+    "prompt": "Line chart of temperature readings per sensor over the dates.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 14,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "012 bar humidity by sensor",
+    "dataset": "readings",
+    "prompt": "Compare average humidity between the two sensors using bars.",
+    "expect": {
+      "typesAnyOf": [
+        "bar"
+      ],
+      "xLen": 2,
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "013 scatter temp vs humidity readings",
+    "dataset": "readings",
+    "prompt": "Plot temperature on the x and humidity on the y as a scatter.",
+    "expect": {
+      "typesAnyOf": [
+        "scatter"
+      ]
+    }
+  },
+  {
+    "name": "014 area daily visits",
+    "dataset": "traffic",
+    "prompt": "Show visits over time as a filled area chart.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 365,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "015 sum revenue by region",
+    "dataset": "sales",
+    "prompt": "Show me total revenue for each region",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "region"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "016 sum units by product (casual)",
+    "dataset": "sales",
+    "prompt": "add up all the units sold per product and chart it",
+    "expect": {
+      "xLen": 3,
+      "xNameAnyOf": [
+        "product"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "017 average revenue by month",
+    "dataset": "sales",
+    "prompt": "What's the mean revenue per month?",
+    "expect": {
+      "xLen": 12,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "018 average temperature by sensor",
+    "dataset": "readings",
+    "prompt": "Give me the average temperature reading for each sensor",
+    "expect": {
+      "xLen": 2,
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "019 max temperature by sensor (highest)",
+    "dataset": "readings",
+    "prompt": "Which sensor hit the highest temperature? Show the max temperature per sensor.",
+    "expect": {
+      "xLen": 2,
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "020 min humidity by sensor (lowest)",
+    "dataset": "readings",
+    "prompt": "Show the lowest humidity recorded by each sensor",
+    "expect": {
+      "xLen": 2,
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "021 total visits by channel",
+    "dataset": "traffic",
+    "prompt": "Sum up the visits for every channel",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "022 average daily visits by channel (mean)",
+    "dataset": "traffic",
+    "prompt": "What is the average number of visits per day for each channel?",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "023 count rows per channel (how many)",
+    "dataset": "traffic",
+    "prompt": "How many records are there for each channel?",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "024 count days threshold per channel",
+    "dataset": "traffic",
+    "prompt": "How many days did each channel get more than 1000 visits?",
+    "expect": {
+      "xLenMax": 4,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "025 max revenue by region (peak)",
+    "dataset": "sales",
+    "prompt": "Find the peak revenue value in each region",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "region"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "026 raw temperature no aggregate (none)",
+    "dataset": "readings",
+    "prompt": "Plot the raw temperature readings for Sensor A over time, one point per day, no averaging",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "scatter"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "027 min units by product (smallest)",
+    "dataset": "sales",
+    "prompt": "What's the smallest units figure for each product?",
+    "expect": {
+      "xLen": 3,
+      "xNameAnyOf": [
+        "product"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "028 units vs revenue per product",
+    "dataset": "sales",
+    "prompt": "Compare units and revenue for each product",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ],
+      "xLen": 3,
+      "xNameAnyOf": [
+        "product"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "029 units vs revenue per region",
+    "dataset": "sales",
+    "prompt": "For every region, show me both units sold and revenue side by side",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "region"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "030 visits vs signups per channel",
+    "dataset": "traffic",
+    "prompt": "Plot visits and signups broken down by channel",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "031 temperature vs humidity per sensor",
+    "dataset": "readings",
+    "prompt": "Show temperature and humidity for each sensor",
+    "expect": {
+      "xLen": 2,
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "032 one line per region over months",
+    "dataset": "sales",
+    "prompt": "Revenue trend across the months, one line per region",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 12,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 4
+    }
+  },
+  {
+    "name": "033 one line per product over months",
+    "dataset": "sales",
+    "prompt": "Draw a line for each product showing units across the months",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 12,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 3
+    }
+  },
+  {
+    "name": "034 channel series over date",
+    "dataset": "traffic",
+    "prompt": "Daily visits over time, with a separate series for each channel",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 365,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 4
+    }
+  },
+  {
+    "name": "035 units vs revenue per month (two measures, no group)",
+    "dataset": "sales",
+    "prompt": "How do total units compare with total revenue month by month?",
+    "expect": {
+      "xLen": 12,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "036 visits vs signups over date (two measures)",
+    "dataset": "traffic",
+    "prompt": "Chart visits against signups across the year",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "scatter"
+      ],
+      "xNameAnyOf": [
+        "date",
+        "visits"
+      ]
+    }
+  },
+  {
+    "name": "037 temperature vs humidity over date",
+    "dataset": "readings",
+    "prompt": "Compare temperature and humidity day by day",
+    "expect": {
+      "xLen": 14,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "038 sensor series temperature over date",
+    "dataset": "readings",
+    "prompt": "Temperature over time, one line per sensor",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 14,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "039 units vs revenue per product per month grouped on product",
+    "dataset": "sales",
+    "prompt": "Break down units and revenue by product across each region",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "region"
+      ],
+      "seriesCount": 6
+    }
+  },
+  {
+    "name": "040 Conversion rate by channel",
+    "dataset": "traffic",
+    "prompt": "Show me the conversion rate (signups divided by visits) for each marketing channel.",
+    "expect": {
+      "xLen": 4,
+      "seriesCount": 1,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "041 Signup-to-visit ratio per channel casual",
+    "dataset": "traffic",
+    "prompt": "what's the signup-to-visit ratio broken down by channel?",
+    "expect": {
+      "xLen": 4,
+      "seriesCount": 1,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "042 Revenue per unit by product",
+    "dataset": "sales",
+    "prompt": "What is the revenue per unit for each product?",
+    "expect": {
+      "xLen": 3,
+      "seriesCount": 1,
+      "xNameAnyOf": [
+        "product"
+      ]
+    }
+  },
+  {
+    "name": "043 Average price per unit by region",
+    "dataset": "sales",
+    "prompt": "Plot revenue divided by units (price per unit) across the four regions.",
+    "expect": {
+      "xLen": 4,
+      "seriesCount": 1,
+      "xNameAnyOf": [
+        "region"
+      ]
+    }
+  },
+  {
+    "name": "044 Revenue per unit by month line",
+    "dataset": "sales",
+    "prompt": "Show revenue per unit trend over the months as a line chart.",
+    "expect": {
+      "xLen": 12,
+      "seriesCount": 1,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "typesAnyOf": [
+        "line"
+      ]
+    }
+  },
+  {
+    "name": "045 Conversion rate over time daily",
+    "dataset": "traffic",
+    "prompt": "Graph the daily conversion rate (signups/visits) over the whole year.",
+    "expect": {
+      "seriesCount": 1,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "046 Yield per unit by product formal",
+    "dataset": "sales",
+    "prompt": "I'd like to see the average revenue generated per unit sold, grouped by product line.",
+    "expect": {
+      "xLen": 3,
+      "seriesCount": 1,
+      "xNameAnyOf": [
+        "product"
+      ]
+    }
+  },
+  {
+    "name": "047 Conversion rate by channel as bars",
+    "dataset": "traffic",
+    "prompt": "Compare each channel's signup conversion rate using a bar chart.",
+    "expect": {
+      "xLen": 4,
+      "seriesCount": 1,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "typesAnyOf": [
+        "bar"
+      ]
+    }
+  },
+  {
+    "name": "048 Revenue-to-units ratio per region split by product",
+    "dataset": "sales",
+    "prompt": "Show revenue per unit for each region, with a separate line for every product.",
+    "expect": {
+      "xLen": 4,
+      "seriesCount": 3,
+      "xNameAnyOf": [
+        "region"
+      ]
+    }
+  },
+  {
+    "name": "049 Conversion rate per channel question synonym",
+    "dataset": "traffic",
+    "prompt": "How well does each channel convert visitors into signups? Show the signups/visits rate by channel.",
+    "expect": {
+      "xLen": 4,
+      "seriesCount": 1,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "050 Conversion rate over months grouped",
+    "dataset": "traffic",
+    "prompt": "Break the conversion rate down by month of the year.",
+    "expect": {
+      "xLen": 12,
+      "seriesCount": 1,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "051 Sales North region by month",
+    "dataset": "sales",
+    "prompt": "Show monthly revenue for the North region.",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ],
+      "xLen": 12,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "052 Traffic Organic only over time",
+    "dataset": "traffic",
+    "prompt": "Plot daily visits for Organic only.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLenMin": 360,
+      "xLenMax": 366,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "053 Sales Widget units by region",
+    "dataset": "sales",
+    "prompt": "How many units of Widget were sold in each region?",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "region"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "054 Readings Sensor A temperature",
+    "dataset": "readings",
+    "prompt": "Give me the temperature readings for Sensor A.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLenMin": 13,
+      "xLenMax": 14,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "055 Sales North and South combined",
+    "dataset": "sales",
+    "prompt": "Monthly revenue for North and South regions combined.",
+    "expect": {
+      "xLen": 12,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "056 Traffic Paid and Email visits",
+    "dataset": "traffic",
+    "prompt": "Compare daily visits, but only for the Paid and Email channels.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "057 Sales Gadget for East region (two-filter AND)",
+    "dataset": "sales",
+    "prompt": "Show revenue by month for Gadget in the East region only.",
+    "expect": {
+      "xLen": 12,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "058 Sales West region split by product",
+    "dataset": "sales",
+    "prompt": "For the West region, break down monthly units by product.",
+    "expect": {
+      "xLen": 12,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 3
+    }
+  },
+  {
+    "name": "059 Traffic Organic by weekday grouping",
+    "dataset": "traffic",
+    "prompt": "For Organic traffic only, what are average visits by day of the week?",
+    "expect": {
+      "xLen": 7,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "060 Sales South region one series per product",
+    "dataset": "sales",
+    "prompt": "In the South region, plot revenue per product across the months, one line each.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 12,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 3
+    }
+  },
+  {
+    "name": "061 Readings Sensor B humidity",
+    "dataset": "readings",
+    "prompt": "Just Sensor B please - show its humidity over the two weeks.",
+    "expect": {
+      "xLenMin": 13,
+      "xLenMax": 14,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "062 Traffic Social and Organic per-channel series",
+    "dataset": "traffic",
+    "prompt": "Daily signups for the Social and Organic channels, one series per channel.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "063 Sales Gizmo revenue by region pie",
+    "dataset": "sales",
+    "prompt": "For Gizmo only, what share of revenue comes from each region? Pie chart.",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 4
+    }
+  },
+  {
+    "name": "064 traffic January only",
+    "dataset": "traffic",
+    "prompt": "Show daily visits for January only",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 28,
+      "xLenMax": 33
+    }
+  },
+  {
+    "name": "065 traffic in February",
+    "dataset": "traffic",
+    "prompt": "Plot visits over time, but only for the days in February",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 27,
+      "xLenMax": 31
+    }
+  },
+  {
+    "name": "066 traffic March only casual",
+    "dataset": "traffic",
+    "prompt": "just March please, show me the signups per day",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 28,
+      "xLenMax": 33
+    }
+  },
+  {
+    "name": "067 traffic Q1 quarter",
+    "dataset": "traffic",
+    "prompt": "Display visits for Q1 across all channels",
+    "expect": {
+      "xNameAnyOf": [
+        "channel",
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "068 traffic first quarter phrasing",
+    "dataset": "traffic",
+    "prompt": "How did visits trend during the first quarter of the year?",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 85,
+      "xLenMax": 95
+    }
+  },
+  {
+    "name": "069 traffic on Mondays",
+    "dataset": "traffic",
+    "prompt": "Show me visits but keep only the Mondays",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 48,
+      "xLenMax": 56
+    }
+  },
+  {
+    "name": "070 traffic Fridays only",
+    "dataset": "traffic",
+    "prompt": "Plot daily signups on Fridays",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 48,
+      "xLenMax": 56
+    }
+  },
+  {
+    "name": "071 traffic the 10th each month",
+    "dataset": "traffic",
+    "prompt": "Chart visits on the 10th of each month",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 10,
+      "xLenMax": 14
+    }
+  },
+  {
+    "name": "072 traffic the 15th day-of-month",
+    "dataset": "traffic",
+    "prompt": "Show me what visits looked like on the 15th of every month",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 10,
+      "xLenMax": 14
+    }
+  },
+  {
+    "name": "073 traffic December bar",
+    "dataset": "traffic",
+    "prompt": "Bar chart of December visits per day",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 27,
+      "xLenMax": 32,
+      "typesAnyOf": [
+        "bar"
+      ]
+    }
+  },
+  {
+    "name": "074 traffic Sundays formal",
+    "dataset": "traffic",
+    "prompt": "Please restrict the data to Sundays and display the visit counts over the year",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 48,
+      "xLenMax": 56
+    }
+  },
+  {
+    "name": "075 readings March only",
+    "dataset": "readings",
+    "prompt": "Show temperature readings for March only",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 13,
+      "xLenMax": 14
+    }
+  },
+  {
+    "name": "076 readings Mondays filter",
+    "dataset": "readings",
+    "prompt": "Just the Mondays — plot the humidity readings",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 1,
+      "xLenMax": 3
+    }
+  },
+  {
+    "name": "077 traffic April only line",
+    "dataset": "traffic",
+    "prompt": "Give me a line chart of visits during April",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 28,
+      "xLenMax": 32,
+      "typesAnyOf": [
+        "line"
+      ]
+    }
+  },
+  {
+    "name": "078 revenue at least 5000 by region",
+    "dataset": "sales",
+    "prompt": "Show total revenue by region, but only include rows where revenue is at least 5000.",
+    "expect": {
+      "xNameAnyOf": [
+        "region"
+      ],
+      "xLenMax": 4,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "079 units below 50 by product (bar)",
+    "dataset": "sales",
+    "prompt": "Bar chart of units per product where units are under 50.",
+    "expect": {
+      "typesAnyOf": [
+        "bar"
+      ],
+      "xNameAnyOf": [
+        "product"
+      ],
+      "xLenMax": 3,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "080 high revenue months over 8000",
+    "dataset": "sales",
+    "prompt": "Plot revenue by month, keeping only entries where revenue exceeds 8000.",
+    "expect": {
+      "xNameAnyOf": [
+        "month"
+      ],
+      "xLenMax": 12,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "081 visits over 1000 daily line",
+    "dataset": "traffic",
+    "prompt": "Line chart of visits over time for days where visits were greater than 1000.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 1,
+      "xLenMax": 365
+    }
+  },
+  {
+    "name": "082 count days per channel visits exceed 1000",
+    "dataset": "traffic",
+    "prompt": "How many days per channel did visits exceed 1000?",
+    "expect": {
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLenMax": 4,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "083 count days per channel visits above 1300",
+    "dataset": "traffic",
+    "prompt": "For each channel, count the number of days when visits went above 1300.",
+    "expect": {
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLenMax": 4,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "084 visits at least 500 by channel total",
+    "dataset": "traffic",
+    "prompt": "Total visits grouped by channel, only counting days with visits of 500 or more.",
+    "expect": {
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLenMax": 4,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "085 signups greater than 30 count per channel",
+    "dataset": "traffic",
+    "prompt": "Count how many days each channel had more than 30 signups.",
+    "expect": {
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLenMax": 4,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "086 temperature above 25 by sensor",
+    "dataset": "readings",
+    "prompt": "Show readings per sensor where temperature is above 15 degrees.",
+    "expect": {
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "xLenMax": 2,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "087 humidity below 40 daily",
+    "dataset": "readings",
+    "prompt": "Plot humidity by date for readings where humidity dropped below 40.",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 1,
+      "xLenMax": 14
+    }
+  },
+  {
+    "name": "088 count readings per sensor temp at least 22",
+    "dataset": "readings",
+    "prompt": "How many readings did each sensor record with a temperature of at least 22?",
+    "expect": {
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "xLenMax": 2,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "089 revenue under 2000 low performers by product",
+    "dataset": "sales",
+    "prompt": "Which products had revenue less than 2000? Chart revenue by product for those.",
+    "expect": {
+      "xNameAnyOf": [
+        "product"
+      ],
+      "xLenMax": 3,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "090 units over 200 by region casual",
+    "dataset": "sales",
+    "prompt": "gimme units per region but only where units are over 200",
+    "expect": {
+      "xNameAnyOf": [
+        "region"
+      ],
+      "xLenMax": 4,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "091 iso-range-march-traffic",
+    "dataset": "traffic",
+    "prompt": "Show daily visits between 2024-03-01 and 2024-03-31",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 28,
+      "xLenMax": 33
+    }
+  },
+  {
+    "name": "092 iso-range-explicit-from-to",
+    "dataset": "traffic",
+    "prompt": "Plot visits over time from 2024-06-01 to 2024-07-24",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 50,
+      "xLenMax": 56
+    }
+  },
+  {
+    "name": "093 single-digit-range",
+    "dataset": "traffic",
+    "prompt": "Line chart of visits for the period 2024-06-1 - 2024-07-24",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 50,
+      "xLenMax": 56
+    }
+  },
+  {
+    "name": "094 natural-language-range",
+    "dataset": "traffic",
+    "prompt": "Graph the visits from 7th january to 9th july",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 180,
+      "xLenMax": 190
+    }
+  },
+  {
+    "name": "095 open-ended-after",
+    "dataset": "traffic",
+    "prompt": "How did visits trend after 2024-09-01?",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 115,
+      "xLenMax": 122
+    }
+  },
+  {
+    "name": "096 open-ended-before",
+    "dataset": "traffic",
+    "prompt": "Show me visits before 2024-02-15",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 43,
+      "xLenMax": 47
+    }
+  },
+  {
+    "name": "097 range-per-channel-series",
+    "dataset": "traffic",
+    "prompt": "Visits per channel over time between 2024-04-01 and 2024-04-30, one line for each channel",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 28,
+      "xLenMax": 31,
+      "seriesCount": 4
+    }
+  },
+  {
+    "name": "098 range-broken-by-channel-casual",
+    "dataset": "traffic",
+    "prompt": "between 2024-05-01 and 2024-06-30 can you break visits down by channel?",
+    "expect": {
+      "xNameAnyOf": [
+        "channel",
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "099 readings-iso-range-temp",
+    "dataset": "readings",
+    "prompt": "Temperature readings between 2024-03-05 and 2024-03-10",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 5,
+      "xLenMax": 7
+    }
+  },
+  {
+    "name": "100 readings-after-open-ended",
+    "dataset": "readings",
+    "prompt": "Show humidity after 2024-03-07",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 6,
+      "xLenMax": 8
+    }
+  },
+  {
+    "name": "101 readings-before-per-sensor",
+    "dataset": "readings",
+    "prompt": "Plot temperature before 2024-03-05 for each sensor",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 3,
+      "xLenMax": 5,
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "102 readings-natural-range",
+    "dataset": "readings",
+    "prompt": "Give me the humidity from the 3rd of march to the 12th of march 2024",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 9,
+      "xLenMax": 11
+    }
+  },
+  {
+    "name": "103 Monthly total visits",
+    "dataset": "traffic",
+    "prompt": "Show total visits per month over 2024 as a line chart.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 12,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "104 Monthly visits bar",
+    "dataset": "traffic",
+    "prompt": "Bucket the daily traffic into monthly totals and plot visits as bars.",
+    "expect": {
+      "typesAnyOf": [
+        "bar"
+      ],
+      "xLen": 12,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "105 Quarterly visits",
+    "dataset": "traffic",
+    "prompt": "What were the quarterly total visits across the year?",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "106 Quarterly signups line",
+    "dataset": "traffic",
+    "prompt": "Roll up signups by quarter and show me the trend.",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "107 Yearly total",
+    "dataset": "traffic",
+    "prompt": "Give me the grand total visits for the whole year in a single yearly bucket.",
+    "expect": {
+      "xLen": 1,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "108 Weekly visits",
+    "dataset": "traffic",
+    "prompt": "Aggregate visits into weekly totals and chart them over time.",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 52,
+      "xLenMax": 54,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "109 Weekly signups area",
+    "dataset": "traffic",
+    "prompt": "Sum up signups week by week and show it as an area chart.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 52,
+      "xLenMax": 54
+    }
+  },
+  {
+    "name": "110 Monthly visits per channel",
+    "dataset": "traffic",
+    "prompt": "Plot monthly total visits broken down by channel, one line per channel.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 12,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 4
+    }
+  },
+  {
+    "name": "111 Quarterly visits per channel",
+    "dataset": "traffic",
+    "prompt": "Quarterly visit totals split out for each channel.",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 4
+    }
+  },
+  {
+    "name": "112 Weekly visits per channel",
+    "dataset": "traffic",
+    "prompt": "Show me weekly visit totals with a separate series for every channel.",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 52,
+      "xLenMax": 54,
+      "seriesCount": 4
+    }
+  },
+  {
+    "name": "113 Monthly revenue-style sum casual",
+    "dataset": "traffic",
+    "prompt": "how many visits did we get each month? bucket it monthly please",
+    "expect": {
+      "xLen": 12,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "114 avg visits by weekday",
+    "dataset": "traffic",
+    "prompt": "What's the average number of visits by day of the week?",
+    "expect": {
+      "xLen": 7,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "115 total visits per weekday casual",
+    "dataset": "traffic",
+    "prompt": "show me total visits per weekday",
+    "expect": {
+      "xLen": 7,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "116 weekday breakdown of signups",
+    "dataset": "traffic",
+    "prompt": "Give me a weekday breakdown of signups.",
+    "expect": {
+      "xLen": 7,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "117 visits for each day of the week",
+    "dataset": "traffic",
+    "prompt": "How do visits compare for each day of the week?",
+    "expect": {
+      "xLen": 7,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "118 total visits by month of the year",
+    "dataset": "traffic",
+    "prompt": "Total visits by month of the year, please.",
+    "expect": {
+      "xLen": 12,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "119 visits broken down by month of year",
+    "dataset": "traffic",
+    "prompt": "I want visits broken down by month of year.",
+    "expect": {
+      "xLen": 12,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "120 average visits per month-of-year",
+    "dataset": "traffic",
+    "prompt": "average visits per month-of-year as a bar chart",
+    "expect": {
+      "xLen": 12,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1,
+      "typesAnyOf": [
+        "bar"
+      ]
+    }
+  },
+  {
+    "name": "121 visits by quarter cyclic",
+    "dataset": "traffic",
+    "prompt": "Break visits down by quarter of the year.",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "122 total signups for each quarter",
+    "dataset": "traffic",
+    "prompt": "What are total signups for each quarter?",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "123 visits by day of month",
+    "dataset": "traffic",
+    "prompt": "Show average visits grouped by day of the month (1 through 31).",
+    "expect": {
+      "xLen": 31,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "124 readings avg temp by weekday",
+    "dataset": "readings",
+    "prompt": "What is the average temperature for each day of the week?",
+    "expect": {
+      "xLenMin": 1,
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "125 readings humidity by day of month",
+    "dataset": "readings",
+    "prompt": "Plot average humidity grouped by day of month.",
+    "expect": {
+      "xLenMin": 14,
+      "xLenMax": 31,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "126 visits weekday line chart formal",
+    "dataset": "traffic",
+    "prompt": "Please render a line chart of mean visits across the seven days of the week.",
+    "expect": {
+      "xLen": 7,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "typesAnyOf": [
+        "line"
+      ]
+    }
+  },
+  {
+    "name": "127 top 3 products by revenue",
+    "dataset": "sales",
+    "prompt": "Show me the top 3 products by revenue.",
+    "expect": {
+      "xLen": 3,
+      "xNameAnyOf": [
+        "product"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "128 top 5 days by visits",
+    "dataset": "traffic",
+    "prompt": "What were the top 5 days by visits?",
+    "expect": {
+      "xLenMin": 5,
+      "xLenMax": 5,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "129 10 busiest days",
+    "dataset": "traffic",
+    "prompt": "Give me the 10 busiest days by traffic.",
+    "expect": {
+      "xLenMin": 10,
+      "xLenMax": 10,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "130 regions ranked high to low by revenue",
+    "dataset": "sales",
+    "prompt": "Rank the regions from highest to lowest revenue.",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "region"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "131 products ascending by units",
+    "dataset": "sales",
+    "prompt": "List products in ascending order of units sold.",
+    "expect": {
+      "xLen": 3,
+      "xNameAnyOf": [
+        "product"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "132 bottom 2 products by revenue",
+    "dataset": "sales",
+    "prompt": "Which are the bottom 2 products by revenue?",
+    "expect": {
+      "xLen": 2,
+      "xNameAnyOf": [
+        "product"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "133 top 2 channels by visits",
+    "dataset": "traffic",
+    "prompt": "Show the two channels with the most visits.",
+    "expect": {
+      "xLenMin": 2,
+      "xLenMax": 2,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "134 channels sorted descending by visits",
+    "dataset": "traffic",
+    "prompt": "Sort the marketing channels by total visits, biggest first.",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "135 top 6 months by revenue",
+    "dataset": "sales",
+    "prompt": "Pull the six highest-revenue months.",
+    "expect": {
+      "xLenMin": 6,
+      "xLenMax": 6,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "136 least busy 4 days by visits",
+    "dataset": "traffic",
+    "prompt": "What were the 4 quietest days for visits?",
+    "expect": {
+      "xLenMin": 4,
+      "xLenMax": 4,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "137 sensors ranked by temperature",
+    "dataset": "readings",
+    "prompt": "Rank the sensors from highest to lowest average temperature.",
+    "expect": {
+      "xLen": 2,
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "138 top 7 days by signups",
+    "dataset": "traffic",
+    "prompt": "Give me the seven best days for signups, ranked.",
+    "expect": {
+      "xLenMin": 7,
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "139 regions ascending by units",
+    "dataset": "sales",
+    "prompt": "Order regions from lowest to highest by units sold.",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "region"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "140 top 3 readings days by humidity",
+    "dataset": "readings",
+    "prompt": "Show the 3 days with the highest humidity.",
+    "expect": {
+      "xLenMin": 3,
+      "xLenMax": 3,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "141 filter region + series product over months",
+    "dataset": "sales",
+    "prompt": "For the North region only, show monthly revenue with a separate line for each product",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 12,
+      "xNameAnyOf": [
+        "month"
+      ],
+      "seriesCount": 3
+    }
+  },
+  {
+    "name": "142 datepart month filter + series channel",
+    "dataset": "traffic",
+    "prompt": "Looking only at January, plot daily visits as one line per channel",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLenMin": 28,
+      "xLenMax": 33,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 4
+    }
+  },
+  {
+    "name": "143 datepart quarter filter + cross measures per channel",
+    "dataset": "traffic",
+    "prompt": "During Q1, compare visits versus signups for each channel as grouped bars",
+    "expect": {
+      "typesAnyOf": [
+        "bar"
+      ],
+      "xNameAnyOf": [
+        "channel",
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "144 groupByPart weekday + compare two measures",
+    "dataset": "traffic",
+    "prompt": "Average visits and signups by day of the week, side by side",
+    "expect": {
+      "xLen": 7,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "145 groupByPart month-of-year + series channel",
+    "dataset": "traffic",
+    "prompt": "Show average visits grouped by month of the year, with a line for each channel",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 12,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 4
+    }
+  },
+  {
+    "name": "146 bucket monthly + derived conversion rate",
+    "dataset": "traffic",
+    "prompt": "What's the monthly conversion rate (signups divided by visits) over the year?",
+    "expect": {
+      "xLen": 12,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "147 bucket quarterly + derived per channel series",
+    "dataset": "traffic",
+    "prompt": "Plot quarterly conversion rate (signups over visits) with one line per channel",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 4,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 4
+    }
+  },
+  {
+    "name": "148 topN + category filter (Widget products by region)",
+    "dataset": "sales",
+    "prompt": "Among Widget sales only, give me the top 2 regions by revenue",
+    "expect": {
+      "typesAnyOf": [
+        "bar"
+      ],
+      "xLenMin": 1,
+      "xLenMax": 2,
+      "xNameAnyOf": [
+        "region"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "149 category filter + threshold + count per channel",
+    "dataset": "traffic",
+    "prompt": "For the Organic and Paid channels, how many days did visits exceed 1000? Count per channel.",
+    "expect": {
+      "xLenMax": 2,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "150 threshold + count per channel all four (some dropped)",
+    "dataset": "traffic",
+    "prompt": "Count the number of days each channel had more than 1000 visits",
+    "expect": {
+      "xLenMax": 4,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "151 filter sensor + series-per-sensor cross measures",
+    "dataset": "readings",
+    "prompt": "Compare temperature and humidity over the dates, with separate lines for each sensor",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 14,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 4
+    }
+  },
+  {
+    "name": "152 cross measures per product (sales units vs revenue)",
+    "dataset": "sales",
+    "prompt": "For each product, show units versus revenue as grouped bars across the year",
+    "expect": {
+      "typesAnyOf": [
+        "bar"
+      ],
+      "xNameAnyOf": [
+        "product",
+        "month"
+      ]
+    }
+  },
+  {
+    "name": "153 weekday filter (Mondays) + series channel",
+    "dataset": "traffic",
+    "prompt": "On Mondays only, chart daily visits with a line per channel",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLenMin": 50,
+      "xLenMax": 54,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 4
+    }
+  },
+  {
+    "name": "154 filter region + pie of revenue by product",
+    "dataset": "sales",
+    "prompt": "In the West region, what share of revenue does each product hold? Pie it.",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 3
+    }
+  },
+  {
+    "name": "155 which region makes the most money",
+    "dataset": "sales",
+    "prompt": "which region makes the most money?",
+    "expect": {
+      "xNameAnyOf": [
+        "region"
+      ],
+      "xLen": 4
+    }
+  },
+  {
+    "name": "156 revenue per product casual",
+    "dataset": "sales",
+    "prompt": "what does revenue look like for each product?",
+    "expect": {
+      "xNameAnyOf": [
+        "product"
+      ],
+      "xLen": 3
+    }
+  },
+  {
+    "name": "157 busiest channels",
+    "dataset": "traffic",
+    "prompt": "show me the busiest channels",
+    "expect": {
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLen": 4
+    }
+  },
+  {
+    "name": "158 how have signups trended",
+    "dataset": "traffic",
+    "prompt": "how have signups trended over the year?",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "typesAnyOf": [
+        "line"
+      ]
+    }
+  },
+  {
+    "name": "159 link between visits and signups",
+    "dataset": "traffic",
+    "prompt": "is there a link between visits and signups?",
+    "expect": {
+      "typesAnyOf": [
+        "scatter"
+      ]
+    }
+  },
+  {
+    "name": "160 where do most units sell",
+    "dataset": "sales",
+    "prompt": "where are we selling the most units?",
+    "expect": {
+      "xNameAnyOf": [
+        "region",
+        "month"
+      ]
+    }
+  },
+  {
+    "name": "161 sales across the year",
+    "dataset": "sales",
+    "prompt": "how do sales move across the months of the year?",
+    "expect": {
+      "xNameAnyOf": [
+        "month"
+      ],
+      "xLen": 12
+    }
+  },
+  {
+    "name": "162 split traffic by channel pie",
+    "dataset": "traffic",
+    "prompt": "give me a breakdown of total visits as a pie, one slice per channel",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 4
+    }
+  },
+  {
+    "name": "163 compare the two sensors",
+    "dataset": "readings",
+    "prompt": "how do the two sensors compare on temperature?",
+    "expect": {
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "xLen": 2
+    }
+  },
+  {
+    "name": "164 whats happening with temps over time",
+    "dataset": "readings",
+    "prompt": "whats happening with the temperature readings day to day?",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 12,
+      "xLenMax": 14
+    }
+  },
+  {
+    "name": "165 best selling product overall",
+    "dataset": "sales",
+    "prompt": "which product is our best seller?",
+    "expect": {
+      "xNameAnyOf": [
+        "product"
+      ]
+    }
+  },
+  {
+    "name": "166 do more visits mean more signups",
+    "dataset": "traffic",
+    "prompt": "do more visits actually translate into more signups?",
+    "expect": {
+      "typesAnyOf": [
+        "scatter"
+      ]
+    }
+  },
+  {
+    "name": "167 readings temperature over time null-heavy",
+    "dataset": "readings",
+    "prompt": "Plot the temperature readings over the two weeks as a line chart.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 14,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "168 readings humidity per sensor (small data)",
+    "dataset": "readings",
+    "prompt": "Compare average humidity between the two sensors.",
+    "expect": {
+      "xLen": 2,
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "169 readings show everything vague",
+    "dataset": "readings",
+    "prompt": "Just show me everything in the readings data.",
+    "expect": {
+      "xNameAnyOf": [
+        "date",
+        "sensor"
+      ]
+    }
+  },
+  {
+    "name": "170 readings temp one line per sensor",
+    "dataset": "readings",
+    "prompt": "Draw a line for each sensor showing how temperature changes day by day.",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xLen": 14,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "171 readings humidity vs temperature scatter",
+    "dataset": "readings",
+    "prompt": "Is there any relationship between humidity and temperature? Scatter it.",
+    "expect": {
+      "typesAnyOf": [
+        "scatter"
+      ]
+    }
+  },
+  {
+    "name": "172 traffic signups over time with nulls",
+    "dataset": "traffic",
+    "prompt": "Show daily signups across the whole year.",
+    "expect": {
+      "xLen": 365,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "173 traffic signups per channel null-aware",
+    "dataset": "traffic",
+    "prompt": "What were total signups by channel?",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "174 readings single sensor filter",
+    "dataset": "readings",
+    "prompt": "Show me Sensor A's temperature trend.",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ],
+      "xLenMin": 12,
+      "xLenMax": 14,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "175 readings humidity pie by sensor",
+    "dataset": "readings",
+    "prompt": "Break down total humidity by sensor as a pie.",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 2
+    }
+  },
+  {
+    "name": "176 traffic visits vs signups per channel",
+    "dataset": "traffic",
+    "prompt": "For each channel, put visits next to signups so I can compare them.",
+    "expect": {
+      "xLen": 4,
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "177 readings everything casual one chart",
+    "dataset": "readings",
+    "prompt": "gimme a quick chart of the sensor data, whatever makes sense",
+    "expect": {
+      "xNameAnyOf": [
+        "date",
+        "sensor"
+      ]
+    }
+  }
+]

@@ -1,0 +1,1866 @@
+[
+  {
+    "name": "E001 sales triple stack: region + product + month + threshold",
+    "dataset": "sales",
+    "prompt": "North region Widget units above 100 in the first quarter",
+    "expect": {
+      "xLenMax": 35,
+      "xNameAnyOf": [
+        "month",
+        "product",
+        "region"
+      ]
+    }
+  },
+  {
+    "name": "E002 traffic category + threshold + quarter",
+    "dataset": "traffic",
+    "prompt": "Organic visits over 1000 in Q1",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ],
+      "xLenMax": 95,
+      "xNameAnyOf": [
+        "date",
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E003 traffic category + threshold + weekday filter",
+    "dataset": "traffic",
+    "prompt": "Paid channel signups under 20 on Mondays",
+    "expect": {
+      "xLenMax": 60,
+      "xNameAnyOf": [
+        "date",
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E004 readings sensor + null-prone measure + threshold + date window",
+    "dataset": "readings",
+    "prompt": "Sensor A temperature above 15 between March 1 and March 7",
+    "expect": {
+      "xLenMax": 10,
+      "xNameAnyOf": [
+        "date",
+        "sensor"
+      ]
+    }
+  },
+  {
+    "name": "E005 traffic negation channel + month + threshold",
+    "dataset": "traffic",
+    "prompt": "non-Organic visits over 800 in August",
+    "expect": {
+      "xLenMax": 35,
+      "xNameAnyOf": [
+        "date",
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E006 traffic category + fuzzy-number threshold + month",
+    "dataset": "traffic",
+    "prompt": "Social visits over 1.2k in July",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ]
+    },
+    "note": "Social visits never exceed 1.2k -> renders empty or constraint-dropped"
+  },
+  {
+    "name": "E007 sales region exclusion + product + month range",
+    "dataset": "sales",
+    "prompt": "every region but North, Gadget units, from March to June",
+    "expect": {
+      "xLenMax": 35,
+      "xNameAnyOf": [
+        "month",
+        "region"
+      ]
+    }
+  },
+  {
+    "name": "E008 traffic category + threshold-with-comma + quarter",
+    "dataset": "traffic",
+    "prompt": "Email visits of at least 1,200.50 in Q4",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ]
+    },
+    "note": "Email never reaches 1,200.50 -> impossible threshold (comma+decimal parse tested deterministically)"
+  },
+  {
+    "name": "E009 traffic exclude-weekends + channel + threshold",
+    "dataset": "traffic",
+    "prompt": "Paid visits over 700 excluding weekends in the last week of March",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ]
+    },
+    "note": "Paid>700 on late-March weekdays -> impossible/near-empty"
+  },
+  {
+    "name": "E010 readings sensor + humidity threshold + temperature threshold + day",
+    "dataset": "readings",
+    "prompt": "Sensor B humidity over 60 where temperature is at least 14 on the 10th",
+    "expect": {
+      "typesAnyOf": [
+        "bar",
+        "line"
+      ]
+    },
+    "note": "triple filter on a single day -> near-empty"
+  },
+  {
+    "name": "E011 sales run-on region + product + month + threshold messy",
+    "dataset": "sales",
+    "prompt": "show me revenue for South region Gizmo only in Q2 but just the months where units are over 50",
+    "expect": {
+      "xLenMax": 35,
+      "xNameAnyOf": [
+        "month"
+      ]
+    }
+  },
+  {
+    "name": "E012 traffic empty-stack zero rows",
+    "dataset": "traffic",
+    "prompt": "Email visits over 5000 in January on Sundays",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ]
+    },
+    "note": "Email>5000 -> impossible"
+  },
+  {
+    "name": "E013 traffic channel + threshold + single-day range",
+    "dataset": "traffic",
+    "prompt": "Organic signups over 30 on 2024-08-15",
+    "expect": {
+      "xLenMax": 2,
+      "xNameAnyOf": [
+        "date",
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E014 sales pie after stacked filter",
+    "dataset": "sales",
+    "prompt": "pie of revenue by product for West region with units above 80 in the second half of the year",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "xNameAnyOf": [
+        "product"
+      ]
+    }
+  },
+  {
+    "name": "E015 fewest-signups-channel-daily",
+    "dataset": "traffic",
+    "prompt": "show daily signups over the year for the single channel that got the fewest total signups",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 300,
+      "xLenMax": 366,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "E016 lowest-avg-visits-channel-weekday",
+    "dataset": "traffic",
+    "prompt": "the channel with the lowest average visits — break its visits down by weekday",
+    "expect": {
+      "xNameAnyOf": [
+        "weekday",
+        "date"
+      ],
+      "xLenMax": 8,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "E017 top2-regions-by-revenue-monthly",
+    "dataset": "sales",
+    "prompt": "the 2 regions with the most total revenue, plotted month by month",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ],
+      "xNameAnyOf": [
+        "month"
+      ],
+      "xLen": 12,
+      "seriesCount": 2
+    },
+    "note": "top-N over series fix: 2 regions x 12 months; model may pick line or bar"
+  },
+  {
+    "name": "E018 highest-avg-visits-channel",
+    "dataset": "traffic",
+    "prompt": "which channel has the highest average daily visits? chart its visits across the year",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 300,
+      "xLenMax": 366,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "E019 argmax-signups-then-weekday-breakdown",
+    "dataset": "traffic",
+    "prompt": "daily visits by weekday for the channel with the most signups",
+    "expect": {
+      "xNameAnyOf": [
+        "weekday",
+        "date"
+      ],
+      "xLenMax": 8,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "E020 least-revenue-product-by-region",
+    "dataset": "sales",
+    "prompt": "take the product with the least total revenue and show its revenue broken out by region",
+    "expect": {
+      "xNameAnyOf": [
+        "region"
+      ],
+      "xLen": 4,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "E021 top2-channels-most-visits-daily",
+    "dataset": "traffic",
+    "prompt": "plot daily visits for the top 2 channels by total visits",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMin": 300,
+      "xLenMax": 366,
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "E022 lowest-units-region-monthly",
+    "dataset": "sales",
+    "prompt": "the region that sells the fewest units overall, show its monthly units",
+    "expect": {
+      "xNameAnyOf": [
+        "month",
+        "region"
+      ],
+      "seriesCount": 1
+    },
+    "note": "argmin picks lowest region; model may chart it as x=region or x=month"
+  },
+  {
+    "name": "E023 argmax-avg-then-q1-weekday",
+    "dataset": "traffic",
+    "prompt": "for the channel with the highest average visits, average visits by weekday in Q1 only",
+    "expect": {
+      "xNameAnyOf": [
+        "weekday",
+        "date"
+      ],
+      "xLenMax": 8,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "E024 sensor-fewest-temp-readings-humidity",
+    "dataset": "readings",
+    "prompt": "the sensor with the fewest temperature readings — chart its humidity over the two weeks",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMax": 15,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "E025 top2-most-signups-pie",
+    "dataset": "traffic",
+    "prompt": "pie of total signups for just the 2 channels with the most signups",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 2
+    }
+  },
+  {
+    "name": "E026 highest-single-day-visits-per-channel",
+    "dataset": "traffic",
+    "prompt": "the highest single-day visit count per channel, one bar each",
+    "expect": {
+      "typesAnyOf": [
+        "bar"
+      ],
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLen": 4,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "E027 least-avg-revenue-region-by-product",
+    "dataset": "sales",
+    "prompt": "whichever region has the lowest average revenue, break that region's revenue down by product",
+    "expect": {
+      "xNameAnyOf": [
+        "product"
+      ],
+      "xLen": 3,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "E028 argmax-signups-month-aug-by-channel",
+    "dataset": "traffic",
+    "prompt": "in the month that had the most signups overall, show total signups by channel",
+    "expect": {
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLen": 4,
+      "seriesCount": 1
+    }
+  },
+  {
+    "name": "E029 neg-all-channels-except-email-weekly",
+    "dataset": "traffic",
+    "prompt": "weekly visits for all channels except Email",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "seriesCount": 3,
+      "xNameAnyOf": [
+        "date",
+        "week"
+      ]
+    }
+  },
+  {
+    "name": "E030 neg-every-region-but-north-bar",
+    "dataset": "sales",
+    "prompt": "total revenue by region for every region but North",
+    "expect": {
+      "typesAnyOf": [
+        "bar"
+      ],
+      "xLen": 3,
+      "xNameAnyOf": [
+        "region"
+      ]
+    }
+  },
+  {
+    "name": "E031 neg-non-organic-by-channel",
+    "dataset": "traffic",
+    "prompt": "average visits per non-Organic channel",
+    "expect": {
+      "xLen": 3,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E032 neg-exclude-weekends-monthly",
+    "dataset": "traffic",
+    "prompt": "monthly total signups but exclude weekends",
+    "expect": {
+      "xNameAnyOf": [
+        "date",
+        "month"
+      ],
+      "xLenMax": 13
+    }
+  },
+  {
+    "name": "E033 neg-not-mondays-daily",
+    "dataset": "traffic",
+    "prompt": "daily organic visits on days that are not Mondays",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMax": 365
+    }
+  },
+  {
+    "name": "E034 neg-products-other-than-widget-pie",
+    "dataset": "sales",
+    "prompt": "pie of revenue share for products other than Widget",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 2,
+      "xNameAnyOf": [
+        "product"
+      ]
+    }
+  },
+  {
+    "name": "E035 neg-except-email-and-paid",
+    "dataset": "traffic",
+    "prompt": "total visits by channel excluding both Email and Paid",
+    "expect": {
+      "xLen": 2,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E036 neg-exclude-sensorB-temp-line",
+    "dataset": "readings",
+    "prompt": "temperature over time for sensors other than Sensor B",
+    "expect": {
+      "typesAnyOf": [
+        "line"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMax": 16
+    }
+  },
+  {
+    "name": "E037 neg-not-q1-by-quarter",
+    "dataset": "traffic",
+    "prompt": "visits by quarter for everything except Q1",
+    "expect": {
+      "xNameAnyOf": [
+        "date",
+        "quarter"
+      ],
+      "xLenMax": 95
+    }
+  },
+  {
+    "name": "E038 neg-non-summer-months-weekday-stack",
+    "dataset": "traffic",
+    "prompt": "average visits by weekday excluding the summer months June July and August",
+    "expect": {
+      "xNameAnyOf": [
+        "weekday",
+        "date"
+      ],
+      "xLenMax": 8
+    }
+  },
+  {
+    "name": "E039 neg-except-north-and-non-widget-stacked",
+    "dataset": "sales",
+    "prompt": "monthly revenue by region for every region except North and only products that aren't Widget",
+    "expect": {
+      "seriesCount": 3,
+      "xNameAnyOf": [
+        "month",
+        "date"
+      ],
+      "xLenMax": 13
+    }
+  },
+  {
+    "name": "E040 neg-double-negative-not-not-organic",
+    "dataset": "traffic",
+    "prompt": "visits for channels that are not non-Organic",
+    "expect": {
+      "xNameAnyOf": [
+        "channel",
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E041 over 1.2k visits decimal-k",
+    "dataset": "traffic",
+    "prompt": "daily visits over 1.2k",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ],
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMax": 366
+    }
+  },
+  {
+    "name": "E042 at least 1,200.50 comma-decimal threshold",
+    "dataset": "traffic",
+    "prompt": "show me days where visits were at least 1,200.50",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMax": 366
+    }
+  },
+  {
+    "name": "E043 more than 1k plus channel filter",
+    "dataset": "traffic",
+    "prompt": "Organic visits more than 1k by day",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMax": 366
+    }
+  },
+  {
+    "name": "E044 between 1000 and 1200 visits range",
+    "dataset": "traffic",
+    "prompt": "visits between 1000 and 1200 over time",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMax": 366
+    }
+  },
+  {
+    "name": "E045 single-day range just one date",
+    "dataset": "traffic",
+    "prompt": "visits by channel just on 2024-08-15",
+    "expect": {
+      "xNameAnyOf": [
+        "channel",
+        "date"
+      ],
+      "xLenMax": 5
+    }
+  },
+  {
+    "name": "E046 last week of March readings",
+    "dataset": "readings",
+    "prompt": "temperature for the last week of March",
+    "expect": {
+      "xLen": 0
+    },
+    "note": "readings end Mar 14; on-device last-week-of-March window always yields 0 rows"
+  },
+  {
+    "name": "E047 first 10 days of February visits",
+    "dataset": "traffic",
+    "prompt": "total visits for the first 10 days of February",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMax": 12
+    }
+  },
+  {
+    "name": "E048 over 1.2k then by weekday cyclic",
+    "dataset": "traffic",
+    "prompt": "average visits by weekday for days over 1.2k visits",
+    "expect": {
+      "xNameAnyOf": [
+        "weekday",
+        "date"
+      ],
+      "xLenMax": 8
+    }
+  },
+  {
+    "name": "E049 comma-thousands signups threshold low-count",
+    "dataset": "traffic",
+    "prompt": "days with signups of at least 1,000",
+    "expect": {
+      "typesAnyOf": [
+        "bar",
+        "line"
+      ]
+    },
+    "note": "signups never reach 1,000 -> impossible (comma parse tested deterministically)"
+  },
+  {
+    "name": "E050 k-suffix range more than 0.4k less than 0.8k",
+    "dataset": "traffic",
+    "prompt": "visits more than 0.4k and under 0.8k per day",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMax": 366
+    }
+  },
+  {
+    "name": "E051 single-day range on readings small data",
+    "dataset": "readings",
+    "prompt": "humidity by sensor on just 2024-03-07",
+    "expect": {
+      "xNameAnyOf": [
+        "sensor",
+        "date"
+      ],
+      "xLenMax": 4
+    }
+  },
+  {
+    "name": "E052 out-of-range window empty",
+    "dataset": "traffic",
+    "prompt": "visits between 2025-01-01 and 2025-02-01",
+    "expect": {}
+  },
+  {
+    "name": "E053 exactly 1000 visits boundary",
+    "dataset": "traffic",
+    "prompt": "days where visits were exactly 1000",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMax": 366
+    }
+  },
+  {
+    "name": "E054 1.2k threshold stacked exclude Email",
+    "dataset": "traffic",
+    "prompt": "daily visits over 1.2k for all channels except Email",
+    "expect": {
+      "xNameAnyOf": [
+        "date",
+        "channel"
+      ],
+      "xLenMax": 366
+    }
+  },
+  {
+    "name": "E055 the 1st through the 7th week phrasing",
+    "dataset": "traffic",
+    "prompt": "signups in the last week of August",
+    "expect": {
+      "xNameAnyOf": [
+        "date"
+      ],
+      "xLenMax": 10
+    }
+  },
+  {
+    "name": "E056 avg visits by weekday in Q1",
+    "dataset": "traffic",
+    "prompt": "average visits by weekday in Q1",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date",
+        "weekday"
+      ],
+      "typesAnyOf": [
+        "bar",
+        "line"
+      ]
+    }
+  },
+  {
+    "name": "E057 signups by month of year organic only",
+    "dataset": "traffic",
+    "prompt": "signups by month of the year for Organic only",
+    "expect": {
+      "xLenMax": 12,
+      "xNameAnyOf": [
+        "date",
+        "month"
+      ]
+    }
+  },
+  {
+    "name": "E058 weekday breakdown of visits over 1000",
+    "dataset": "traffic",
+    "prompt": "weekday breakdown of visits over 1000",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date",
+        "weekday"
+      ]
+    }
+  },
+  {
+    "name": "E059 avg visits and signups by day of week",
+    "dataset": "traffic",
+    "prompt": "average visits and signups by day of week",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date",
+        "weekday"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "E060 weekday signups split by channel excluding email",
+    "dataset": "traffic",
+    "prompt": "signups by weekday for all channels except Email, one line per channel",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date",
+        "weekday"
+      ],
+      "seriesCount": 3,
+      "typesAnyOf": [
+        "line"
+      ]
+    }
+  },
+  {
+    "name": "E061 avg visits by month of year paid in second half",
+    "dataset": "traffic",
+    "prompt": "avg visits by month of the year for Paid, only after July 1st",
+    "expect": {
+      "xLenMax": 12,
+      "xNameAnyOf": [
+        "date",
+        "month"
+      ]
+    }
+  },
+  {
+    "name": "E062 weekday breakdown signups over 20 q3",
+    "dataset": "traffic",
+    "prompt": "weekday breakdown of signups over 20 during Q3",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date",
+        "weekday"
+      ]
+    }
+  },
+  {
+    "name": "E063 avg temperature by weekday per sensor",
+    "dataset": "readings",
+    "prompt": "average temperature by day of week, one line per sensor",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date",
+        "weekday"
+      ],
+      "seriesCount": 2,
+      "typesAnyOf": [
+        "line"
+      ]
+    }
+  },
+  {
+    "name": "E064 visits by quarter of year non-organic avg",
+    "dataset": "traffic",
+    "prompt": "average visits per quarter of the year for the non-Organic channels",
+    "expect": {
+      "xLenMax": 4,
+      "xNameAnyOf": [
+        "date",
+        "quarter"
+      ]
+    }
+  },
+  {
+    "name": "E065 runon weekday visits signups social weekends excluded",
+    "dataset": "traffic",
+    "prompt": "can you do average visits and avg signups by weekday for Social, and skip the weekend days",
+    "expect": {
+      "xLenMax": 5,
+      "xNameAnyOf": [
+        "date",
+        "weekday"
+      ],
+      "seriesCount": 2
+    }
+  },
+  {
+    "name": "E066 month of year avg signups august region",
+    "dataset": "traffic",
+    "prompt": "signups by month of year, channels except Paid and Email, averaged",
+    "expect": {
+      "xLenMax": 12,
+      "xNameAnyOf": [
+        "date",
+        "month"
+      ]
+    }
+  },
+  {
+    "name": "E067 weekday avg visits top signup channel",
+    "dataset": "traffic",
+    "prompt": "daily visits by weekday for the channel with the most total signups",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date",
+        "weekday"
+      ]
+    }
+  },
+  {
+    "name": "E068 single-row-exact-date",
+    "dataset": "traffic",
+    "prompt": "show me visits by channel on 2024-08-15",
+    "expect": {
+      "xLenMax": 4,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E069 zero-rows-temp-above-30",
+    "dataset": "readings",
+    "prompt": "plot temperature over time for readings above 30 degrees",
+    "expect": {}
+  },
+  {
+    "name": "E070 zero-rows-visits-over-99999",
+    "dataset": "traffic",
+    "prompt": "daily visits where visits are over 99999",
+    "expect": {}
+  },
+  {
+    "name": "E071 all-rows-visits-over-0",
+    "dataset": "traffic",
+    "prompt": "total visits by channel where visits over 0",
+    "expect": {
+      "seriesCount": 1,
+      "xLen": 4,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E072 exactly-equal-1000",
+    "dataset": "traffic",
+    "prompt": "count of days where visits is exactly equal to 1000, by channel",
+    "expect": {
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLenMax": 4
+    }
+  },
+  {
+    "name": "E073 range-entirely-outside-2025",
+    "dataset": "traffic",
+    "prompt": "visits over time between 2025-01-01 and 2025-03-01",
+    "expect": {
+      "xLen": 0
+    },
+    "note": "on-device 2025 range filter always yields 0 rows on 2024 data"
+  },
+  {
+    "name": "E074 single-day-range-readings",
+    "dataset": "readings",
+    "prompt": "temperature by sensor between 2024-03-07 and 2024-03-07",
+    "expect": {
+      "xLenMax": 2,
+      "xNameAnyOf": [
+        "sensor",
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E075 humidity-impossible-threshold-empty",
+    "dataset": "readings",
+    "prompt": "average humidity by sensor where humidity above 200",
+    "expect": {}
+  },
+  {
+    "name": "E076 temp-just-below-max-near-empty",
+    "dataset": "readings",
+    "prompt": "readings of temperature over time where temperature is at least 20.9",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ]
+    },
+    "note": "temperature never reaches 20.9 -> impossible"
+  },
+  {
+    "name": "E077 boundary-single-future-day-sales",
+    "dataset": "sales",
+    "prompt": "revenue by region for revenue greater than 9999999",
+    "expect": {}
+  },
+  {
+    "name": "E078 all-rows-units-at-least-zero",
+    "dataset": "sales",
+    "prompt": "sum of units by product where units >= 0",
+    "expect": {
+      "seriesCount": 1,
+      "xLen": 3,
+      "xNameAnyOf": [
+        "product"
+      ]
+    }
+  },
+  {
+    "name": "E079 near-boundary-1k-format-low-match",
+    "dataset": "traffic",
+    "prompt": "visits over time for visits over 1.3k",
+    "expect": {
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ]
+    },
+    "note": "visits peak at exactly 1.3k; >1.3k -> empty/near-empty"
+  },
+  {
+    "name": "E080 monthly conversion rate per channel (ratio + series + bucket)",
+    "dataset": "traffic",
+    "prompt": "show me the monthly conversion rate (signups divided by visits) for each channel over the year",
+    "expect": {
+      "xLenMax": 12,
+      "xNameAnyOf": [
+        "date",
+        "month"
+      ],
+      "seriesCount": 4
+    }
+  },
+  {
+    "name": "E081 conversion rate for Organic in Q1 (ratio + category filter + date range)",
+    "dataset": "traffic",
+    "prompt": "conversion rate for Organic only during Q1",
+    "expect": {
+      "xLenMax": 95,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E082 top 2 channels by conversion rate (top-N over derived ratio)",
+    "dataset": "traffic",
+    "prompt": "which are the top 2 channels by conversion rate? chart them",
+    "expect": {
+      "xLenMax": 2,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E083 conversion rate for the channel with the most visits (argmax-narrow + ratio)",
+    "dataset": "traffic",
+    "prompt": "plot the conversion rate over time for the channel that gets the most visits",
+    "expect": {
+      "xLenMax": 366,
+      "xNameAnyOf": [
+        "date",
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E084 revenue per unit for the top region (ratio for argmax group, sales)",
+    "dataset": "sales",
+    "prompt": "revenue per unit for the region with the highest total revenue, month by month",
+    "expect": {
+      "xLenMax": 12,
+      "xNameAnyOf": [
+        "month",
+        "region"
+      ]
+    }
+  },
+  {
+    "name": "E085 revenue per unit per product (derived ratio, one line per group)",
+    "dataset": "sales",
+    "prompt": "average revenue per unit for each product across the months",
+    "expect": {
+      "xLenMax": 12,
+      "xNameAnyOf": [
+        "month",
+        "product"
+      ]
+    },
+    "note": "derived ratio; product-vs-month axis is ambiguous"
+  },
+  {
+    "name": "E086 weekday conversion rate for non-Email channels (ratio + cyclic group + negation)",
+    "dataset": "traffic",
+    "prompt": "average conversion rate by weekday for all channels except Email",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date",
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E087 quarterly conversion rate, Paid, signups over 20 (ratio + bucket + filter + threshold)",
+    "dataset": "traffic",
+    "prompt": "quarterly conversion rate for Paid, but only counting days where signups went above 20",
+    "expect": {
+      "xLenMax": 4,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E088 lowest conversion rate channel then break down by month (argmin ratio + group)",
+    "dataset": "traffic",
+    "prompt": "find the channel with the worst conversion rate and then show that rate by month",
+    "expect": {
+      "xLenMax": 12,
+      "xNameAnyOf": [
+        "date",
+        "month",
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E089 pie of revenue per unit by product (pie of derived value)",
+    "dataset": "sales",
+    "prompt": "pie chart comparing revenue per unit across the three products",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 3,
+      "xNameAnyOf": [
+        "product"
+      ]
+    }
+  },
+  {
+    "name": "E090 conversion rate per channel in last week of March (ratio + series + odd range)",
+    "dataset": "traffic",
+    "prompt": "conversion rate for each channel in the last week of March",
+    "expect": {
+      "xLenMax": 10,
+      "xNameAnyOf": [
+        "date",
+        "channel"
+      ],
+      "seriesCount": 1
+    },
+    "note": "conversion rate per channel = one derived series of channel bars"
+  },
+  {
+    "name": "E091 revenue per unit for West and East only over 1.2k units (ratio + multi-filter + threshold)",
+    "dataset": "sales",
+    "prompt": "monthly revenue per unit for West and East, only where units are over 1.2k",
+    "expect": {
+      "xLenMax": 12,
+      "xNameAnyOf": [
+        "month",
+        "region"
+      ]
+    }
+  },
+  {
+    "name": "E092 messy-organic-weekend-vs-weekday-vague",
+    "dataset": "traffic",
+    "prompt": "show me how organic is doing on weekends vs weekdays, visits wise",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "weekday",
+        "date",
+        "is_weekend"
+      ]
+    }
+  },
+  {
+    "name": "E093 messy-good-months-split-by-channel-runon",
+    "dataset": "traffic",
+    "prompt": "i wanna see signups but only the good months really and can u split it by channel too",
+    "expect": {
+      "xNameAnyOf": [
+        "date",
+        "month",
+        "channel"
+      ]
+    },
+    "note": "\"good months\" undefined; axis ambiguous"
+  },
+  {
+    "name": "E094 messy-worst-region-revenue-wise",
+    "dataset": "sales",
+    "prompt": "whats our worst performing region revenue wise, just show that one",
+    "expect": {
+      "xLenMax": 12,
+      "xNameAnyOf": [
+        "region",
+        "month"
+      ]
+    }
+  },
+  {
+    "name": "E095 messy-visits-trend-just-summer",
+    "dataset": "traffic",
+    "prompt": "visualise the visits trend but just summer pls",
+    "expect": {
+      "xLenMax": 95,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "typesAnyOf": [
+        "line"
+      ]
+    }
+  },
+  {
+    "name": "E096 messy-two-requests-in-one",
+    "dataset": "sales",
+    "prompt": "compare units and revenue over the year and also which product sells the most, whatever you can fit",
+    "expect": {
+      "xNameAnyOf": [
+        "month",
+        "product"
+      ]
+    }
+  },
+  {
+    "name": "E097 messy-vague-pronoun-best-channel-then-weekday",
+    "dataset": "traffic",
+    "prompt": "find the channel that brings in the most signups overall then show me how it does across the week",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "weekday",
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E098 messy-typo-temprature-sensorA-march",
+    "dataset": "readings",
+    "prompt": "can i get the temprature for senor A over thoses two weeks in marhc",
+    "expect": {
+      "xLenMax": 16,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E099 messy-everything-but-email-loose-threshold",
+    "dataset": "traffic",
+    "prompt": "ignore email completely and just show me the days where visits were like over a thousand or so, by channel",
+    "expect": {
+      "xNameAnyOf": [
+        "channel",
+        "date"
+      ],
+      "xLenMax": 4
+    },
+    "note": "only Organic+Social exceed 1000 after excluding Email -> 2 bars"
+  },
+  {
+    "name": "E100 messy-pie-share-of-revenue-north-only",
+    "dataset": "sales",
+    "prompt": "gimme a pie of how revenue splits across products but only up north",
+    "expect": {
+      "pieSlices": 3,
+      "typesAnyOf": [
+        "pie"
+      ]
+    }
+  },
+  {
+    "name": "E101 messy-runon-paid-q1-avg-by-weekday",
+    "dataset": "traffic",
+    "prompt": "so for paid traffic in the first quarter i basically want the average visits broken down by day of the week if that makes sense",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "weekday",
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E102 messy-highest-single-day-per-channel",
+    "dataset": "traffic",
+    "prompt": "whats the single best day each channel ever had for visits, one number per channel is fine",
+    "expect": {
+      "xLen": 4,
+      "seriesCount": 1,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E103 messy-vague-humidity-when-its-dry",
+    "dataset": "readings",
+    "prompt": "show humidity readings but only the dry ones below like 60ish, both sensors, over time",
+    "expect": {
+      "seriesCount": 2,
+      "xLenMax": 16,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E104 peak single-day visits per channel",
+    "dataset": "traffic",
+    "prompt": "show me the highest single-day visits for each channel",
+    "expect": {
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLen": 4,
+      "seriesCount": 1,
+      "typesAnyOf": [
+        "bar"
+      ]
+    }
+  },
+  {
+    "name": "E105 lowest temperature reading per sensor",
+    "dataset": "readings",
+    "prompt": "lowest temperature reading per sensor",
+    "expect": {
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "xLen": 2
+    }
+  },
+  {
+    "name": "E106 peak signups day value per channel",
+    "dataset": "traffic",
+    "prompt": "what's the peak signups on any single day for each channel?",
+    "expect": {
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLen": 4
+    }
+  },
+  {
+    "name": "E107 best monthly revenue per region as value",
+    "dataset": "sales",
+    "prompt": "for every region give me its best single month revenue",
+    "expect": {
+      "xNameAnyOf": [
+        "region"
+      ],
+      "xLen": 4
+    }
+  },
+  {
+    "name": "E108 max humidity per sensor with null measure",
+    "dataset": "readings",
+    "prompt": "highest humidity recorded by each sensor",
+    "expect": {
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "xLen": 2
+    }
+  },
+  {
+    "name": "E109 worst day visits per channel (min as value)",
+    "dataset": "traffic",
+    "prompt": "the worst single day of visits each channel ever had",
+    "expect": {
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLen": 4
+    }
+  },
+  {
+    "name": "E110 per-group extreme stacked with date range",
+    "dataset": "traffic",
+    "prompt": "highest single-day visits per channel but only looking at Q1",
+    "expect": {
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLen": 4,
+      "xLenMax": 4
+    }
+  },
+  {
+    "name": "E111 per-group max stacked with category filter",
+    "dataset": "sales",
+    "prompt": "best single-month revenue per product for the North region only",
+    "expect": {
+      "xNameAnyOf": [
+        "product"
+      ],
+      "xLen": 3
+    }
+  },
+  {
+    "name": "E112 per-group min temperature stacked with sensor filter",
+    "dataset": "readings",
+    "prompt": "lowest temperature reading for each sensor, Sensor A only please",
+    "expect": {
+      "xNameAnyOf": [
+        "sensor"
+      ],
+      "xLenMax": 2
+    }
+  },
+  {
+    "name": "E113 per-group max of two measures pie edge",
+    "dataset": "sales",
+    "prompt": "pie of each region's single best month of revenue",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ]
+    },
+    "note": "per-group best-month is unsupported; model renders a pie of months"
+  },
+  {
+    "name": "E114 messy run-on per-group peak and least",
+    "dataset": "traffic",
+    "prompt": "i wanna see for each channel what their biggest day of visits was, the peak not the average",
+    "expect": {
+      "xNameAnyOf": [
+        "channel"
+      ],
+      "xLen": 4
+    }
+  },
+  {
+    "name": "E115 per-group max units per product over threshold-ish phrasing",
+    "dataset": "sales",
+    "prompt": "the highest single month units sold per product across all regions",
+    "expect": {
+      "xNameAnyOf": [
+        "product"
+      ],
+      "xLen": 3
+    }
+  },
+  {
+    "name": "E116 pie-revenue-by-region-widget-only",
+    "dataset": "sales",
+    "prompt": "pie of total revenue by region for Widget only",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 4,
+      "xNameAnyOf": [
+        "region"
+      ]
+    }
+  },
+  {
+    "name": "E117 scatter-visits-vs-signups-organic",
+    "dataset": "traffic",
+    "prompt": "scatter of visits vs signups for Organic",
+    "expect": {
+      "typesAnyOf": [
+        "scatter"
+      ],
+      "xNameAnyOf": [
+        "visits",
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E118 scatter-colored-by-channel-q1",
+    "dataset": "traffic",
+    "prompt": "scatter plot of visits versus signups colored by channel in Q1",
+    "expect": {
+      "typesAnyOf": [
+        "scatter"
+      ],
+      "seriesCount": 4,
+      "xNameAnyOf": [
+        "visits",
+        "date"
+      ]
+    },
+    "note": "scatter xLen is point count, not day count"
+  },
+  {
+    "name": "E119 pie-conversion-rate-by-channel",
+    "dataset": "traffic",
+    "prompt": "pie of conversion rate (signups divided by visits) by channel",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 4,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E120 pie-visits-august-by-channel",
+    "dataset": "traffic",
+    "prompt": "pie of visits in August by channel",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 4,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E121 pie-revenue-by-product-non-north-excl-north",
+    "dataset": "sales",
+    "prompt": "pie chart of revenue by product for every region except North",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 3,
+      "xNameAnyOf": [
+        "product"
+      ]
+    }
+  },
+  {
+    "name": "E122 scatter-temp-vs-humidity-sensorA-excl-nulls",
+    "dataset": "readings",
+    "prompt": "scatter of temperature against humidity for Sensor A only",
+    "expect": {
+      "typesAnyOf": [
+        "scatter"
+      ],
+      "xNameAnyOf": [
+        "temperature",
+        "date"
+      ],
+      "xLenMax": 35
+    }
+  },
+  {
+    "name": "E123 scatter-units-vs-revenue-grouped-by-region-east-west",
+    "dataset": "sales",
+    "prompt": "scatter of units vs revenue grouped by region but only East and West",
+    "expect": {
+      "typesAnyOf": [
+        "scatter"
+      ],
+      "seriesCount": 2,
+      "xNameAnyOf": [
+        "units",
+        "month"
+      ]
+    }
+  },
+  {
+    "name": "E124 pie-signups-by-channel-visits-over-1k",
+    "dataset": "traffic",
+    "prompt": "pie of total signups by channel where visits are over 1k",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 2,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    },
+    "note": "only Organic+Social have visits>1k -> 2 slices"
+  },
+  {
+    "name": "E125 pie-revenue-top-region-by-product",
+    "dataset": "sales",
+    "prompt": "for the region with the most revenue, show a pie of revenue by product",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 3,
+      "xNameAnyOf": [
+        "product"
+      ]
+    }
+  },
+  {
+    "name": "E126 scatter-visits-vs-signups-non-email-week",
+    "dataset": "traffic",
+    "prompt": "scatter of visits vs signups for all channels except Email in the last week of March",
+    "expect": {
+      "typesAnyOf": [
+        "scatter"
+      ],
+      "xNameAnyOf": [
+        "visits",
+        "date"
+      ]
+    },
+    "note": "scatter point count; date window now applies via date-not-x fix"
+  },
+  {
+    "name": "E127 pie-avg-temperature-by-sensor-march-first-week",
+    "dataset": "readings",
+    "prompt": "pie of average temperature by sensor for the first week of March",
+    "expect": {
+      "typesAnyOf": [
+        "pie"
+      ],
+      "pieSlices": 2,
+      "xNameAnyOf": [
+        "sensor"
+      ]
+    }
+  },
+  {
+    "name": "E128 traffic-last-30-days",
+    "dataset": "traffic",
+    "prompt": "show me daily visits for the last 30 days",
+    "expect": {
+      "xLenMax": 35,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ]
+    }
+  },
+  {
+    "name": "E129 traffic-first-half-of-year-monthly",
+    "dataset": "traffic",
+    "prompt": "total visits per month for the first half of the year",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date",
+        "month"
+      ]
+    }
+  },
+  {
+    "name": "E130 traffic-second-quarter-by-channel",
+    "dataset": "traffic",
+    "prompt": "visits in the second quarter broken down by channel",
+    "expect": {
+      "xLenMax": 95,
+      "xNameAnyOf": [
+        "date",
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E131 traffic-summer-months",
+    "dataset": "traffic",
+    "prompt": "daily signups over the summer months only",
+    "expect": {
+      "xLenMax": 100,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "typesAnyOf": [
+        "line",
+        "bar"
+      ]
+    }
+  },
+  {
+    "name": "E132 traffic-year-to-date",
+    "dataset": "traffic",
+    "prompt": "year to date visits by channel",
+    "expect": {
+      "xNameAnyOf": [
+        "date",
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E133 traffic-week-of-specific-date",
+    "dataset": "traffic",
+    "prompt": "visits for the week of 2024-07-01",
+    "expect": {
+      "xLenMax": 10,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E134 traffic-march-and-april-only",
+    "dataset": "traffic",
+    "prompt": "show visits for March and April only",
+    "expect": {
+      "xLenMax": 65,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E135 traffic-q1-and-q3",
+    "dataset": "traffic",
+    "prompt": "compare total visits in Q1 and Q3",
+    "expect": {
+      "xLenMax": 200,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E136 traffic-last-week-of-march-by-channel",
+    "dataset": "traffic",
+    "prompt": "daily visits during the last week of March, split by channel",
+    "expect": {
+      "xLenMax": 10,
+      "xNameAnyOf": [
+        "date",
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E137 readings-first-week-temp-per-sensor",
+    "dataset": "readings",
+    "prompt": "average temperature for the first week of the data, one line per sensor",
+    "expect": {
+      "xLenMax": 9,
+      "xNameAnyOf": [
+        "date"
+      ],
+      "seriesCount": 2,
+      "typesAnyOf": [
+        "line"
+      ]
+    }
+  },
+  {
+    "name": "E138 traffic-trailing-90-days-organic",
+    "dataset": "traffic",
+    "prompt": "Organic visits over the trailing 90 days, weekly",
+    "expect": {
+      "xLenMax": 16,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E139 traffic-between-mid-may-mid-june-typo",
+    "dataset": "traffic",
+    "prompt": "vists from teh middle of may thru the middle of june, daily",
+    "expect": {
+      "xLenMax": 65,
+      "xNameAnyOf": [
+        "date"
+      ]
+    },
+    "note": "middle-of-month boundary unsupported; returns full May+June span"
+  },
+  {
+    "name": "E140 readings-march-1-to-march-7-humidity",
+    "dataset": "readings",
+    "prompt": "humidity from March 1 through March 7",
+    "expect": {
+      "xLenMax": 9,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E141 traffic-second-half-by-channel",
+    "dataset": "traffic",
+    "prompt": "back half of the year, total visits by channel",
+    "expect": {
+      "xLenMax": 200,
+      "xNameAnyOf": [
+        "date",
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E142 top5-days-visits-organic-q1",
+    "dataset": "traffic",
+    "prompt": "show me the top 5 days by visits for Organic in Q1",
+    "expect": {
+      "xLenMax": 5,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E143 bottom3-channels-by-signups",
+    "dataset": "traffic",
+    "prompt": "bottom 3 channels by total signups",
+    "expect": {
+      "xLenMax": 3,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "E144 top10-days-by-conversion-rate",
+    "dataset": "traffic",
+    "prompt": "top 10 days by conversion rate (signups divided by visits)",
+    "expect": {
+      "xLenMax": 10,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E145 3-busiest-weekdays",
+    "dataset": "traffic",
+    "prompt": "what are the 3 busiest weekdays by average visits?",
+    "expect": {
+      "xLenMax": 3,
+      "xNameAnyOf": [
+        "weekday",
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E146 worst5-days-signups-august",
+    "dataset": "traffic",
+    "prompt": "the worst 5 days for signups in August",
+    "expect": {
+      "xLenMax": 5,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E147 top3-regions-revenue-then-q1-only-stacked",
+    "dataset": "sales",
+    "prompt": "take the top 3 regions by revenue and only count Q1 months for them",
+    "expect": {
+      "xLenMax": 3,
+      "xNameAnyOf": [
+        "region"
+      ]
+    }
+  },
+  {
+    "name": "E148 bottom2-products-by-avg-units-widget-excluded-paid",
+    "dataset": "sales",
+    "prompt": "bottom 2 products by average units sold, excluding the West region",
+    "expect": {
+      "xLenMax": 2,
+      "xNameAnyOf": [
+        "product"
+      ]
+    }
+  },
+  {
+    "name": "E149 top7-days-visits-non-organic",
+    "dataset": "traffic",
+    "prompt": "give me the 7 highest-visit days across all channels except Organic",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E150 top4-weekdays-signups-over-20-q3",
+    "dataset": "traffic",
+    "prompt": "the 4 weekdays with the most signups, only counting days where signups were over 20, in Q3",
+    "expect": {
+      "xLenMax": 4,
+      "xNameAnyOf": [
+        "weekday",
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E151 top5-sensorB-temp-readings-march-first-week",
+    "dataset": "readings",
+    "prompt": "top 5 highest temperature readings for Sensor B in the first week of March",
+    "expect": {
+      "xLenMax": 7,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E152 messy-top3-then-bottom-runon",
+    "dataset": "traffic",
+    "prompt": "i wanna see the top 3 days by visits for Paid but only after july 1st pls",
+    "expect": {
+      "xLenMax": 3,
+      "xNameAnyOf": [
+        "date"
+      ]
+    }
+  },
+  {
+    "name": "E153 top2-channels-by-conversion-rate-derived",
+    "dataset": "traffic",
+    "prompt": "which 2 channels have the best signup-to-visit ratio overall",
+    "expect": {
+      "xLenMax": 2,
+      "xNameAnyOf": [
+        "channel"
+      ]
+    }
+  }
+]

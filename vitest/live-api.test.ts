@@ -2,10 +2,6 @@ import { test, expect, vi, beforeAll, afterAll } from 'vitest'
 import { generateOption } from '../src/ai'
 import { datasets } from '../src/data'
 
-// LIVE end-to-end check of the part nothing else can verify: does the cloud model,
-// given a DE-IDENTIFIED prompt, still choose the right ChartSpec? Opt-in only:
-//   set -a; . ./.env; set +a; RUN_LIVE_API=1 npx vitest run vitest/live-api.test.ts
-// Never runs in the normal suite (gated on RUN_LIVE_API). Uses the Claude key from .env.
 const KEY = process.env.VITE_CLAUDE_API_KEY ?? ''
 const LIVE = process.env.RUN_LIVE_API === '1' && KEY.length > 0
 
@@ -120,15 +116,12 @@ test.skipIf(!LIVE)('LIVE: Claude picks the right spec through the de-identificat
       line = `THREW  ${c.name}  ::  ${(e as Error).message}`
     }
     rows.push(line)
-    // be gentle with rate limits
     await new Promise((res) => setTimeout(res, 1200))
   }
 
   // eslint-disable-next-line no-console
   console.log(`\n=== LIVE CLAUDE PIPELINE (${CASES.length} prompts) ===\n${rows.join('\n')}\n=== pipeline ok: ${CASES.length - pipelineFails}/${CASES.length} | spec correct: ${judgmentPass}/${CASES.length} ===\n`)
 
-  // the PIPELINE must work end-to-end for every prompt (de-id -> model -> detok -> render)
   expect(pipelineFails).toBe(0)
-  // the model's JUDGMENT should be right for the clear majority (model is non-deterministic)
   expect(judgmentPass).toBeGreaterThanOrEqual(Math.ceil(CASES.length * 0.7))
 }, 180000)

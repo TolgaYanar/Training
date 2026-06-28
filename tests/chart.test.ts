@@ -150,7 +150,7 @@ test('two measures on a LINE: dual y-axis + yAxisIndex (each line tracks its own
 test('two measures on a BAR: single shared y-axis (no dual-axis deception)', () => {
   const o = buildChartOption({ chartType: 'bar', x: 'ch', measures: ['s', 'v'], aggregate: 'sum' }, mm)
   assert.equal(o.series.length, 2)
-  assert.ok(!Array.isArray(o.yAxis)) // one honest axis, so a small measure reads as small
+  assert.ok(!Array.isArray(o.yAxis))
   assert.equal(o.series[0].yAxisIndex, undefined)
   assert.equal(o.series[1].yAxisIndex, undefined)
   assert.ok('legend' in o)
@@ -236,7 +236,7 @@ test('grouped bar: one bar series per group', () => {
 test('a MISSING aggregate defaults to sum, so bucketed/grouped rows total (not first-row)', () => {
   const r = [{ k: 'A', v: 10 }, { k: 'A', v: 20 }, { k: 'B', v: 5 }]
   const o = buildChartOption({ chartType: 'bar', x: 'k', measure: 'v' } as unknown as Parameters<typeof buildChartOption>[0], r)
-  assert.deepEqual(o.series[0].data, [30, 5]) // A summed to 30, not 10 (first row)
+  assert.deepEqual(o.series[0].data, [30, 5])
 })
 
 test('aggregate none with multiple rows per x returns the first present value', () => {
@@ -325,8 +325,55 @@ test('date-part filter: weekday (0=Sun..6=Sat) keeps the Saturday', () => {
   assert.deepEqual(o.xAxis.data, ['2024-02-10'])
 })
 
-test('filter matching no rows throws', () => {
+test('filter matching no rows throws by default', () => {
   assert.throws(() => buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'cat', in: ['Z'] } }, frows), /matched no rows/)
+})
+
+test('filter matching no rows renders an empty chart when emptyOk', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'cat', in: ['Z'] } }, frows, true)
+  assert.equal(o.series.length, 1)
+  assert.deepEqual(o.series[0].data, [])
+  assert.deepEqual(o.xAxis.data, [])
+})
+
+test('categorical bar count keeps zero categories (comparison shows a 0 bar)', () => {
+  const rows = [{ cat: 'A', v: 10 }, { cat: 'B', v: 1 }, { cat: 'C', v: 10 }]
+  const o = buildChartOption({ chartType: 'bar', x: 'cat', aggregate: 'count', filter: { column: 'v', op: '>', value: 5 } }, rows)
+  assert.deepEqual(o.xAxis.data, ['A', 'B', 'C'])
+  assert.deepEqual(o.series[0].data, [1, 0, 1])
+})
+
+test('categorical bar sum does NOT zero-fill (only count comparisons do)', () => {
+  const rows = [{ cat: 'A', v: 10 }, { cat: 'B', v: 1 }, { cat: 'C', v: 20 }]
+  const o = buildChartOption({ chartType: 'bar', x: 'cat', measure: 'v', aggregate: 'sum', filter: { column: 'v', op: '>', value: 5 } }, rows)
+  assert.deepEqual(o.xAxis.data, ['A', 'C'])
+  assert.deepEqual(o.series[0].data, [10, 20])
+})
+
+test('an explicit filter on the x column still removes those categories (not zero-filled)', () => {
+  const rows = [{ cat: 'A', v: 10 }, { cat: 'B', v: 1 }, { cat: 'C', v: 20 }]
+  const o = buildChartOption({ chartType: 'bar', x: 'cat', aggregate: 'count', filters: [{ column: 'cat', in: ['A', 'C'] }, { column: 'v', op: '>', value: 5 }] }, rows)
+  assert.deepEqual(o.xAxis.data, ['A', 'C'])
+  assert.deepEqual(o.series[0].data, [1, 1])
+})
+
+test('count zero-fill applies to a line chart too (keeps the 0 category)', () => {
+  const rows = [{ cat: 'A', v: 10 }, { cat: 'B', v: 1 }, { cat: 'C', v: 10 }]
+  const o = buildChartOption({ chartType: 'line', x: 'cat', aggregate: 'count', filter: { column: 'v', op: '>', value: 5 } }, rows)
+  assert.deepEqual(o.xAxis.data, ['A', 'B', 'C'])
+  assert.deepEqual(o.series[0].data, [1, 0, 1])
+})
+
+test('count zero-fill does NOT apply when x is a date axis', () => {
+  const rows = [{ date: '2024-01-01', v: 10 }, { date: '2024-01-02', v: 1 }, { date: '2024-01-03', v: 10 }]
+  const o = buildChartOption({ chartType: 'bar', x: 'date', aggregate: 'count', filter: { column: 'v', op: '>', value: 5 } }, rows)
+  assert.deepEqual(o.xAxis.data, ['2024-01-01', '2024-01-03'])
+})
+
+test('avg is not zero-filled (no meaningful 0 for an empty average)', () => {
+  const rows = [{ cat: 'A', v: 10 }, { cat: 'B', v: 1 }, { cat: 'C', v: 20 }]
+  const o = buildChartOption({ chartType: 'bar', x: 'cat', measure: 'v', aggregate: 'avg', filter: { column: 'v', op: '>', value: 5 } }, rows)
+  assert.deepEqual(o.xAxis.data, ['A', 'C'])
 })
 
 test('filter on unknown column throws', () => {
@@ -340,7 +387,7 @@ test('empty filter.in is ignored', () => {
 
 test('filters[] are AND-combined (category value AND date-part)', () => {
   const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filters: [{ column: 'cat', in: ['A'] }, { column: 'date', datePart: 'month', in: [1] }] }, frows)
-  assert.deepEqual(o.xAxis.data, ['2024-01-10']) // cat A AND January only
+  assert.deepEqual(o.xAxis.data, ['2024-01-10'])
   assert.deepEqual(o.series[0].data, [1])
 })
 
@@ -357,8 +404,8 @@ test('comparison filter + count: days a channel exceeds a threshold, one bar, no
   ]
   const spec = { chartType: 'bar', x: 'ch', aggregate: 'count', filters: [{ column: 'ch', in: ['Organic'] }, { column: 'visits', op: '>', value: 605 }] } as unknown as ChartSpec
   const o = buildChartOption(spec, tr)
-  assert.deepEqual(o.xAxis.data, ['Organic']) // only Organic kept
-  assert.deepEqual(o.series[0].data, [2]) // 700 and 800 exceed 605; 500 and Paid excluded
+  assert.deepEqual(o.xAxis.data, ['Organic'])
+  assert.deepEqual(o.series[0].data, [2])
   assert.equal(o.series[0].name, 'count')
 })
 
@@ -371,14 +418,91 @@ test('comparison operators <, <=, ==, != filter a numeric column', () => {
 
 test('comparison works for a very large threshold and tolerates it arriving in `in`', () => {
   const tr = [{ k: 'A', v: 605000 }, { k: 'A', v: 700000 }, { k: 'A', v: 100 }]
-  // value path
   assert.deepEqual(buildChartOption({ chartType: 'bar', x: 'k', measure: 'v', aggregate: 'count', filter: { column: 'v', op: '>', value: 605000 } }, tr).series[0].data, [1])
-  // model put the (detokenized) threshold in `in` instead of value — still filters
   const viaIn = { chartType: 'bar', x: 'k', aggregate: 'count', filter: { column: 'v', op: '>=', in: [605000] } } as unknown as ChartSpec
   assert.deepEqual(buildChartOption(viaIn, tr).series[0].data, [2])
 })
 
-test('filters[] that narrow to zero rows throw', () => {
+test('comparison tolerates a comma-grouped threshold arriving as a string in `in`', () => {
+  const tr = [{ k: 'A', v: 2000 }, { k: 'A', v: 1000 }, { k: 'A', v: 1500 }]
+  const spec = { chartType: 'bar', x: 'k', aggregate: 'count', filter: { column: 'v', op: '>', in: ['1,500'] } } as unknown as ChartSpec
+  assert.deepEqual(buildChartOption(spec, tr).series[0].data, [1])
+})
+
+test('a series equal to the x-axis is ignored (no degenerate per-x series)', () => {
+  const tr = [{ ch: 'A', u: 1, r: 10 }, { ch: 'B', u: 2, r: 20 }]
+  const spec = { chartType: 'bar', x: 'ch', series: 'ch', measures: ['u', 'r'], aggregate: 'sum' } as unknown as ChartSpec
+  const o = buildChartOption(spec, tr)
+  assert.equal(o.series.length, 2)
+  assert.deepEqual(o.series.map((s) => s.name), ['u', 'r'])
+})
+
+test('a series equal to the x-axis with a derived ratio collapses to one series', () => {
+  const tr = [{ ch: 'A', n: 1, d: 10 }, { ch: 'B', n: 2, d: 20 }]
+  const spec = { chartType: 'bar', x: 'ch', series: 'ch', aggregate: 'sum', derived: { name: 'rate', numerator: 'n', denominator: 'd' } } as unknown as ChartSpec
+  assert.equal(buildChartOption(spec, tr).series.length, 1)
+})
+
+test('groupByPart weekday collapses the date axis into ordered weekday labels', () => {
+  const tr = [
+    { date: '2024-01-01', v: 10 },
+    { date: '2024-01-02', v: 20 },
+    { date: '2024-01-07', v: 5 },
+    { date: '2024-01-08', v: 30 },
+  ]
+  const spec = { chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', groupByPart: 'weekday' } as unknown as ChartSpec
+  const o = buildChartOption(spec, tr)
+  assert.deepEqual(o.xAxis.data, ['Sun', 'Mon', 'Tue'])
+  assert.equal(o.series[0].data[o.xAxis.data.indexOf('Mon')], 40)
+})
+
+test('groupByPart month collapses the date axis into Jan..Dec order', () => {
+  const tr = [{ date: '2024-03-05', v: 1 }, { date: '2024-01-10', v: 2 }, { date: '2024-03-20', v: 3 }]
+  const spec = { chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', groupByPart: 'month' } as unknown as ChartSpec
+  assert.deepEqual(buildChartOption(spec, tr).xAxis.data, ['Jan', 'Mar'])
+})
+
+test('a date range filter keeps only dates within [from, to]', () => {
+  const tr = [
+    { date: '2024-08-31', v: 1 },
+    { date: '2024-09-03', v: 2 },
+    { date: '2024-10-15', v: 3 },
+    { date: '2024-12-01', v: 4 },
+    { date: '2024-12-02', v: 5 },
+  ]
+  const spec = { chartType: 'line', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'date', from: '2024-09-03', to: '2024-12-01' } } as unknown as ChartSpec
+  assert.deepEqual(buildChartOption(spec, tr).xAxis.data, ['2024-09-03', '2024-10-15', '2024-12-01'])
+})
+
+test('an open-ended date range (only from) keeps dates >= from', () => {
+  const tr = [{ date: '2024-08-31', v: 1 }, { date: '2024-09-03', v: 2 }]
+  const spec = { chartType: 'line', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'date', from: '2024-09-01' } } as unknown as ChartSpec
+  assert.deepEqual(buildChartOption(spec, tr).xAxis.data, ['2024-09-03'])
+})
+
+test('series + measures draws one bar series per group and measure', () => {
+  const tr = [
+    { m: 'Jan', p: 'A', u: 1, r: 10 },
+    { m: 'Jan', p: 'B', u: 2, r: 20 },
+    { m: 'Feb', p: 'A', u: 3, r: 30 },
+    { m: 'Feb', p: 'B', u: 4, r: 40 },
+  ]
+  const o = buildChartOption({ chartType: 'bar', x: 'm', series: 'p', measures: ['u', 'r'], aggregate: 'sum' }, tr)
+  assert.equal(o.series.length, 4)
+  assert.deepEqual(o.series.map((s) => s.name), ['A · u', 'A · r', 'B · u', 'B · r'])
+  assert.deepEqual(o.series[0].data, [1, 3])
+  assert.deepEqual(o.series[1].data, [10, 30])
+})
+
+test('series + two measures as a line puts each measure on its own y-axis', () => {
+  const tr = [{ m: 'Jan', p: 'A', u: 1, r: 10 }, { m: 'Feb', p: 'A', u: 3, r: 30 }]
+  const o = buildChartOption({ chartType: 'line', x: 'm', series: 'p', measures: ['u', 'r'], aggregate: 'sum' }, tr)
+  assert.ok(Array.isArray(o.yAxis) && o.yAxis.length === 2)
+  assert.equal(o.series.find((s) => s.name === 'A · u').yAxisIndex, 0)
+  assert.equal(o.series.find((s) => s.name === 'A · r').yAxisIndex, 1)
+})
+
+test('filters[] that narrow to zero rows throw by default', () => {
   assert.throws(() => buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filters: [{ column: 'cat', in: ['A'] }, { column: 'cat', in: ['B'] }] }, frows), /matched no rows/)
 })
 
@@ -393,7 +517,7 @@ test('bucket is skipped when ANY filter pins a specific day', () => {
     { date: '2024-02-10', cat: 'A', v: 3 },
   ]
   const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', bucket: 'month', filters: [{ column: 'cat', in: ['A'] }, { column: 'date', datePart: 'day', in: [10] }] }, tenths)
-  assert.deepEqual(o.xAxis.data, ['2024-01-10', '2024-02-10']) // real dates kept, not month buckets
+  assert.deepEqual(o.xAxis.data, ['2024-01-10', '2024-02-10'])
 })
 
 const drows = [
