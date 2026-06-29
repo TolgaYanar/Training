@@ -19,6 +19,10 @@ async function fetchRetry(url: string, init: RequestInit): Promise<Response> {
   return res
 }
 
+function llmProxyUrl(): string {
+  return (import.meta.env.VITE_LLM_PROXY ?? '').trim()
+}
+
 async function claudeComplete(system: string, user: Outbound, key: string, schema?: object): Promise<string> {
   const body: Record<string, unknown> = {
     model: CLAUDE_MODEL,
@@ -28,14 +32,17 @@ async function claudeComplete(system: string, user: Outbound, key: string, schem
     messages: [{ role: 'user', content: user }],
   }
   if (schema) body.output_config = { format: { type: 'json_schema', schema } }
-  const res = await fetchRetry('https://api.anthropic.com/v1/messages', {
+  const proxy = llmProxyUrl()
+  const res = await fetchRetry(proxy || 'https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
+    headers: proxy
+      ? { 'content-type': 'application/json' }
+      : {
+          'content-type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
     body: JSON.stringify(body),
   })
   if (!res.ok) throw new Error(`Claude ${res.status}: ${await res.text()}`)
@@ -75,7 +82,7 @@ export function deidentify(prompt: string, rows: Row[]): { message: Outbound; to
 export async function generateOption(req: GenerateRequest): Promise<GenerateResult> {
   const sent: SentRequest[] = []
   const key = import.meta.env.VITE_CLAUDE_API_KEY ?? ''
-  if (!key) return { status: 'failed', error: 'Missing VITE_CLAUDE_API_KEY in .env', raw: '', sent }
+  if (!key && !llmProxyUrl()) return { status: 'failed', error: 'Missing VITE_CLAUDE_API_KEY in .env', raw: '', sent }
   const { message, toReal } = deidentify(req.prompt, req.rows)
 
   let raw: string

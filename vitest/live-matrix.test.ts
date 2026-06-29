@@ -4,10 +4,11 @@ import { generateOption } from '../src/ai'
 import { datasets } from '../src/data'
 
 const KEY = process.env.VITE_CLAUDE_API_KEY ?? ''
+const PROXY = process.env.VITE_LLM_PROXY ?? ''
 const CASES_PATH = process.env.LIVE_CASES ?? ''
-const LIVE = process.env.RUN_LIVE_API === '1' && KEY.length > 0 && CASES_PATH.length > 0
+const LIVE = process.env.RUN_LIVE_API === '1' && (KEY.length > 0 || PROXY.length > 0) && CASES_PATH.length > 0
 
-beforeAll(() => { if (LIVE) vi.stubEnv('VITE_CLAUDE_API_KEY', KEY) })
+beforeAll(() => { if (LIVE) { vi.stubEnv('VITE_CLAUDE_API_KEY', KEY); vi.stubEnv('VITE_LLM_PROXY', PROXY) } })
 afterAll(() => vi.unstubAllEnvs())
 
 const rowsOf = (id: string) => datasets.find((d) => d.id === id)!.rows

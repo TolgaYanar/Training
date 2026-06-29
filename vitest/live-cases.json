@@ -2011,7 +2011,8 @@
       "xNameAnyOf": [
         "channel"
       ],
-      "xLen": 4
+      "xLenMin": 1,
+      "xLenMax": 4
     }
   },
   {

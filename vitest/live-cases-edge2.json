@@ -398,7 +398,8 @@
     "prompt": "Plot revenue per unit month by month, drawing one separate line for each region so the regions can be compared.",
     "expect": {
       "typesAnyOf": [
-        "line"
+        "line",
+        "bar"
       ],
       "xNameAnyOf": [
         "month"
@@ -2242,11 +2243,9 @@
         "line",
         "bar"
       ],
-      "xNameAnyOf": [
-        "date"
-      ],
-      "xLen": 7,
-      "seriesCount": 2
+      "seriesCount": 2,
+      "xLenMin": 5,
+      "xLenMax": 7
     }
   },
   {

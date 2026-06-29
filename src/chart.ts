@@ -447,8 +447,30 @@ function resolvePick(spec: ChartSpec, rows: Row[]): ChartSpec {
   return { ...rest, filters: [...(Array.isArray(rest.filters) ? rest.filters : []), pickFilter] }
 }
 
+function isNumericColumn(rows: Row[], col: string): boolean {
+  let saw = false
+  for (const r of rows) {
+    const v = r[col]
+    if (!present(v)) continue
+    if (typeof v !== 'number') return false
+    saw = true
+  }
+  return saw
+}
+
+function fixMeasureOnX(spec: ChartSpec, rows: Row[]): ChartSpec {
+  if (spec.chartType === 'scatter' || spec.chartType === 'pie') return spec
+  if (spec.derived || (Array.isArray(spec.measures) && spec.measures.length > 0)) return spec
+  if (typeof spec.x !== 'string' || !isNumericColumn(rows, spec.x)) return spec
+  if (typeof spec.series === 'string' && spec.series.length > 0 && !isNumericColumn(rows, spec.series)) {
+    return { ...spec, x: spec.series, measure: typeof spec.measure === 'string' ? spec.measure : spec.x, series: undefined }
+  }
+  return spec
+}
+
 export function buildChartOption(spec: ChartSpec, rows: Row[], emptyOk = false): EChartsOption {
   if (!spec.aggregate) spec = { ...spec, aggregate: 'sum' }
+  spec = fixMeasureOnX(spec, rows)
   if (spec.pick) spec = resolvePick(spec, rows)
   const columns = new Set(Object.keys(rows[0] ?? {}))
   const hasMeasures = Array.isArray(spec.measures) && spec.measures.length > 0

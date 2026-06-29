@@ -390,6 +390,21 @@ test('avg is not zero-filled (no meaningful 0 for an empty average)', () => {
   assert.deepEqual(o.xAxis.data, ['A', 'C'])
 })
 
+test('a measure on the x-axis of a bar is swapped with the categorical series', () => {
+  const r = [{ region: 'N', product: 'W', units: 10 }, { region: 'S', product: 'W', units: 5 }, { region: 'N', product: 'G', units: 8 }]
+  const o = buildChartOption({ chartType: 'bar', x: 'units', series: 'product', aggregate: 'sum' }, r)
+  assert.equal(o.xAxis.name, 'product')
+  assert.deepEqual(o.xAxis.data, ['W', 'G'])
+  assert.deepEqual(o.series[0].data, [15, 8])
+  assert.equal(o.series.length, 1)
+})
+
+test('measure-on-x fix is a no-op when x is already a dimension', () => {
+  const r = [{ region: 'N', units: 10 }, { region: 'S', units: 5 }]
+  const o = buildChartOption({ chartType: 'bar', x: 'region', measure: 'units', aggregate: 'sum' }, r)
+  assert.deepEqual(o.xAxis.data, ['N', 'S'])
+})
+
 test('filter on unknown column throws', () => {
   assert.throws(() => buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'nope', in: ['A'] } }, frows), /unknown column/)
 })
