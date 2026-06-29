@@ -17,6 +17,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllEnvs()
   vi.unstubAllGlobals()
+  vi.useRealTimers()
 })
 
 test('success on first try returns a built option', async () => {
@@ -46,6 +47,33 @@ test('both attempts bad -> failed with the column error', async () => {
   if (r.status === 'failed') expect(r.error).toMatch(/unknown column/)
 })
 
+test('a single prose refusal is recovered by the schema-free repair', async () => {
+  const f = vi.fn().mockResolvedValueOnce(claude("I'm sorry, I don't have data for that request.")).mockResolvedValueOnce(claude(good))
+  vi.stubGlobal('fetch', f)
+  const r = await generateOption({ prompt: 'x', rows })
+  expect(r.status).toBe('ok')
+  if (r.status === 'ok') expect(r.repaired).toBe(true)
+  expect(f).toHaveBeenCalledTimes(2)
+  expect(JSON.parse(String((f.mock.calls[0][1] as RequestInit).body)).output_config).toBeUndefined()
+  expect(JSON.parse(String((f.mock.calls[1][1] as RequestInit).body)).output_config).toBeUndefined()
+})
+
+test('a double prose refusal is recovered by a final forced-JSON attempt', async () => {
+  const f = vi.fn()
+    .mockResolvedValueOnce(claude("I'm sorry, I can't do that."))
+    .mockResolvedValueOnce(claude('I still cannot produce that chart.'))
+    .mockResolvedValueOnce(claude(good))
+  vi.stubGlobal('fetch', f)
+  const r = await generateOption({ prompt: 'x', rows })
+  expect(r.status).toBe('ok')
+  if (r.status === 'ok') expect(r.repaired).toBe(true)
+  expect(f).toHaveBeenCalledTimes(3)
+  const bodies = f.mock.calls.map((c) => JSON.parse(String((c[1] as RequestInit).body)))
+  expect(bodies[0].output_config).toBeUndefined()
+  expect(bodies[1].output_config).toBeUndefined()
+  expect(bodies[2].output_config).toBeDefined()
+})
+
 test('missing key -> failed, fetch never called', async () => {
   vi.stubEnv('VITE_CLAUDE_API_KEY', '')
   const f = vi.fn()
@@ -63,11 +91,16 @@ test('HTTP 500 surfaces as failed', async () => {
   if (r.status === 'failed') expect(r.error).toMatch(/Claude 500/)
 })
 
-test('HTTP 429 surfaces as failed', async () => {
-  vi.stubGlobal('fetch', vi.fn(async () => claude('{"error":{"message":"rate limited"}}', false, 429)))
-  const r = await generateOption({ prompt: 'x', rows })
+test('HTTP 429 is retried with backoff, then surfaces as failed', async () => {
+  vi.useFakeTimers()
+  const f = vi.fn(async () => claude('{"error":{"message":"rate limited"}}', false, 429))
+  vi.stubGlobal('fetch', f)
+  const p = generateOption({ prompt: 'x', rows })
+  await vi.runAllTimersAsync()
+  const r = await p
   expect(r.status).toBe('failed')
   if (r.status === 'failed') expect(r.error).toMatch(/Claude 429/)
+  expect(f).toHaveBeenCalledTimes(4)
 })
 
 test('spec wrapped in code fences is still parsed', async () => {
@@ -210,10 +243,9 @@ test('"for each quarter / each month" is recognized as a coarser period (model b
   expect(xAxisOf(await generateOption({ prompt: 'total visits for each month', rows: traffic() })).length).toBe(12)
 })
 
-test('group-by-weekday is inferred when the prompt asks for it (closes the cyclic-grouping gap)', async () => {
-  const modelSpec = specOf({ chartType: 'bar', x: 'col_0', measure: 'col_2', aggregate: 'avg' })
-  vi.stubGlobal('fetch', vi.fn(async () => claude(modelSpec)))
-  const xs = xAxisOf(await generateOption({ prompt: 'average visits for each day of the week', rows: traffic() }))
+test('the model emits groupByPart weekday -> cyclic 7-point breakdown', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'bar', x: 'col_0', measure: 'col_2', aggregate: 'avg', groupByPart: 'weekday' }))))
+  const xs = xAxisOf(await generateOption({ prompt: 'average visits by weekday', rows: traffic() }))
   expect(xs.length).toBe(7)
   expect(xs).toContain('Mon')
 })
@@ -308,7 +340,7 @@ test('argmax phrasing: "which channel has the highest average visits" narrows to
 })
 
 test('exclusion: "all channels except Email" keeps the other three', async () => {
-  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'bar', x: 'col_1', measure: 'col_2', aggregate: 'sum' }))))
+  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'bar', x: 'col_1', measure: 'col_2', aggregate: 'sum', filters: [{ column: 'col_1', notIn: ['val_3'] }] }))))
   const r = await generateOption({ prompt: 'total visits by channel for all channels except Email', rows: traffic() })
   expect(r.status).toBe('ok')
   if (r.status === 'ok') {
@@ -319,7 +351,7 @@ test('exclusion: "all channels except Email" keeps the other three', async () =>
 })
 
 test('exclusion: "excluding weekends" keeps only weekday rows', async () => {
-  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'line', x: 'col_0', measure: 'col_2', aggregate: 'sum' }))))
+  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'line', x: 'col_0', measure: 'col_2', aggregate: 'sum', filters: [{ column: 'col_0', datePart: 'weekday', in: [1, 2, 3, 4, 5] }] }))))
   const xs = xAxisOf(await generateOption({ prompt: 'daily visits excluding weekends', rows: traffic() }))
   expect(xs.length).toBeGreaterThan(250)
   expect(xs.length).toBeLessThan(270)
@@ -327,30 +359,18 @@ test('exclusion: "excluding weekends" keeps only weekday rows', async () => {
 })
 
 test('weekday FILTER: "restricted to weekdays ... day by day" keeps individual weekday dates (not a 7-point cyclic collapse)', async () => {
-  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'line', x: 'col_0', measure: 'col_2', aggregate: 'sum' }))))
+  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'line', x: 'col_0', measure: 'col_2', aggregate: 'sum', filters: [{ column: 'col_0', datePart: 'quarter', in: [1, 2] }, { column: 'col_0', datePart: 'weekday', in: [1, 2, 3, 4, 5] }] }))))
   const xs = xAxisOf(await generateOption({ prompt: 'daily visits restricted to weekdays in the first half of the year, show the trend day by day', rows: traffic() }))
   expect(xs.length).toBe(130)
   for (const d of xs) { const wd = new Date(d + 'T00:00:00Z').getUTCDay(); expect(wd === 0 || wd === 6).toBe(false) }
 })
 
 test('weekend FILTER: "only on weekends" keeps just Saturday/Sunday dates', async () => {
-  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'line', x: 'col_0', measure: 'col_2', aggregate: 'sum' }))))
+  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'line', x: 'col_0', measure: 'col_2', aggregate: 'sum', filters: [{ column: 'col_0', datePart: 'weekday', in: [0, 6] }] }))))
   const xs = xAxisOf(await generateOption({ prompt: 'daily visits only on weekends over the year', rows: traffic() }))
   expect(xs.length).toBeGreaterThan(95)
   expect(xs.length).toBeLessThan(110)
   for (const d of xs) { const wd = new Date(d + 'T00:00:00Z').getUTCDay(); expect(wd === 0 || wd === 6).toBe(true) }
-})
-
-test('cyclic weekday STILL works: "visits by weekday" collapses to 7 points', async () => {
-  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'bar', x: 'col_0', measure: 'col_2', aggregate: 'avg' }))))
-  const xs = xAxisOf(await generateOption({ prompt: 'average visits by weekday', rows: traffic() }))
-  expect(xs.length).toBe(7)
-})
-
-test('"weekends vs weekdays" comparison groups by weekday (7 buckets, all days present, no filter)', async () => {
-  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'bar', x: 'col_0', measure: 'col_2', aggregate: 'avg', filters: [{ column: 'col_1', in: ['Organic'] }] }))))
-  const xs = xAxisOf(await generateOption({ prompt: 'show how Organic is doing on weekends vs weekdays, visits wise', rows: traffic() }))
-  expect(xs.length).toBe(7)
 })
 
 test('engine counts rows per x when the model asks for aggregate "count" (the count decision itself is the model\'s job)', async () => {
@@ -362,39 +382,6 @@ test('engine counts rows per x when the model asks for aggregate "count" (the co
     expect(o.xAxis.data).toEqual(['Organic', 'Paid', 'Social', 'Email'])
     expect(o.series[0].data).toEqual([29, 21, 29, 0])
   }
-})
-
-test('count classifier: a "total" spec with a threshold gets flipped to count when the model decides "count"', async () => {
-  const main = specOf({ chartType: 'bar', x: 'col_1', measure: 'col_2', aggregate: 'sum', filters: [{ column: 'col_0', datePart: 'month', in: [2] }, { column: 'col_2', op: '>', value: 600 }] })
-  const f = vi.fn().mockResolvedValueOnce(claude(main)).mockResolvedValueOnce(claude('{"decision":"count"}'))
-  vi.stubGlobal('fetch', f)
-  const r = await generateOption({ prompt: 'amount of channels, separately, its visits are more than 600 in February', rows: traffic() })
-  expect(r.status).toBe('ok')
-  if (r.status === 'ok') {
-    const o = r.option as { xAxis: { data: string[] }; series: { data: number[] }[] }
-    expect(o.xAxis.data).toEqual(['Organic', 'Paid', 'Social', 'Email'])
-    expect(o.series[0].data).toEqual([29, 21, 29, 0])
-  }
-  expect(f).toHaveBeenCalledTimes(2)
-})
-
-test('count classifier: a genuine total stays a sum when the model decides "total"', async () => {
-  const main = specOf({ chartType: 'bar', x: 'col_1', measure: 'col_2', aggregate: 'sum', filters: [{ column: 'col_0', datePart: 'month', in: [2] }, { column: 'col_2', op: '>', value: 600 }] })
-  const f = vi.fn().mockResolvedValueOnce(claude(main)).mockResolvedValueOnce(claude('{"decision":"total"}'))
-  vi.stubGlobal('fetch', f)
-  const r = await generateOption({ prompt: 'total of the high February visit days by channel', rows: traffic() })
-  expect(r.status).toBe('ok')
-  if (r.status === 'ok') expect((r.option as { series: { data: number[] }[] }).series[0].data).toEqual([34253, 16223, 27404])
-  expect(f).toHaveBeenCalledTimes(2)
-})
-
-test('count classifier is NOT invoked without a threshold condition (plain total -> one call only)', async () => {
-  const main = specOf({ chartType: 'bar', x: 'col_1', measure: 'col_2', aggregate: 'sum', filters: [{ column: 'col_0', datePart: 'month', in: [2] }] })
-  const f = vi.fn().mockResolvedValueOnce(claude(main))
-  vi.stubGlobal('fetch', f)
-  const r = await generateOption({ prompt: 'total February visits by channel', rows: traffic() })
-  expect(r.status).toBe('ok')
-  expect(f).toHaveBeenCalledTimes(1)
 })
 
 test('single-day range: "just on 2024-08-15" filters to that one date', async () => {
@@ -413,8 +400,8 @@ test('single-day range: "on just 2024-02-05" works in either word order', async 
   expect(xs).toEqual(['2024-02-05'])
 })
 
-test('relative window: "summer months" -> Jun-Aug only', async () => {
-  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'line', x: 'col_0', measure: 'col_2', aggregate: 'sum' }))))
+test('the AI emits summer as a month datePart filter -> Jun-Aug only', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'line', x: 'col_0', measure: 'col_2', aggregate: 'sum', filters: [{ column: 'col_0', datePart: 'month', in: [6, 7, 8] }] }))))
   const xs = xAxisOf(await generateOption({ prompt: 'daily visits over the summer months', rows: traffic() }))
   expect(xs.length).toBe(92)
   for (const d of xs) expect(['06', '07', '08']).toContain(d.slice(5, 7))
@@ -479,19 +466,36 @@ test('top-N over series: "the 2 regions with the most revenue, month by month" -
   }
 })
 
-test('enforceSeries: "both sensors over time" injects a per-sensor series', async () => {
-  const readings = datasets.find((d) => d.id === 'readings')!.rows
-  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'line', x: 'col_0', measure: 'col_2', aggregate: 'avg' }))))
-  const r = await generateOption({ prompt: 'show temperature for both sensors over time', rows: readings })
+test('pick: the month one channel peaks, signups for EVERY channel (conditional argmax)', async () => {
+  const tr = traffic()
+  const byMonth: Record<string, number> = {}
+  for (const row of tr) if (row.channel === 'Organic' && typeof row.visits === 'number') { const m = (row.date as string).slice(5, 7); byMonth[m] = (byMonth[m] ?? 0) + row.visits }
+  const peak = Object.entries(byMonth).sort((a, b) => b[1] - a[1])[0][0]
+  const modelSpec = specOf({ chartType: 'bar', x: 'col_1', measure: 'col_3', aggregate: 'sum', pick: { column: 'col_0', datePart: 'month', by: 'col_2', extreme: 'max', where: { column: 'col_1', in: ['val_0'] } } })
+  vi.stubGlobal('fetch', vi.fn(async () => claude(modelSpec)))
+  const r = await generateOption({ prompt: 'in the month organic visits peak, every channel signups as bar', rows: tr })
   expect(r.status).toBe('ok')
-  if (r.status === 'ok') expect((r.option as { series: unknown[] }).series.length).toBe(2)
+  if (r.status === 'ok') {
+    const o = r.option as { xAxis: { data: string[] }; series: { data: number[] }[] }
+    expect(o.xAxis.data).toEqual(['Organic', 'Paid', 'Social', 'Email'])
+    const orgSign = tr.filter((row) => row.channel === 'Organic' && (row.date as string).slice(5, 7) === peak).reduce((a, row) => a + (typeof row.signups === 'number' ? row.signups : 0), 0)
+    expect(o.series[0].data[0]).toBe(orgSign)
+  }
 })
 
-test('enforceSeries: "for all channels" injects a per-channel series', async () => {
-  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'line', x: 'col_0', measure: 'col_2', aggregate: 'sum' }))))
-  const r = await generateOption({ prompt: 'weekly visits for all channels', rows: traffic() })
+test('over: "best single month per region" charts the max monthly total per region', async () => {
+  const sales = datasets.find((d) => d.id === 'sales')!.rows
+  vi.stubGlobal('fetch', vi.fn(async () => claude(specOf({ chartType: 'bar', x: 'col_1', measure: 'col_4', aggregate: 'max', over: 'col_0' }))))
+  const r = await generateOption({ prompt: 'for every region give me its best single month revenue', rows: sales })
   expect(r.status).toBe('ok')
-  if (r.status === 'ok') expect((r.option as { series: unknown[] }).series.length).toBe(4)
+  if (r.status === 'ok') {
+    const o = r.option as { xAxis: { data: string[] }; series: { data: number[] }[] }
+    expect(o.xAxis.data.length).toBe(4)
+    const monthly: Record<string, number> = {}
+    for (const row of sales) if (row.region === 'North') monthly[row.month as string] = (monthly[row.month as string] ?? 0) + (row.revenue as number)
+    const best = Object.values(monthly).reduce((a, b) => (b > a ? b : a), -Infinity)
+    expect(o.series[0].data[o.xAxis.data.indexOf('North')]).toBe(best)
+  }
 })
 
 test('date window applies even when the date is not the x-axis (scatter)', async () => {

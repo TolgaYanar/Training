@@ -58,10 +58,12 @@ export function detokenizeSpec(spec: ChartSpec, toReal: Record<string, string>):
   if (typeof spec.measure === 'string') out.measure = real(spec.measure)
   if (Array.isArray(spec.measures)) out.measures = spec.measures.map((m) => (typeof m === 'string' ? real(m) : m))
   if (typeof spec.series === 'string') out.series = real(spec.series)
+  if (typeof spec.over === 'string') out.over = real(spec.over)
   const realFilter = (f: Filter): Filter => ({
     ...f,
     column: typeof f.column === 'string' ? real(f.column) : f.column,
     in: Array.isArray(f.in) ? f.in.map((v) => (typeof v === 'string' ? real(v) : v)) : f.in,
+    notIn: Array.isArray(f.notIn) ? f.notIn.map((v) => (typeof v === 'string' ? real(v) : v)) : f.notIn,
     value: typeof f.value === 'string' ? groupedToNumber(real(f.value)) : f.value,
   })
   if (spec.filter && typeof spec.filter.column === 'string') out.filter = realFilter(spec.filter)
@@ -73,6 +75,14 @@ export function detokenizeSpec(spec: ChartSpec, toReal: Record<string, string>):
       name: typeof spec.derived.name === 'string' ? detokenizeText(spec.derived.name, toReal) : spec.derived.name,
       numerator: typeof spec.derived.numerator === 'string' ? real(spec.derived.numerator) : spec.derived.numerator,
       denominator: typeof spec.derived.denominator === 'string' ? real(spec.derived.denominator) : spec.derived.denominator,
+    }
+  }
+  if (spec.pick && typeof spec.pick.column === 'string') {
+    out.pick = {
+      ...spec.pick,
+      column: real(spec.pick.column),
+      by: typeof spec.pick.by === 'string' ? real(spec.pick.by) : spec.pick.by,
+      where: spec.pick.where && typeof spec.pick.where.column === 'string' ? realFilter(spec.pick.where) : spec.pick.where,
     }
   }
   return out

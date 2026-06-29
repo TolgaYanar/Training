@@ -50,6 +50,14 @@ function partRank(label: string, part: 'day' | 'weekday' | 'month' | 'quarter'):
   return Number(label)
 }
 
+function namedPartNum(v: unknown, part: 'day' | 'weekday' | 'month' | 'quarter'): number | null {
+  if (typeof v !== 'string') return null
+  const w = v.trim().toLowerCase().slice(0, 3)
+  if (part === 'month') { const i = MONTH_LABELS.findIndex((m) => m.toLowerCase() === w); return i < 0 ? null : i + 1 }
+  if (part === 'weekday') { const i = WEEKDAY_LABELS.findIndex((d) => d.toLowerCase() === w); return i < 0 ? null : i }
+  return null
+}
+
 function matchesTerm(actual: string, term: string): boolean {
   if (actual === term) return true
   const a = actual.toLowerCase().trim()
@@ -92,8 +100,15 @@ function applyFilter(rows: Row[], filter: Filter): Row[] {
   if (filter.datePart) {
     const set = new Set((filter.in ?? []).map(String))
     return rows.filter((r) => {
-      const p = datePartOf(r[filter.column], filter.datePart!)
+      const p = datePartOf(r[filter.column], filter.datePart!) ?? namedPartNum(r[filter.column], filter.datePart!)
       return p !== null && set.has(String(p))
+    })
+  }
+  if (Array.isArray(filter.notIn) && filter.notIn.length > 0) {
+    const excluded = filter.notIn.map(String)
+    return rows.filter((r) => {
+      const v = r[filter.column]
+      return !present(v) || !excluded.some((t) => matchesTerm(String(v), t))
     })
   }
   const terms = (filter.in ?? []).map(String)
@@ -107,7 +122,7 @@ function allFilters(spec: ChartSpec): Filter[] {
   const list: Filter[] = []
   if (Array.isArray(spec.filters)) list.push(...spec.filters)
   if (spec.filter) list.push(spec.filter)
-  return list.filter((f) => f && typeof f.column === 'string' && ((typeof f.op === 'string' && Number.isFinite(f.value)) || (Array.isArray(f.in) && f.in.length > 0) || typeof f.from === 'string' || typeof f.to === 'string'))
+  return list.filter((f) => f && typeof f.column === 'string' && ((typeof f.op === 'string' && Number.isFinite(f.value)) || (Array.isArray(f.in) && f.in.length > 0) || (Array.isArray(f.notIn) && f.notIn.length > 0) || typeof f.from === 'string' || typeof f.to === 'string'))
 }
 
 function uniqueInOrder(rows: Row[], key: string): Array<string | number> {
@@ -155,6 +170,30 @@ function cell(rows: Row[], measure: string, op: ChartSpec['aggregate']): number 
   }
 }
 
+function overActive(spec: ChartSpec): boolean {
+  return typeof spec.over === 'string' && spec.over.length > 0 && typeof spec.measure === 'string' && !spec.derived && !(Array.isArray(spec.measures) && spec.measures.length > 0)
+}
+
+function cellOver(rows: Row[], measure: string, op: ChartSpec['aggregate'], over: string): number | null {
+  const totals = new Map<string, number>()
+  for (const r of rows) {
+    const k = r[over]
+    if (!present(k)) continue
+    const n = num(r[measure])
+    if (n === null) continue
+    totals.set(String(k), (totals.get(String(k)) ?? 0) + n)
+  }
+  const vals = [...totals.values()]
+  if (vals.length === 0) return null
+  switch (op) {
+    case 'min': return vals.reduce((a, b) => (b < a ? b : a), Infinity)
+    case 'avg': return vals.reduce((a, b) => a + b, 0) / vals.length
+    case 'sum': return vals.reduce((a, b) => a + b, 0)
+    case 'count': return vals.length
+    default: return vals.reduce((a, b) => (b > a ? b : a), -Infinity)
+  }
+}
+
 function derivedItem(rows: Row[], spec: ChartSpec): { value: number | null; [k: string]: number | null } {
   const n = cell(rows, spec.derived!.numerator, 'sum')
   const d = cell(rows, spec.derived!.denominator, 'sum')
@@ -163,11 +202,14 @@ function derivedItem(rows: Row[], spec: ChartSpec): { value: number | null; [k: 
 
 function metric(rows: Row[], spec: ChartSpec): number | null {
   if (spec.derived) return derivedItem(rows, spec).value
+  if (overActive(spec)) return cellOver(rows, spec.measure, spec.aggregate, spec.over as string)
   return cell(rows, spec.measure, spec.aggregate)
 }
 
 function cellValue(rows: Row[], spec: ChartSpec): number | { value: number | null } | null {
-  return spec.derived ? derivedItem(rows, spec) : cell(rows, spec.measure, spec.aggregate)
+  if (spec.derived) return derivedItem(rows, spec)
+  if (overActive(spec)) return cellOver(rows, spec.measure, spec.aggregate, spec.over as string)
+  return cell(rows, spec.measure, spec.aggregate)
 }
 
 function derivedTooltip(spec: ChartSpec): Record<string, unknown> {
@@ -199,7 +241,7 @@ function orderX(spec: ChartSpec, rows: Row[], byX: Map<string, Row[]>, baseVals?
     const part = spec.groupByPart
     if (spec.sort === 'value') {
       const m = typeof spec.measure === 'string' ? spec.measure : (Array.isArray(spec.measures) ? spec.measures[0] : '')
-      const total = (xv: string | number) => (spec.derived ? metric(byX.get(String(xv)) ?? [], spec) : cell(byX.get(String(xv)) ?? [], m, spec.aggregate === 'count' ? 'count' : 'sum')) ?? -Infinity
+      const total = (xv: string | number) => (spec.derived ? metric(byX.get(String(xv)) ?? [], spec) : overActive(spec) ? cellOver(byX.get(String(xv)) ?? [], m, spec.aggregate, spec.over as string) : cell(byX.get(String(xv)) ?? [], m, spec.aggregate === 'count' ? 'count' : 'sum')) ?? -Infinity
       xVals = [...xVals].sort((a, b) => total(a) - total(b))
       if (spec.order !== 'asc') xVals.reverse()
     } else {
@@ -213,7 +255,7 @@ function orderX(spec: ChartSpec, rows: Row[], byX: Map<string, Row[]>, baseVals?
   const rank = spec.sort === 'value' && (!isDate || typeof spec.limit === 'number')
   if (rank) {
     const m = typeof spec.measure === 'string' ? spec.measure : (Array.isArray(spec.measures) ? spec.measures[0] : '')
-    const total = (xv: string | number) => (spec.derived ? metric(byX.get(String(xv)) ?? [], spec) : cell(byX.get(String(xv)) ?? [], m, spec.aggregate === 'count' ? 'count' : 'sum')) ?? -Infinity
+    const total = (xv: string | number) => (spec.derived ? metric(byX.get(String(xv)) ?? [], spec) : overActive(spec) ? cellOver(byX.get(String(xv)) ?? [], m, spec.aggregate, spec.over as string) : cell(byX.get(String(xv)) ?? [], m, spec.aggregate === 'count' ? 'count' : 'sum')) ?? -Infinity
     xVals = [...xVals].sort((a, b) => total(a) - total(b))
     if (spec.order !== 'asc') xVals.reverse()
   } else if (isDate) {
@@ -231,11 +273,12 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>,
   const xVals = orderX(spec, rows, byX, domainX)
   const fill = (grp: Row[]) => (domainX !== undefined && grp.length === 0 ? 0 : cellValue(grp, spec))
   const type = spec.chartType === 'bar' ? 'bar' : 'line'
-  const extra: Record<string, unknown> = type === 'line' ? { smooth: true } : {}
+  const extra: Record<string, unknown> = type === 'line' ? (spec.display?.step ? { step: 'end' } : { smooth: true }) : {}
   if (type === 'line' && xVals.length > 30) extra.showSymbol = false
   if (spec.chartType === 'area') extra.areaStyle = {}
   const measures = Array.isArray(spec.measures) && spec.measures.length > 0 ? spec.measures : null
   const dual = measures !== null && measures.length === 2 && spec.chartType === 'line'
+  const stackProp = spec.display?.stacked === true && !dual ? { stack: 'total' } : {}
   let series: unknown[]
   if (measures && grouped(spec)) {
     const key = spec.series as string
@@ -245,6 +288,7 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>,
         type,
         data: xVals.map((xv) => cell((byX.get(String(xv)) ?? []).filter((r) => String(r[key]) === String(sv)), m, spec.aggregate)),
         ...extra,
+        ...stackProp,
         ...(dual ? { yAxisIndex: i } : {}),
       })),
     )
@@ -255,6 +299,7 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>,
       type,
       data: xVals.map((xv) => fill((byX.get(String(xv)) ?? []).filter((r) => String(r[key]) === String(sv)))),
       ...extra,
+      ...stackProp,
     }))
   } else if (measures) {
     series = measures.map((m, i) => ({
@@ -262,20 +307,24 @@ function cartesian(spec: ChartSpec, rows: Row[], title: Record<string, unknown>,
       type,
       data: xVals.map((xv) => cell(byX.get(String(xv)) ?? [], m, spec.aggregate)),
       ...extra,
+      ...stackProp,
       ...(dual ? { yAxisIndex: i } : {}),
     }))
   } else {
     series = [{ name: spec.derived ? spec.derived.name : (spec.aggregate === 'count' ? 'count' : spec.measure), type, data: xVals.map((xv) => fill(byX.get(String(xv)) ?? [])), ...extra }]
   }
   const yName = !measures ? (spec.derived ? spec.derived.name : spec.aggregate === 'count' ? 'count' : spec.measure) : undefined
+  const horizontal = spec.display?.horizontal === true && type === 'bar'
+  const catAxis = { type: 'category', data: xVals, name: spec.x, nameLocation: 'middle', nameGap: 30 }
+  const valueAxis = dual
+    ? [{ type: 'value', name: measures![0] }, { type: 'value', name: measures![1] }]
+    : { type: 'value', name: yName }
   const option: Record<string, unknown> = {
     ...title,
     tooltip: derivedTooltip(spec),
     grid: { bottom: 48 },
-    xAxis: { type: 'category', data: xVals, name: spec.x, nameLocation: 'middle', nameGap: 30 },
-    yAxis: dual
-      ? [{ type: 'value', name: measures![0] }, { type: 'value', name: measures![1] }]
-      : { type: 'value', name: yName },
+    xAxis: horizontal ? valueAxis : catAxis,
+    yAxis: horizontal ? catAxis : valueAxis,
     series,
   }
   if (series.length > 1) option.legend = {}
@@ -287,11 +336,13 @@ function pie(spec: ChartSpec, rows: Row[], title: Record<string, unknown>): ECha
   const data = orderX(spec, rows, byX)
     .map((xv) => ({ name: String(xv), value: metric(byX.get(String(xv)) ?? [], spec) }))
     .filter((d) => typeof d.value === 'number' && d.value > 0)
+  const radius = spec.display?.donut === true ? ['40%', '70%'] : '60%'
+  const rose = spec.display?.rose === true ? { roseType: 'area' } : {}
   const option: Record<string, unknown> = {
     ...title,
     tooltip: { trigger: 'item' },
     legend: {},
-    series: [{ type: 'pie', radius: '60%', data }],
+    series: [{ type: 'pie', radius, ...rose, data }],
   }
   return option as EChartsOption
 }
@@ -366,8 +417,39 @@ function categoricalDomain(spec: ChartSpec, rows: Row[], filters: Filter[]): Arr
   return dom.length > 0 ? dom : undefined
 }
 
+function resolvePick(spec: ChartSpec, rows: Row[]): ChartSpec {
+  const p = spec.pick
+  const rest: ChartSpec = { ...spec }
+  delete rest.pick
+  if (!p || typeof p.column !== 'string' || typeof p.by !== 'string') return rest
+  const candidates = p.where ? applyFilter(rows, p.where) : rows
+  const totals = new Map<string, number>()
+  const counts = new Map<string, number>()
+  for (const r of candidates) {
+    const key = p.datePart
+      ? ((d) => (d === null ? null : String(d)))(datePartOf(r[p.column], p.datePart) ?? namedPartNum(r[p.column], p.datePart))
+      : (present(r[p.column]) ? String(r[p.column]) : null)
+    if (key === null) continue
+    const n = num(r[p.by])
+    if (n === null) continue
+    totals.set(key, (totals.get(key) ?? 0) + n)
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+  if (totals.size === 0) return rest
+  let best: string | null = null
+  let bestVal = p.extreme === 'min' ? Infinity : -Infinity
+  for (const [k, sum] of totals) {
+    const val = p.agg === 'avg' ? sum / (counts.get(k) ?? 1) : sum
+    if (p.extreme === 'min' ? val < bestVal : val > bestVal) { bestVal = val; best = k }
+  }
+  if (best === null) return rest
+  const pickFilter: Filter = p.datePart ? { column: p.column, datePart: p.datePart, in: [Number(best)] } : { column: p.column, in: [best] }
+  return { ...rest, filters: [...(Array.isArray(rest.filters) ? rest.filters : []), pickFilter] }
+}
+
 export function buildChartOption(spec: ChartSpec, rows: Row[], emptyOk = false): EChartsOption {
   if (!spec.aggregate) spec = { ...spec, aggregate: 'sum' }
+  if (spec.pick) spec = resolvePick(spec, rows)
   const columns = new Set(Object.keys(rows[0] ?? {}))
   const hasMeasures = Array.isArray(spec.measures) && spec.measures.length > 0
   const hasDerived = !!spec.derived && typeof spec.derived.numerator === 'string' && typeof spec.derived.denominator === 'string'
@@ -377,6 +459,7 @@ export function buildChartOption(spec: ChartSpec, rows: Row[], emptyOk = false):
   if (hasMeasures) required.push(...(spec.measures as string[]))
   if (hasDerived) required.push(spec.derived!.numerator, spec.derived!.denominator)
   if (grouped(spec)) required.push(spec.series as string)
+  if (typeof spec.over === 'string') required.push(spec.over)
   const filters = allFilters(spec)
   for (const f of filters) required.push(f.column)
   for (const key of required) {

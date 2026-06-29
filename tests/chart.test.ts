@@ -298,6 +298,13 @@ test('value filter matches by contained substring', () => {
   assert.deepEqual(o.series[0].data, [1])
 })
 
+test('notIn filter excludes the listed values and keeps the rest', () => {
+  const r = [{ ch: 'A', v: 1 }, { ch: 'B', v: 2 }, { ch: 'C', v: 3 }]
+  const o = buildChartOption({ chartType: 'bar', x: 'ch', measure: 'v', aggregate: 'sum', filters: [{ column: 'ch', notIn: ['B'] }] }, r)
+  assert.deepEqual(o.xAxis.data, ['A', 'C'])
+  assert.deepEqual(o.series[0].data, [1, 3])
+})
+
 test('date-part filter: day of month (the 10th of each month)', () => {
   const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'date', datePart: 'day', in: [10] } }, frows)
   assert.deepEqual(o.xAxis.data, ['2024-01-10', '2024-02-10'])
@@ -318,6 +325,13 @@ test('date-part filter: quarter (Q1 = Jan-Mar)', () => {
 test('date-part filter: month', () => {
   const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'sum', filter: { column: 'date', datePart: 'month', in: [2] } }, frows)
   assert.deepEqual(o.xAxis.data, ['2024-02-10', '2024-02-12'])
+})
+
+test('date-part month filter matches a categorical month-name column by name', () => {
+  const r = [{ month: 'Feb', region: 'N', units: 5 }, { month: 'Mar', region: 'N', units: 7 }, { month: 'Mar', region: 'S', units: 3 }]
+  const o = buildChartOption({ chartType: 'pie', x: 'region', measure: 'units', aggregate: 'sum', filters: [{ column: 'month', datePart: 'month', in: [3] }] }, r)
+  assert.deepEqual(o.series[0].data.map((d) => d.name).sort(), ['N', 'S'])
+  assert.deepEqual(o.series[0].data.map((d) => d.value).sort((a, b) => a - b), [3, 7])
 })
 
 test('date-part filter: weekday (0=Sun..6=Sat) keeps the Saturday', () => {
@@ -618,6 +632,60 @@ test('bucket is ignored when filtering to a specific day (keeps the date label)'
   assert.deepEqual(o.xAxis.data, ['2024-01-10', '2024-02-10'])
 })
 
+test('over: best single PERIOD per group = max of per-over totals', () => {
+  const r = [
+    { region: 'N', month: 'Jan', rev: 100 },
+    { region: 'N', month: 'Jan', rev: 50 },
+    { region: 'N', month: 'Feb', rev: 200 },
+    { region: 'S', month: 'Jan', rev: 300 },
+    { region: 'S', month: 'Feb', rev: 90 },
+  ]
+  const o = buildChartOption({ chartType: 'bar', x: 'region', measure: 'rev', aggregate: 'max', over: 'month' }, r)
+  assert.deepEqual(o.xAxis.data, ['N', 'S'])
+  assert.deepEqual(o.series[0].data, [200, 300])
+})
+
+test('over: avg = mean of per-over totals; min = worst period', () => {
+  const r = [{ g: 'A', p: 'x', v: 10 }, { g: 'A', p: 'x', v: 20 }, { g: 'A', p: 'y', v: 50 }]
+  assert.deepEqual(buildChartOption({ chartType: 'bar', x: 'g', measure: 'v', aggregate: 'avg', over: 'p' }, r).series[0].data, [40])
+  assert.deepEqual(buildChartOption({ chartType: 'bar', x: 'g', measure: 'v', aggregate: 'min', over: 'p' }, r).series[0].data, [30])
+})
+
+test('over validates its column', () => {
+  assert.throws(() => buildChartOption({ chartType: 'bar', x: 'g', measure: 'v', aggregate: 'max', over: 'nope' }, [{ g: 'A', v: 1 }]), /unknown column/)
+})
+
+test('pick: conditional argmax — month where ONE group peaks, applied to ALL groups', () => {
+  const r = [
+    { month: 'Jan', ch: 'A', vis: 100, sign: 10 },
+    { month: 'Jan', ch: 'B', vis: 50, sign: 5 },
+    { month: 'Feb', ch: 'A', vis: 300, sign: 30 },
+    { month: 'Feb', ch: 'B', vis: 40, sign: 4 },
+  ]
+  const o = buildChartOption({ chartType: 'bar', x: 'ch', measure: 'sign', aggregate: 'sum', pick: { column: 'month', by: 'vis', extreme: 'max', where: { column: 'ch', in: ['A'] } } }, r)
+  assert.deepEqual(o.xAxis.data, ['A', 'B'])
+  assert.deepEqual(o.series[0].data, [30, 4])
+})
+
+test('pick with datePart: the month-of-date chosen by a where-group, applied to all', () => {
+  const r = [
+    { date: '2024-01-05', ch: 'A', vis: 100, sign: 10 },
+    { date: '2024-02-10', ch: 'A', vis: 300, sign: 30 },
+    { date: '2024-02-12', ch: 'B', vis: 40, sign: 4 },
+    { date: '2024-01-15', ch: 'B', vis: 90, sign: 9 },
+  ]
+  const o = buildChartOption({ chartType: 'bar', x: 'ch', measure: 'sign', aggregate: 'sum', pick: { column: 'date', datePart: 'month', by: 'vis', extreme: 'max', where: { column: 'ch', in: ['A'] } } }, r)
+  assert.deepEqual(o.xAxis.data, ['A', 'B'])
+  assert.deepEqual(o.series[0].data, [30, 4])
+})
+
+test('pick without where: the category with the max measure, applied to all', () => {
+  const r = [{ region: 'N', prod: 'X', u: 10 }, { region: 'N', prod: 'Y', u: 20 }, { region: 'S', prod: 'X', u: 5 }]
+  const o = buildChartOption({ chartType: 'bar', x: 'prod', measure: 'u', aggregate: 'sum', pick: { column: 'region', by: 'u', extreme: 'max' } }, r)
+  assert.deepEqual(o.xAxis.data, ['X', 'Y'])
+  assert.deepEqual(o.series[0].data, [10, 20])
+})
+
 test('bucket + derived: monthly conversion rate', () => {
   const md = [
     { date: '2024-01-05', s: 10, vis: 100 },
@@ -628,4 +696,71 @@ test('bucket + derived: monthly conversion rate', () => {
   assert.deepEqual(o.xAxis.data, ['2024-01', '2024-02'])
   const d = o.series[0].data
   assert.ok(Math.abs(d[0].value - 0.075) < 1e-9 && Math.abs(d[1].value - 0.05) < 1e-9)
+})
+
+test('stacked: every grouped bar series gets stack:"total"', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'day', series: 'team', measure: 'score', aggregate: 'sum', display: { stacked: true } }, rows)
+  assert.equal(o.series.length, 2)
+  assert.ok(o.series.every((s) => s.stack === 'total'))
+})
+
+test('stacked omitted: series carry no stack (default behavior unchanged)', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'day', series: 'team', measure: 'score', aggregate: 'sum' }, rows)
+  assert.ok(o.series.every((s) => s.stack === undefined))
+})
+
+test('stacked applies to a grouped AREA chart too (stays a line type with areaStyle)', () => {
+  const o = buildChartOption({ chartType: 'area', x: 'day', series: 'team', measure: 'score', aggregate: 'sum', display: { stacked: true } }, rows)
+  assert.ok(o.series.every((s) => s.stack === 'total' && s.type === 'line' && s.areaStyle))
+})
+
+test('stacked two measures on a BAR: both stacked on a single shared y-axis', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'ch', measures: ['s', 'v'], aggregate: 'sum', display: { stacked: true } }, mm)
+  assert.ok(o.series.every((s) => s.stack === 'total'))
+  assert.ok(!Array.isArray(o.yAxis))
+})
+
+test('stacked is ignored on a dual-axis (2-measure line) chart — different scales must not stack', () => {
+  const o = buildChartOption({ chartType: 'line', x: 'ch', measures: ['s', 'v'], aggregate: 'sum', display: { stacked: true } }, mm)
+  assert.ok(Array.isArray(o.yAxis) && o.yAxis.length === 2)
+  assert.ok(o.series.every((s) => s.stack === undefined))
+})
+
+test('horizontal bar: value x-axis, category y-axis carries the data + name', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'day', measure: 'score', aggregate: 'sum', display: { horizontal: true } }, rows)
+  assert.equal(o.xAxis.type, 'value')
+  assert.equal(o.yAxis.type, 'category')
+  assert.deepEqual(o.yAxis.data, ['Mon', 'Tue', 'Wed'])
+  assert.equal(o.yAxis.name, 'day')
+  assert.equal(o.xAxis.name, 'score')
+})
+
+test('horizontal applies only to bar (a line keeps its category x-axis)', () => {
+  const o = buildChartOption({ chartType: 'line', x: 'day', measure: 'score', aggregate: 'sum', display: { horizontal: true } }, rows)
+  assert.equal(o.xAxis.type, 'category')
+  assert.deepEqual(o.xAxis.data, ['Mon', 'Tue', 'Wed'])
+})
+
+test('step line: step "end", and not smoothed', () => {
+  const o = buildChartOption({ chartType: 'line', x: 'day', measure: 'score', aggregate: 'sum', display: { step: true } }, rows)
+  assert.equal(o.series[0].step, 'end')
+  assert.equal(o.series[0].smooth, undefined)
+})
+
+test('step is ignored on a bar (bars never get a step)', () => {
+  const o = buildChartOption({ chartType: 'bar', x: 'day', measure: 'score', aggregate: 'sum', display: { step: true } }, rows)
+  assert.equal(o.series[0].step, undefined)
+})
+
+test('doughnut: pie radius becomes an inner/outer ring', () => {
+  const o = buildChartOption({ chartType: 'pie', x: 'team', measure: 'score', aggregate: 'sum', display: { donut: true } }, rows)
+  assert.deepEqual(o.series[0].radius, ['40%', '70%'])
+})
+
+test('nightingale: pie gets roseType "area"; a basic pie keeps the solid 60% radius and no roseType', () => {
+  const rose = buildChartOption({ chartType: 'pie', x: 'team', measure: 'score', aggregate: 'sum', display: { rose: true } }, rows)
+  assert.equal(rose.series[0].roseType, 'area')
+  const basic = buildChartOption({ chartType: 'pie', x: 'team', measure: 'score', aggregate: 'sum' }, rows)
+  assert.equal(basic.series[0].radius, '60%')
+  assert.equal(basic.series[0].roseType, undefined)
 })

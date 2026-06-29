@@ -32,6 +32,18 @@ test('generate -> ok renders the chart and passes the 144 sales rows', async () 
   expect(arg.rows.length).toBe(144)
 })
 
+test('a repeated (dataset, prompt) is served from cache without a second AI call', async () => {
+  generateOption.mockResolvedValue({ status: 'ok', option: { series: [] }, repaired: false, raw: '{}' })
+  render(<App />)
+  fireEvent.change(screen.getByPlaceholderText(/monthly revenue/i), { target: { value: 'bar of revenue' } })
+  fireEvent.click(screen.getByText('Generate chart'))
+  await waitFor(() => expect(screen.getByTestId('chart')).toBeTruthy())
+  expect(generateOption).toHaveBeenCalledTimes(1)
+  fireEvent.click(screen.getByText('Generate chart'))
+  await waitFor(() => expect(screen.getByTestId('chart')).toBeTruthy())
+  expect(generateOption).toHaveBeenCalledTimes(1)
+})
+
 test('generate -> repaired shows the auto-repaired tag', async () => {
   generateOption.mockResolvedValue({ status: 'ok', option: { series: [] }, repaired: true, raw: '{}' })
   render(<App />)

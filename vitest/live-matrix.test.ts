@@ -20,15 +20,20 @@ interface Expect {
 interface Case { name: string; dataset: string; prompt: string; expect: Expect }
 
 function facts(option: any) {
-  const xs = option?.xAxis
-  const xAxis = Array.isArray(xs) ? xs[0] : xs
+  const xRaw = option?.xAxis
+  const yRaw = option?.yAxis
+  const xAxis = Array.isArray(xRaw) ? xRaw[0] : xRaw
+  const yAxis = Array.isArray(yRaw) ? yRaw[0] : yRaw
+  const catAxis = Array.isArray(xAxis?.data) ? xAxis : Array.isArray(yAxis?.data) ? yAxis : xAxis
+  const valRaw = catAxis === xAxis ? yRaw : xRaw
+  const valAxis = Array.isArray(valRaw) ? valRaw[0] : valRaw
   const series: any[] = option?.series ?? []
-  const xData: any[] | undefined = Array.isArray(xAxis?.data) ? xAxis.data : undefined
+  const catData: any[] | undefined = Array.isArray(catAxis?.data) ? catAxis.data : undefined
   return {
     types: series.map((s) => s.type),
-    xName: xAxis?.name,
-    yName: Array.isArray(option?.yAxis) ? option.yAxis.map((y: any) => y.name).filter(Boolean) : option?.yAxis?.name,
-    xLen: xData?.length ?? series[0]?.data?.length,
+    xName: catAxis?.name,
+    yName: Array.isArray(valRaw) ? valRaw.map((y: any) => y.name).filter(Boolean) : valAxis?.name,
+    xLen: catData?.length ?? series[0]?.data?.length,
     seriesCount: series.length,
     pieSlices: series[0]?.type === 'pie' ? series[0]?.data?.length : undefined,
   }

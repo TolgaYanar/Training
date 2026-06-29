@@ -12,16 +12,21 @@ const rowsOf = (id: string) => datasets.find((d) => d.id === id)!.rows
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function facts(option: any) {
-  const xs = option?.xAxis
-  const xAxis = Array.isArray(xs) ? xs[0] : xs
+  const xRaw = option?.xAxis
+  const yRaw = option?.yAxis
+  const xAxis = Array.isArray(xRaw) ? xRaw[0] : xRaw
+  const yAxis = Array.isArray(yRaw) ? yRaw[0] : yRaw
+  const catAxis = Array.isArray(xAxis?.data) ? xAxis : Array.isArray(yAxis?.data) ? yAxis : xAxis
+  const valRaw = catAxis === xAxis ? yRaw : xRaw
+  const valAxis = Array.isArray(valRaw) ? valRaw[0] : valRaw
   const series: any[] = option?.series ?? []
-  const xData: any[] | undefined = Array.isArray(xAxis?.data) ? xAxis.data : undefined
+  const catData: any[] | undefined = Array.isArray(catAxis?.data) ? catAxis.data : undefined
   return {
     types: series.map((s) => s.type),
-    xName: xAxis?.name,
-    yName: Array.isArray(option?.yAxis) ? option.yAxis.map((y: any) => y.name) : option?.yAxis?.name,
-    xData,
-    xLen: xData?.length ?? (series[0]?.data?.length),
+    xName: catAxis?.name,
+    yName: Array.isArray(valRaw) ? valRaw.map((y: any) => y.name) : valAxis?.name,
+    xData: catData,
+    xLen: catData?.length ?? (series[0]?.data?.length),
     seriesCount: series.length,
     seriesNames: series.map((s) => s.name),
     title: option?.title?.text,

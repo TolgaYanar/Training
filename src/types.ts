@@ -28,6 +28,7 @@ export type AggregateOp = 'sum' | 'avg' | 'count' | 'min' | 'max' | 'none'
 export interface Filter {
   column: string
   in?: Array<string | number>
+  notIn?: Array<string | number>
   datePart?: 'day' | 'weekday' | 'month' | 'quarter'
   op?: '>' | '>=' | '<' | '<=' | '==' | '!='
   value?: number
@@ -41,12 +42,31 @@ export interface Derived {
   denominator: string
 }
 
+export interface Pick {
+  column: string
+  datePart?: 'day' | 'weekday' | 'month' | 'quarter'
+  by: string
+  agg?: 'sum' | 'avg'
+  where?: Filter
+  extreme: 'max' | 'min'
+}
+
+export interface DisplayOptions {
+  stacked?: boolean
+  horizontal?: boolean
+  step?: boolean
+  donut?: boolean
+  rose?: boolean
+}
+
 export interface ChartSpec {
   chartType: ChartType
   x: string
   measure: string
   measures?: string[]
   series?: string
+  over?: string
+  pick?: Pick
   aggregate: AggregateOp
   filter?: Filter
   filters?: Filter[]
@@ -57,6 +77,7 @@ export interface ChartSpec {
   sort?: 'value'
   order?: 'asc' | 'desc'
   limit?: number
+  display?: DisplayOptions
 }
 
 export interface SentRequest {

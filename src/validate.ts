@@ -1,5 +1,6 @@
 import * as echarts from 'echarts'
 import type { EChartsOption } from './types'
+import { CHART_SPEC_SCHEMA } from './prompt.ts'
 
 export function extractJson(text: string): string {
   let t = text.trim()
@@ -10,6 +11,55 @@ export function extractJson(text: string): string {
   const last = t.lastIndexOf('}')
   if (first !== -1 && last > first) t = t.slice(first, last + 1)
   return t
+}
+
+type JsonSchema = {
+  type?: string
+  enum?: readonly unknown[]
+  required?: readonly string[]
+  properties?: Record<string, JsonSchema>
+  items?: JsonSchema
+  anyOf?: readonly JsonSchema[]
+}
+
+function checkSchema(schema: JsonSchema, value: unknown, path: string): string | null {
+  if (schema.anyOf) {
+    return schema.anyOf.some((s) => checkSchema(s, value, path) === null) ? null : `${path} has an unexpected type`
+  }
+  if (schema.enum && !schema.enum.includes(value)) return `${path} must be one of: ${schema.enum.join(', ')}`
+  switch (schema.type) {
+    case 'object': {
+      if (typeof value !== 'object' || value === null || Array.isArray(value)) return `${path} must be an object`
+      const obj = value as Record<string, unknown>
+      for (const key of schema.required ?? []) if (obj[key] === undefined) return `${path}.${key} is required`
+      for (const [key, sub] of Object.entries(schema.properties ?? {})) {
+        if (obj[key] !== undefined) {
+          const err = checkSchema(sub, obj[key], `${path}.${key}`)
+          if (err) return err
+        }
+      }
+      return null
+    }
+    case 'array': {
+      if (!Array.isArray(value)) return `${path} must be an array`
+      if (schema.items) {
+        for (let i = 0; i < value.length; i++) {
+          const err = checkSchema(schema.items, value[i], `${path}[${i}]`)
+          if (err) return err
+        }
+      }
+      return null
+    }
+    case 'string': return typeof value === 'string' ? null : `${path} must be a string`
+    case 'number': return typeof value === 'number' ? null : `${path} must be a number`
+    case 'integer': return typeof value === 'number' && Number.isInteger(value) ? null : `${path} must be an integer`
+    case 'boolean': return typeof value === 'boolean' ? null : `${path} must be a boolean`
+    default: return null
+  }
+}
+
+export function validateSpec(spec: unknown): string | null {
+  return checkSchema(CHART_SPEC_SCHEMA as unknown as JsonSchema, spec, 'spec')
 }
 
 function normalizeLayout(option: EChartsOption): void {
