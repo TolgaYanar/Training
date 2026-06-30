@@ -76,3 +76,28 @@ test('generate -> failed shows the error result', async () => {
   await waitFor(() => expect(screen.getByText(/Could not generate a valid chart/i)).toBeTruthy())
   expect(screen.getByText('boom-error')).toBeTruthy()
 })
+
+test('the standalone privacy panel surfaces what was de-identified', () => {
+  deidentify.mockReturnValueOnce({ message: 'preview', toReal: { col_0: 'region', val_0: 'North', lit_0: 'Jonathan' } })
+  render(<App />)
+  fireEvent.change(screen.getByPlaceholderText(/monthly revenue/i), { target: { value: 'revenue for Jonathan by region' } })
+  expect(screen.getByText(/Kept on your device/i)).toBeTruthy()
+  expect(screen.getByText(/name.*free-text/i)).toBeTruthy()
+  expect(screen.getByText(/1 column name/i)).toBeTruthy()
+})
+
+test('the privacy panel warns about possible names that pass through verbatim', () => {
+  deidentify.mockReturnValueOnce({ message: 'preview', toReal: {}, safePrompt: 'revenue by region for Mark Day' })
+  render(<App />)
+  fireEvent.change(screen.getByPlaceholderText(/monthly revenue/i), { target: { value: 'revenue by region for Mark Day' } })
+  expect(screen.getByText(/Possible names will be sent/i)).toBeTruthy()
+  expect(screen.getAllByText(/Mark Day/).length).toBeGreaterThan(0)
+})
+
+test('a pasted data dump is blocked and disables Generate (gate-independent of the dev card)', () => {
+  render(<App />)
+  const paste = 'name,email,phone\nJohn,j@x.io,5551234567\nMary,m@x.io,5559876543\nLee,l@x.io,5551112222'
+  fireEvent.change(screen.getByPlaceholderText(/monthly revenue/i), { target: { value: paste } })
+  expect(screen.getByText(/looks like pasted data/i)).toBeTruthy()
+  expect(screen.getByRole('button', { name: /Generate chart/i }).hasAttribute('disabled')).toBe(true)
+})

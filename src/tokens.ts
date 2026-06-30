@@ -2,6 +2,7 @@ import type { ChartSpec, DataSummary, Filter, Row } from './types'
 
 const VALUE_TOTAL_CAP = 5000
 const VALUE_LIST_MAX = 20
+const VALUE_SCAN_SAMPLE = 5000
 const WORD = 'A-Za-z0-9_'
 const UWORD = '\\p{L}\\p{M}\\p{N}_'
 
@@ -16,7 +17,7 @@ const GROUPED_NUMBER = new RegExp(`(?<![${WORD}.])\\d{1,3}(?:,\\d{3})+(?:\\.\\d+
 const SEPARATED_DIGITS = new RegExp(`(?<![${WORD}.])\\d{2,}(?:[-.]\\d{2,})+(?![${WORD}.])`, 'g')
 const DECIMAL = new RegExp(`(?<![${WORD}.])\\d+\\.\\d+(?![${WORD}.])`, 'g')
 const LONG_NUMBER = new RegExp(`(?<![${WORD}.])\\d{4,}(?![${WORD}])`, 'g')
-const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g
+const EMAIL = /[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,255}\.[A-Za-z]{2,24}/g
 const URL = /(?:https?:\/\/|www\.)[^\s]+/gi
 
 export function redactLiterals(text: string, toReal: Record<string, string>): string {
@@ -122,7 +123,7 @@ function vowelDrop(name: string): string | null {
 }
 
 export function tokenizeText(text: string, toReal: Record<string, string>): string {
-  const entries = Object.entries(toReal).filter(([, real]) => real.length > 0)
+  const entries = Object.entries(toReal).filter(([token, real]) => real.length > 0 && !token.startsWith('lit_'))
   if (entries.length === 0) return text
   const exact = new Map<string, string>()
   const names: Array<{ real: string; token: string }> = []
@@ -159,12 +160,13 @@ function detokenizeText(text: string, toReal: Record<string, string>): string {
 
 export function buildTokens(summary: DataSummary, rows: Row[]): { summary: DataSummary; toReal: Record<string, string> } {
   const { summary: tokenized, toReal } = tokenizeSchema(summary)
+  const sample = rows.length > VALUE_SCAN_SAMPLE ? rows.slice(0, VALUE_SCAN_SAMPLE) : rows
   const seen = new Set<string>()
   let next = 0
   summary.columns.forEach((col, i) => {
     if (col.type !== 'categorical' || next >= VALUE_TOTAL_CAP) return
     const tokens: string[] = []
-    for (const row of rows) {
+    for (const row of sample) {
       if (next >= VALUE_TOTAL_CAP) break
       const v = row[col.name]
       if (typeof v !== 'string') continue

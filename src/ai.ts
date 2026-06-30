@@ -1,10 +1,10 @@
-import type { ChartSpec, EChartsOption, GenerateRequest, GenerateResult, Outbound, Row, SentRequest } from './types'
+import type { ChartSpec, DataSummary, EChartsOption, GenerateRequest, GenerateResult, Outbound, Row, SentRequest } from './types'
 import { summarizeData } from './data'
 import { MINIMAL_SPEC_SCHEMA, SYSTEM_PROMPT, buildRepairMessage, buildSpecMessage } from './prompt'
-import { buildChartOption } from './chart'
-import { checkOption, extractJson, validateSpec } from './validate'
+import { extractJson, validateSpec } from './validate'
 import { buildTokens, detokenizeSpec, redactLiterals, tokenizeText } from './tokens'
-import { enforceNamedFilters } from './guardrails'
+import { enforceOutbound, fuzzyTokenizeResiduals, maskPII, neutralizeTokenLookalikes, normalizeLite, scrub, verifyOutbound } from './gate'
+import { computeOption } from './workerClient'
 
 export const CLAUDE_MODEL = 'claude-sonnet-4-6'
 
@@ -24,6 +24,8 @@ function llmProxyUrl(): string {
 }
 
 async function claudeComplete(system: string, user: Outbound, key: string, schema?: object): Promise<string> {
+  const leaks = verifyOutbound(String(user))
+  if (leaks.length > 0) throw new Error(`gate: outbound payload contains un-allowlisted content: ${leaks.slice(0, 8).join(', ')}`)
   const body: Record<string, unknown> = {
     model: CLAUDE_MODEL,
     max_tokens: 1024,
@@ -51,7 +53,7 @@ async function claudeComplete(system: string, user: Outbound, key: string, schem
   return blocks.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('')
 }
 
-function buildFrom(raw: string, prompt: string, rows: Row[], toReal: Record<string, string>, allowEmpty = false): { option: EChartsOption } | { error: string } {
+async function buildFrom(raw: string, prompt: string, rows: Row[], toReal: Record<string, string>, allowEmpty = false): Promise<{ option: EChartsOption } | { error: string }> {
   let parsed: unknown
   try {
     parsed = JSON.parse(extractJson(raw))
@@ -61,22 +63,28 @@ function buildFrom(raw: string, prompt: string, rows: Row[], toReal: Record<stri
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return { error: 'Spec is not a JSON object' }
   const schemaError = validateSpec(parsed)
   if (schemaError) return { error: schemaError }
-  let option: EChartsOption
-  try {
-    option = buildChartOption(enforceNamedFilters(detokenizeSpec(parsed as ChartSpec, toReal), prompt, rows), rows, allowEmpty)
-  } catch (e) {
-    return { error: (e as Error).message }
-  }
-  const checked = checkOption(option)
-  if (!checked.ok) return { error: checked.error }
-  return { option }
+  return computeOption(detokenizeSpec(parsed as ChartSpec, toReal), prompt, rows, allowEmpty)
+}
+
+const indexCache = new WeakMap<Row[], { schema: DataSummary; baseToReal: Record<string, string> }>()
+
+function datasetIndex(rows: Row[]): { schema: DataSummary; baseToReal: Record<string, string> } {
+  const cached = indexCache.get(rows)
+  if (cached) return cached
+  const { summary: schema, toReal: baseToReal } = buildTokens(summarizeData(rows), rows)
+  const built = { schema, baseToReal }
+  indexCache.set(rows, built)
+  return built
 }
 
 export function deidentify(prompt: string, rows: Row[]): { message: Outbound; toReal: Record<string, string>; safePrompt: string } {
-  const summary = summarizeData(rows)
-  const { summary: schema, toReal } = buildTokens(summary, rows)
-  const safePrompt = redactLiterals(tokenizeText(prompt, toReal), toReal)
-  return { message: buildSpecMessage(safePrompt, schema), toReal, safePrompt }
+  const { schema, baseToReal } = datasetIndex(rows)
+  const toReal = { ...baseToReal }
+  const piiFirst = maskPII(neutralizeTokenLookalikes(normalizeLite(prompt), toReal), toReal)
+  const tokenized = fuzzyTokenizeResiduals(tokenizeText(piiFirst, toReal), toReal)
+  const safePrompt = scrub(redactLiterals(tokenized, toReal), toReal)
+  const message = enforceOutbound(buildSpecMessage(safePrompt, schema), toReal) as Outbound
+  return { message, toReal, safePrompt }
 }
 
 export async function generateOption(req: GenerateRequest): Promise<GenerateResult> {
@@ -92,20 +100,20 @@ export async function generateOption(req: GenerateRequest): Promise<GenerateResu
   } catch (e) {
     return { status: 'failed', error: (e as Error).message, raw: '', sent }
   }
-  const first = buildFrom(raw, req.prompt, req.rows, toReal)
+  const first = await buildFrom(raw, req.prompt, req.rows, toReal)
   if ('option' in first) return { status: 'ok', option: first.option, repaired: false, raw, sent }
 
   let raw2: string
   try {
     const safeRaw = redactLiterals(tokenizeText(raw, toReal), toReal)
     const safeError = redactLiterals(tokenizeText(first.error, toReal), toReal)
-    const repair = buildRepairMessage(safeRaw, safeError)
+    const repair = enforceOutbound(buildRepairMessage(safeRaw, safeError), toReal) as Outbound
     sent.push({ system: SYSTEM_PROMPT, user: repair })
     raw2 = await claudeComplete(SYSTEM_PROMPT, repair, key)
   } catch (e) {
     return { status: 'failed', error: (e as Error).message, raw, sent }
   }
-  const second = buildFrom(raw2, req.prompt, req.rows, toReal, true)
+  const second = await buildFrom(raw2, req.prompt, req.rows, toReal, true)
   if ('option' in second) return { status: 'ok', option: second.option, repaired: true, raw: raw2, sent }
 
   const refused = (e: string): boolean => e.startsWith('Spec JSON parse failed') || e === 'Spec is not a JSON object'
@@ -115,13 +123,13 @@ export async function generateOption(req: GenerateRequest): Promise<GenerateResu
   try {
     const safeRaw = redactLiterals(tokenizeText(raw2, toReal), toReal)
     const safeError = redactLiterals(tokenizeText(second.error, toReal), toReal)
-    const repair = buildRepairMessage(safeRaw, safeError)
+    const repair = enforceOutbound(buildRepairMessage(safeRaw, safeError), toReal) as Outbound
     sent.push({ system: SYSTEM_PROMPT, user: repair })
     raw3 = await claudeComplete(SYSTEM_PROMPT, repair, key, MINIMAL_SPEC_SCHEMA)
   } catch (e) {
     return { status: 'failed', error: (e as Error).message, raw: raw2, sent }
   }
-  const third = buildFrom(raw3, req.prompt, req.rows, toReal, true)
+  const third = await buildFrom(raw3, req.prompt, req.rows, toReal, true)
   if ('option' in third) return { status: 'ok', option: third.option, repaired: true, raw: raw3, sent }
   return { status: 'failed', error: third.error, raw: raw3, sent }
 }

@@ -7,6 +7,11 @@ export interface Strings {
   generate: string
   enterPrompt: string
   dataTitle: (n: number) => string
+  redactedTitle: string
+  redactionLabel: (kind: string, n: number) => string
+  blockedTitle: string
+  blockedBody: string
+  nameRiskTitle: string
   sentCard: string
   modelLine: (m: string) => string
   requestsSuffix: (n: number) => string
@@ -28,10 +33,23 @@ export const STRINGS: Record<Lang, Strings> = {
   en: {
     title: 'Prompt → Chart',
     promptPlaceholder: 'e.g. monthly revenue by region as a line chart',
-    privacy: '🔒 Column names, category values, dates, long numbers, emails and links are replaced with placeholders before your request is sent — your data stays on this device. Other free text (names, notes in a sentence) is sent as written, so review the exact payload below before generating.',
+    privacy: '🔒 Your request is de-identified on this device before anything leaves it. Column names, values, dates, numbers, emails, links — and any names, IDs or text that isn’t standard chart vocabulary — become opaque placeholders. Only chart words and those placeholders are ever sent.',
     generate: 'Generate chart',
     enterPrompt: 'Enter a prompt first',
     dataTitle: (n) => `Data (${n} rows)`,
+    redactedTitle: '🔒 Kept on your device',
+    redactionLabel: (kind, n) => {
+      const s = n > 1 ? 's' : ''
+      const m: Record<string, string> = {
+        columns: `${n} column name${s}`, values: `${n} value${s}`, emails: `${n} email${s}`,
+        links: `${n} link${s}`, pii: `${n} phone/ID number${s}`, dates: `${n} date${s}`,
+        numbers: `${n} number${s}`, names: `${n} name${s} / free-text`,
+      }
+      return m[kind] ?? `${n} ${kind}`
+    },
+    blockedTitle: 'That looks like pasted data',
+    blockedBody: 'Describe the chart in words instead of pasting rows or a table — pasted data is masked and won’t make a useful chart.',
+    nameRiskTitle: 'Possible names will be sent as-is — remove them if they’re private:',
     sentCard: '🔍 Sent to the AI (de-identified)',
     modelLine: (m) => `model ${m} · validated on-device before render`,
     requestsSuffix: (n) => ` · ${n} requests this run (initial + auto-repair)`,
@@ -51,10 +69,22 @@ export const STRINGS: Record<Lang, Strings> = {
   tr: {
     title: 'İstem → Grafik',
     promptPlaceholder: 'örn. şehre göre toplam gelir, çubuk grafik',
-    privacy: '🔒 Sütun adları, kategori değerleri, tarihler, uzun sayılar, e-postalar ve bağlantılar; isteğiniz gönderilmeden önce yer tutucularla değiştirilir — verileriniz bu cihazda kalır. Diğer serbest metin (cümle içindeki adlar, notlar) yazıldığı gibi gönderilir, bu yüzden oluşturmadan önce aşağıdaki yükü gözden geçirin.',
+    privacy: '🔒 İsteğiniz, cihazdan ayrılmadan önce bu cihazda kimliksizleştirilir. Sütun adları, değerler, tarihler, sayılar, e-postalar, bağlantılar — ve standart grafik sözcüğü olmayan adlar, kimlikler veya metinler — opak yer tutuculara dönüşür. Yalnızca grafik sözcükleri ve bu yer tutucular gönderilir.',
     generate: 'Grafik oluştur',
     enterPrompt: 'Önce bir istem girin',
     dataTitle: (n) => `Veri (${n} satır)`,
+    redactedTitle: '🔒 Cihazınızda kaldı',
+    redactionLabel: (kind, n) => {
+      const m: Record<string, string> = {
+        columns: `${n} sütun adı`, values: `${n} değer`, emails: `${n} e-posta`,
+        links: `${n} bağlantı`, pii: `${n} telefon/kimlik no`, dates: `${n} tarih`,
+        numbers: `${n} sayı`, names: `${n} ad / serbest metin`,
+      }
+      return m[kind] ?? `${n} ${kind}`
+    },
+    blockedTitle: 'Bu yapıştırılmış veri gibi görünüyor',
+    blockedBody: 'Satır veya tablo yapıştırmak yerine grafiği sözcüklerle tarif edin — yapıştırılan veri maskelenir ve işe yarar bir grafik oluşturmaz.',
+    nameRiskTitle: 'Olası adlar olduğu gibi gönderilecek — özelse kaldırın:',
     sentCard: '🔍 Yapay zekâya gönderilen (kimliksizleştirilmiş)',
     modelLine: (m) => `model ${m} · cihazda doğrulandı`,
     requestsSuffix: (n) => ` · bu çalıştırmada ${n} istek (ilk + otomatik düzeltme)`,
