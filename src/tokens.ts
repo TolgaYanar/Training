@@ -10,6 +10,8 @@ function escapeRegExp(s: string): string {
 }
 
 const ISO_DATE = new RegExp(`(?<![${WORD}])\\d{4}-\\d{1,2}-\\d{1,2}(?:[ T]\\d{2}:\\d{2}(?::\\d{2})?)?(?![${WORD}])`, 'g')
+// English plurals + Turkish case/plural/possessive suffixes, longest first (the word-end boundary keeps it precise).
+const NAME_SUFFIX = '(?:(?:ler|lar)?(?:sının|sinin|ndan|nden|deki|daki|teki|taki|imiz|ımız|ları|leri|sına|sine|sını|sini|nın|nin|nun|nün|nda|nde|dan|den|tan|ten|yla|yle|yı|yi|yu|yü|sı|si|su|sü|ya|ye|na|ne|la|le|da|de|ta|te|ın|in|un|ün|ı|i|u|ü|a|e)?|es|ly|s)?'
 const GROUPED_NUMBER = new RegExp(`(?<![${WORD}.])\\d{1,3}(?:,\\d{3})+(?:\\.\\d+)?(?![${WORD}])`, 'g')
 const SEPARATED_DIGITS = new RegExp(`(?<![${WORD}.])\\d{2,}(?:[-.]\\d{2,})+(?![${WORD}.])`, 'g')
 const DECIMAL = new RegExp(`(?<![${WORD}.])\\d+\\.\\d+(?![${WORD}.])`, 'g')
@@ -113,21 +115,32 @@ export function detokenizeSpec(spec: ChartSpec, toReal: Record<string, string>):
   return out
 }
 
+// Turkish vowel drop: a 2-syllable root losing its final high vowel before a vowel suffix (şehir → şehr).
+function vowelDrop(name: string): string | null {
+  const m = /^(.*[bcçdfgğhjklmnprsştvyz])[ıiuü]([bcçdfgğhjklmnprsştvyz])$/i.exec(name)
+  return m ? m[1] + m[2] : null
+}
+
 export function tokenizeText(text: string, toReal: Record<string, string>): string {
   const entries = Object.entries(toReal).filter(([, real]) => real.length > 0)
   if (entries.length === 0) return text
   const exact = new Map<string, string>()
   const names: Array<{ real: string; token: string }> = []
+  const stems: string[] = []
   for (const [token, real] of entries) {
     const low = real.toLowerCase()
     if (!exact.has(low)) exact.set(low, token)
-    if (token.startsWith('col_')) names.push({ real: low, token })
+    if (token.startsWith('col_')) {
+      names.push({ real: low, token })
+      const vd = real.length >= 4 ? vowelDrop(low) : null
+      if (vd && vd !== low) { names.push({ real: vd, token }); stems.push(vd) }
+    }
   }
   names.sort((a, b) => b.real.length - a.real.length)
-  const alternation = [...entries]
-    .sort((a, b) => b[1].length - a[1].length)
-    .map(([token, real]) => escapeRegExp(real) + (token.startsWith('col_') && real.length >= 4 ? '(?:es|s|ly)?' : ''))
-    .join('|')
+  const alternation = [
+    ...[...entries].sort((a, b) => b[1].length - a[1].length).map(([token, real]) => escapeRegExp(real) + (token.startsWith('col_') && real.length >= 4 ? NAME_SUFFIX : '')),
+    ...stems.map((s) => escapeRegExp(s) + NAME_SUFFIX),
+  ].join('|')
   const re = new RegExp(`(?<![${UWORD}])(?:${alternation})(?![${UWORD}])`, 'giu')
   return text.replace(re, (m) => {
     const low = m.toLowerCase()

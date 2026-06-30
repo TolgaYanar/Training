@@ -3,6 +3,7 @@ import type { ColumnProfile, DataSummary, Row } from './types'
 export interface Dataset {
   id: string
   label: string
+  lang: 'en' | 'tr'
   rows: Row[]
 }
 
@@ -61,10 +62,46 @@ function buildTraffic(): Row[] {
   return rows
 }
 
+const AYLAR = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+const SEHIRLER = ['İstanbul', 'Ankara', 'İzmir', 'Bursa']
+const URUNLER = ['Telefon', 'Tablet', 'Saat']
+
+function buildSatis(): Row[] {
+  const rows: Row[] = []
+  for (let m = 0; m < AYLAR.length; m++) {
+    for (let s = 0; s < SEHIRLER.length; s++) {
+      for (let u = 0; u < URUNLER.length; u++) {
+        const adet = Math.round(SEASONAL[m] * REGION_WEIGHT[s] * PRODUCT_WEIGHT[u])
+        rows.push({ ay: AYLAR[m], şehir: SEHIRLER[s], ürün: URUNLER[u], adet, gelir: adet * UNIT_PRICE[u] })
+      }
+    }
+  }
+  return rows
+}
+
+function buildEticaret(): Row[] {
+  const kategoriler = ['Elektronik', 'Giyim', 'Kitap', 'Ev']
+  const agirlik = [1, 0.6, 0.8, 0.4]
+  const rows: Row[] = []
+  for (let i = 0; i < 365; i++) {
+    const gun = (i + 1) % 7
+    const haftaSonu = gun === 0 || gun === 6 ? 0.7 : 1
+    const mevsim = 1000 + Math.round(300 * Math.sin(i / 30))
+    for (let k = 0; k < kategoriler.length; k++) {
+      const ziyaret = Math.round(mevsim * agirlik[k] * haftaSonu)
+      const sip = (i * 4 + k) % 13 === 0 ? null : Math.round(ziyaret * 0.04)
+      rows.push({ tarih: isoDate(2024, 0, 1 + i), kategori: kategoriler[k], ziyaret, sipariş: sip })
+    }
+  }
+  return rows
+}
+
 export const datasets: Dataset[] = [
-  { id: 'sales', label: 'Monthly sales — small, clean', rows: buildSales() },
-  { id: 'readings', label: 'Daily readings — small, with gaps', rows: buildReadings() },
-  { id: 'traffic', label: 'Daily traffic — large, with gaps', rows: buildTraffic() },
+  { id: 'sales', label: 'Monthly sales — small, clean', lang: 'en', rows: buildSales() },
+  { id: 'readings', label: 'Daily readings — small, with gaps', lang: 'en', rows: buildReadings() },
+  { id: 'traffic', label: 'Daily traffic — large, with gaps', lang: 'en', rows: buildTraffic() },
+  { id: 'satis', label: 'Aylık satış — küçük, temiz', lang: 'tr', rows: buildSatis() },
+  { id: 'eticaret', label: 'Günlük e-ticaret — büyük, boşluklu', lang: 'tr', rows: buildEticaret() },
 ]
 
 const PROFILE_SAMPLE = 5000
