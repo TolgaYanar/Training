@@ -732,6 +732,12 @@ test('op filter compares a date column lexically (after / on-or-before a date)',
   assert.deepEqual(before.xAxis.data, ['2024-01-05', '2024-01-10'])
 })
 
+test('a yearless MM-DD date bound is resolved against the data year', () => {
+  const r = [{ date: '2024-03-05', v: 1 }, { date: '2024-03-07', v: 2 }, { date: '2024-12-30', v: 3 }]
+  const o = buildChartOption({ chartType: 'line', x: 'date', measure: 'v', aggregate: 'sum', filters: [{ column: 'date', op: '>=', value: '03-07' }] }, r)
+  assert.deepEqual(o.xAxis.data, ['2024-03-07', '2024-12-30'])
+})
+
 test('a date range mis-filed onto a number column is re-targeted to the date column', () => {
   const r = [{ date: '2024-03-04', temp: 10 }, { date: '2024-03-05', temp: 11 }, { date: '2024-03-10', temp: 12 }, { date: '2024-03-12', temp: 13 }]
   const o = buildChartOption({ chartType: 'line', x: 'date', measure: 'temp', aggregate: 'none', filters: [{ column: 'temp', op: '>=', value: '2024-03-05' }, { column: 'temp', op: '<=', value: '2024-03-10' }] }, r)

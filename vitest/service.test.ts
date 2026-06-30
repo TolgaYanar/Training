@@ -19,13 +19,13 @@ test('unknown source -> failed without invoking generateOption', async () => {
   expect(generateOption).not.toHaveBeenCalled()
 })
 
-test('ok result maps to ChartResponse ok, drops raw, and forwards the resolved rows', async () => {
+test('ok result maps to ChartResponse ok, forwards raw and the resolved rows', async () => {
   generateOption.mockResolvedValueOnce({ status: 'ok', option: { series: [] }, repaired: true, raw: 'RAW' })
   const r = await chartService.getChart({ source: 'sales', prompt: 'monthly revenue' })
   expect(r.status).toBe('ok')
   if (r.status === 'ok') {
     expect(r.repaired).toBe(true)
-    expect('raw' in r).toBe(false)
+    expect(r.raw).toBe('RAW')
   }
   const arg = generateOption.mock.calls[0][0]
   expect(arg.prompt).toBe('monthly revenue')

@@ -7,7 +7,7 @@ export const chartService: ChartService = {
     const dataset = datasets.find((d) => d.id === req.source)
     if (!dataset) return { status: 'failed', error: `Unknown source "${req.source}"`, raw: '', sent: [] }
     const result = await generateOption({ prompt: req.prompt, rows: dataset.rows })
-    if (result.status === 'ok') return { status: 'ok', option: result.option, repaired: result.repaired, sent: result.sent }
+    if (result.status === 'ok') return { status: 'ok', option: result.option, repaired: result.repaired, raw: result.raw, sent: result.sent }
     return { status: 'failed', error: result.error, raw: result.raw, sent: result.sent }
   },
 }

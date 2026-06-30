@@ -15,13 +15,14 @@ function allFilters(spec: ChartSpec): Filter[] {
 }
 const hasDatePart = (spec: ChartSpec, part: string) => allFilters(spec).some((f) => f.datePart === part)
 
-// "May" the month vs "may" the verb: index 4 requires a capitalized "May" in the original text.
+// A month is a PERIOD filter ("in March") only when it is NOT part of a specific date
+// ("March 7", "7 March", "March 2024"). "May" also needs a capital to avoid the verb.
 function monthIndices(prompt: string): number[] {
-  const low = prompt.toLowerCase()
   const out: number[] = []
   for (let i = 0; i < 12; i++) {
-    if (i === 4) { if (/\bMay\b/.test(prompt)) out.push(5); continue }
-    if (new RegExp(`\\b(?:${MONTHS[i]}|${MON_ABBR[i]})\\b`).test(low)) out.push(i + 1)
+    const name = i === 4 ? 'May' : `(?:${MONTHS[i]}|${MON_ABBR[i]})`
+    const re = new RegExp(`(?<!\\d(?:st|nd|rd|th)?\\s)\\b${name}\\b(?!\\s+\\d)`, i === 4 ? '' : 'i')
+    if (re.test(prompt)) out.push(i + 1)
   }
   return out
 }

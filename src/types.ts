@@ -113,7 +113,7 @@ export interface ChartRequest {
 }
 
 export type ChartResponse =
-  | { status: 'ok'; option: EChartsOption; repaired: boolean; sent: SentRequest[] }
+  | { status: 'ok'; option: EChartsOption; repaired: boolean; raw: string; sent: SentRequest[] }
   | { status: 'failed'; error: string; raw: string; sent: SentRequest[] }
 
 export interface ChartService {

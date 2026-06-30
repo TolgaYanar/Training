@@ -52,7 +52,7 @@ function groupedToNumber(s: string): number {
 }
 
 function coerceLiteral(s: string): string | number {
-  return /^\d{4}-\d{1,2}-\d{1,2}/.test(s) ? s : groupedToNumber(s)
+  return /^\d{4}-\d{1,2}-\d{1,2}/.test(s) || /^\d{1,2}-\d{1,2}$/.test(s) ? s : groupedToNumber(s)
 }
 
 export function detokenizeSpec(spec: ChartSpec, toReal: Record<string, string>): ChartSpec {

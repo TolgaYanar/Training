@@ -28,6 +28,20 @@ function normDate(s: string): string {
   return m ? `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` : s
 }
 
+function dataYear(rows: Row[], col: string): string | null {
+  for (const r of rows) { const v = r[col]; if (typeof v === 'string') { const m = /^(\d{4})-/.exec(v); if (m) return m[1] } }
+  return null
+}
+
+// A date bound the model emitted → a full YYYY-MM-DD, filling the data's year for a yearless MM-DD. null if not a date.
+function resolveDateBound(v: unknown, rows: Row[], col: string): string | null {
+  if (typeof v !== 'string') return null
+  if (/^\d{4}-\d{1,2}-\d{1,2}/.test(v)) return normDate(v)
+  const md = /^(\d{1,2})-(\d{1,2})$/.exec(v)
+  if (md) { const y = dataYear(rows, col); return y ? `${y}-${md[1].padStart(2, '0')}-${md[2].padStart(2, '0')}` : null }
+  return null
+}
+
 function datePartOf(v: unknown, part: 'day' | 'weekday' | 'month' | 'quarter'): number | null {
   if (typeof v !== 'string') return null
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v)
@@ -88,8 +102,8 @@ function matchesTerm(actual: string, term: string): boolean {
 
 function applyFilter(rows: Row[], filter: Filter): Row[] {
   if (filter.from !== undefined || filter.to !== undefined) {
-    const from = filter.from !== undefined ? normDate(String(filter.from)) : undefined
-    const to = filter.to !== undefined ? normDate(String(filter.to)) : undefined
+    const from = filter.from !== undefined ? (resolveDateBound(filter.from, rows, filter.column) ?? normDate(String(filter.from))) : undefined
+    const to = filter.to !== undefined ? (resolveDateBound(filter.to, rows, filter.column) ?? normDate(String(filter.to))) : undefined
     return rows.filter((r) => {
       const v = r[filter.column]
       if (typeof v !== 'string') return false
@@ -102,9 +116,10 @@ function applyFilter(rows: Row[], filter: Filter): Row[] {
   if (filter.op) {
     const op = filter.op
     const raw = filter.value ?? (Array.isArray(filter.in) ? filter.in[0] : undefined)
-    if (typeof raw === 'string' && /^\d{4}-\d{1,2}-\d{1,2}/.test(raw)) {
+    if (typeof raw === 'string' && (/^\d{4}-\d{1,2}-\d{1,2}/.test(raw) || /^\d{1,2}-\d{1,2}$/.test(raw))) {
       if (!isDateCol(rows, filter.column)) return rows
-      const t = normDate(raw)
+      const t = resolveDateBound(raw, rows, filter.column)
+      if (t === null) return rows
       return rows.filter((r) => {
         const v = r[filter.column]
         if (typeof v !== 'string') return false
@@ -161,7 +176,7 @@ function allFilters(spec: ChartSpec): Filter[] {
   const list: Filter[] = []
   if (Array.isArray(spec.filters)) list.push(...spec.filters)
   if (spec.filter) list.push(spec.filter)
-  const okOp = (f: Filter): boolean => typeof f.op === 'string' && (Number.isFinite(f.value) || (typeof f.value === 'string' && /^\d{4}-\d{1,2}-\d{1,2}/.test(f.value)))
+  const okOp = (f: Filter): boolean => typeof f.op === 'string' && (Number.isFinite(f.value) || (typeof f.value === 'string' && (/^\d{4}-\d{1,2}-\d{1,2}/.test(f.value) || /^\d{1,2}-\d{1,2}$/.test(f.value))))
   return list.filter((f) => f && typeof f.column === 'string' && (okOp(f) || (Array.isArray(f.in) && f.in.length > 0) || (Array.isArray(f.notIn) && f.notIn.length > 0) || typeof f.from === 'string' || typeof f.to === 'string'))
 }
 
