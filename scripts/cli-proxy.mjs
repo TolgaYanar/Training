@@ -1,5 +1,8 @@
 import { createServer } from 'node:http'
 import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 
 // Faithful API proxy: forwards the app's exact request body (same model, temperature 0,
 // same system prompt) to api.anthropic.com, swapping the API key for your Claude
@@ -10,10 +13,16 @@ const PORT = Number(process.env.PORT ?? 8787)
 const OAUTH_BETA = 'oauth-2025-04-20'
 
 function readToken() {
-  const raw = execFileSync('security', ['find-generic-password', '-s', 'Claude Code-credentials', '-w'], { encoding: 'utf8' })
-  const t = JSON.parse(raw).claudeAiOauth
-  if (t.expiresAt && Date.now() > t.expiresAt) console.warn('[proxy] OAuth token appears expired — open Claude Code to refresh it.')
-  return t.accessToken
+  // Windows/Linux store the token in ~/.claude/.credentials.json; macOS uses the Keychain.
+  let oauth
+  try {
+    oauth = JSON.parse(readFileSync(join(homedir(), '.claude', '.credentials.json'), 'utf8')).claudeAiOauth
+  } catch {
+    oauth = JSON.parse(execFileSync('security', ['find-generic-password', '-s', 'Claude Code-credentials', '-w'], { encoding: 'utf8' })).claudeAiOauth
+  }
+  if (!oauth?.accessToken) throw new Error('No Claude OAuth token found — run `claude` to log in.')
+  if (oauth.expiresAt && Date.now() > oauth.expiresAt) console.warn('[proxy] OAuth token appears expired — open Claude Code to refresh it.')
+  return oauth.accessToken
 }
 
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'POST, OPTIONS' }

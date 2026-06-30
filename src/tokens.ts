@@ -9,7 +9,7 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-const ISO_DATE = new RegExp(`(?<![${WORD}])\\d{4}-\\d{2}-\\d{2}(?:[ T]\\d{2}:\\d{2}(?::\\d{2})?)?(?![${WORD}])`, 'g')
+const ISO_DATE = new RegExp(`(?<![${WORD}])\\d{4}-\\d{1,2}-\\d{1,2}(?:[ T]\\d{2}:\\d{2}(?::\\d{2})?)?(?![${WORD}])`, 'g')
 const GROUPED_NUMBER = new RegExp(`(?<![${WORD}.])\\d{1,3}(?:,\\d{3})+(?:\\.\\d+)?(?![${WORD}])`, 'g')
 const SEPARATED_DIGITS = new RegExp(`(?<![${WORD}.])\\d{2,}(?:[-.]\\d{2,})+(?![${WORD}.])`, 'g')
 const DECIMAL = new RegExp(`(?<![${WORD}.])\\d+\\.\\d+(?![${WORD}.])`, 'g')
@@ -51,6 +51,10 @@ function groupedToNumber(s: string): number {
   return Number(s.replace(/,/g, ''))
 }
 
+function coerceLiteral(s: string): string | number {
+  return /^\d{4}-\d{1,2}-\d{1,2}/.test(s) ? s : groupedToNumber(s)
+}
+
 export function detokenizeSpec(spec: ChartSpec, toReal: Record<string, string>): ChartSpec {
   const real = (v: string): string => toReal[v] ?? v
   const out: ChartSpec = { ...spec }
@@ -64,7 +68,9 @@ export function detokenizeSpec(spec: ChartSpec, toReal: Record<string, string>):
     column: typeof f.column === 'string' ? real(f.column) : f.column,
     in: Array.isArray(f.in) ? f.in.map((v) => (typeof v === 'string' ? real(v) : v)) : f.in,
     notIn: Array.isArray(f.notIn) ? f.notIn.map((v) => (typeof v === 'string' ? real(v) : v)) : f.notIn,
-    value: typeof f.value === 'string' ? groupedToNumber(real(f.value)) : f.value,
+    value: typeof f.value === 'string' ? coerceLiteral(real(f.value)) : f.value,
+    from: typeof f.from === 'string' ? real(f.from) : f.from,
+    to: typeof f.to === 'string' ? real(f.to) : f.to,
   })
   if (spec.filter && typeof spec.filter.column === 'string') out.filter = realFilter(spec.filter)
   if (Array.isArray(spec.filters)) out.filters = spec.filters.map((f) => (f && typeof f.column === 'string' ? realFilter(f) : f))
@@ -83,6 +89,25 @@ export function detokenizeSpec(spec: ChartSpec, toReal: Record<string, string>):
       column: real(spec.pick.column),
       by: typeof spec.pick.by === 'string' ? real(spec.pick.by) : spec.pick.by,
       where: spec.pick.where && typeof spec.pick.where.column === 'string' ? realFilter(spec.pick.where) : spec.pick.where,
+    }
+  }
+  if (spec.groups && typeof spec.groups === 'object' && !Array.isArray(spec.groups)) {
+    const g: Record<string, Array<string | number>> = {}
+    for (const [label, members] of Object.entries(spec.groups)) {
+      g[label] = Array.isArray(members) ? members.map((v) => (typeof v === 'string' ? real(v) : v)) : members
+    }
+    out.groups = g
+  }
+  if (spec.window && typeof spec.window === 'object' && typeof spec.window.date === 'string') {
+    out.window = { ...spec.window, date: real(spec.window.date) }
+  }
+  if (spec.having && typeof spec.having === 'object' && typeof spec.having.column === 'string') {
+    out.having = {
+      ...spec.having,
+      column: real(spec.having.column),
+      measure: typeof spec.having.measure === 'string' ? real(spec.having.measure) : spec.having.measure,
+      value: typeof spec.having.value === 'string' ? coerceLiteral(real(spec.having.value)) : spec.having.value,
+      where: spec.having.where && typeof spec.having.where.column === 'string' ? realFilter(spec.having.where) : spec.having.where,
     }
   }
   return out

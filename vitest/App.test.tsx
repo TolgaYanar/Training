@@ -2,7 +2,7 @@ import { test, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react'
 
 const { generateOption, deidentify } = vi.hoisted(() => ({ generateOption: vi.fn(), deidentify: vi.fn(() => ({ message: 'preview', toReal: {} })) }))
-vi.mock('../src/ai', () => ({ generateOption, deidentify }))
+vi.mock('../src/ai', () => ({ generateOption, deidentify, CLAUDE_MODEL: 'claude-sonnet-4-6' }))
 vi.mock('echarts-for-react', () => ({ default: () => <div data-testid="chart" /> }))
 
 import App from '../src/App.tsx'

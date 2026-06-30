@@ -666,8 +666,116 @@ test('over: avg = mean of per-over totals; min = worst period', () => {
   assert.deepEqual(buildChartOption({ chartType: 'bar', x: 'g', measure: 'v', aggregate: 'min', over: 'p' }, r).series[0].data, [30])
 })
 
+test('over + bucket: per-group aggregate is over BUCKETED periods, not raw over values', () => {
+  const r = [
+    { g: 'A', date: '2024-01-05', v: 10 },
+    { g: 'A', date: '2024-01-20', v: 20 },
+    { g: 'A', date: '2024-02-10', v: 50 },
+  ]
+  assert.deepEqual(buildChartOption({ chartType: 'bar', x: 'g', measure: 'v', aggregate: 'avg', over: 'date', bucket: 'month' }, r).series[0].data, [40])
+  assert.deepEqual(buildChartOption({ chartType: 'bar', x: 'g', measure: 'v', aggregate: 'min', over: 'date', bucket: 'month' }, r).series[0].data, [30])
+})
+
 test('over validates its column', () => {
   assert.throws(() => buildChartOption({ chartType: 'bar', x: 'g', measure: 'v', aggregate: 'max', over: 'nope' }, [{ g: 'A', v: 1 }]), /unknown column/)
+})
+
+test('groups: folds groupByPart weekday into AI-defined Weekday/Weekend buckets', () => {
+  const r = [
+    { date: '2024-01-01', v: 10 },
+    { date: '2024-01-02', v: 20 },
+    { date: '2024-01-06', v: 100 },
+    { date: '2024-01-07', v: 200 },
+  ]
+  const o = buildChartOption({ chartType: 'bar', x: 'date', measure: 'v', aggregate: 'avg', groupByPart: 'weekday', groups: { Weekday: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], Weekend: ['Sat', 'Sun'] } }, r)
+  assert.deepEqual(o.xAxis.data, ['Weekday', 'Weekend'])
+  assert.deepEqual(o.series[0].data, [15, 150])
+})
+
+test('groups: folds a category x into named tiers, dropping unlisted values', () => {
+  const r = [{ prod: 'Widget', u: 5 }, { prod: 'Gadget', u: 7 }, { prod: 'Gizmo', u: 3 }]
+  const o = buildChartOption({ chartType: 'bar', x: 'prod', measure: 'u', aggregate: 'sum', groups: { Premium: ['Gizmo'], Standard: ['Widget', 'Gadget'] } }, r)
+  assert.deepEqual(o.xAxis.data, ['Premium', 'Standard'])
+  assert.deepEqual(o.series[0].data, [3, 12])
+})
+
+test('window: last N days resolves against the data max date (data-anchored)', () => {
+  const r = Array.from({ length: 20 }, (_, i) => ({ date: `2024-03-${String(i + 1).padStart(2, '0')}`, v: i + 1 }))
+  const o = buildChartOption({ chartType: 'line', x: 'date', measure: 'v', aggregate: 'sum', window: { anchor: 'last', count: 5, unit: 'day' } }, r)
+  assert.deepEqual(o.xAxis.data, ['2024-03-16', '2024-03-17', '2024-03-18', '2024-03-19', '2024-03-20'])
+})
+
+test('window: first N weeks resolves from the data min date', () => {
+  const r = Array.from({ length: 20 }, (_, i) => ({ date: `2024-03-${String(i + 1).padStart(2, '0')}`, v: i + 1 }))
+  const o = buildChartOption({ chartType: 'line', x: 'date', measure: 'v', aggregate: 'sum', window: { anchor: 'first', count: 2, unit: 'week' } }, r)
+  assert.equal(o.xAxis.data.length, 14)
+  assert.deepEqual([o.xAxis.data[0], o.xAxis.data[13]], ['2024-03-01', '2024-03-14'])
+})
+
+test('ragged (non-zero-padded) dates in from/to are normalized before comparing', () => {
+  const r = [{ date: '2024-06-01', v: 1 }, { date: '2024-06-15', v: 2 }, { date: '2024-07-24', v: 3 }, { date: '2024-08-01', v: 4 }]
+  const o = buildChartOption({ chartType: 'line', x: 'date', measure: 'v', aggregate: 'sum', filters: [{ column: 'date', from: '2024-6-1', to: '2024-7-24' }] }, r)
+  assert.deepEqual(o.xAxis.data, ['2024-06-01', '2024-06-15', '2024-07-24'])
+})
+
+test('window with an explicit date anchors a 7-day span (week of <date>)', () => {
+  const r = Array.from({ length: 20 }, (_, i) => ({ date: `2024-07-${String(i + 1).padStart(2, '0')}`, v: 1 }))
+  const o = buildChartOption({ chartType: 'line', x: 'date', measure: 'v', aggregate: 'sum', window: { date: '2024-07-01', count: 1, unit: 'week' } }, r)
+  assert.deepEqual([o.xAxis.data[0], o.xAxis.data[o.xAxis.data.length - 1], o.xAxis.data.length], ['2024-07-01', '2024-07-07', 7])
+})
+
+test('op filter compares a date column lexically (after / on-or-before a date)', () => {
+  const r = [{ date: '2024-01-05', v: 1 }, { date: '2024-01-10', v: 2 }, { date: '2024-01-15', v: 3 }]
+  const after = buildChartOption({ chartType: 'line', x: 'date', measure: 'v', aggregate: 'sum', filters: [{ column: 'date', op: '>', value: '2024-01-10' }] }, r)
+  assert.deepEqual(after.xAxis.data, ['2024-01-15'])
+  const before = buildChartOption({ chartType: 'line', x: 'date', measure: 'v', aggregate: 'sum', filters: [{ column: 'date', op: '<=', value: '2024-01-10' }] }, r)
+  assert.deepEqual(before.xAxis.data, ['2024-01-05', '2024-01-10'])
+})
+
+test('a date range mis-filed onto a number column is re-targeted to the date column', () => {
+  const r = [{ date: '2024-03-04', temp: 10 }, { date: '2024-03-05', temp: 11 }, { date: '2024-03-10', temp: 12 }, { date: '2024-03-12', temp: 13 }]
+  const o = buildChartOption({ chartType: 'line', x: 'date', measure: 'temp', aggregate: 'none', filters: [{ column: 'temp', op: '>=', value: '2024-03-05' }, { column: 'temp', op: '<=', value: '2024-03-10' }] }, r)
+  assert.deepEqual(o.xAxis.data, ['2024-03-05', '2024-03-10'])
+})
+
+test('count with a threshold that matches no rows still shows every category at 0', () => {
+  const r = [{ ch: 'A', v: 10 }, { ch: 'B', v: 20 }, { ch: 'A', v: 5 }]
+  const o = buildChartOption({ chartType: 'bar', x: 'ch', aggregate: 'count', filters: [{ column: 'v', op: '>', value: 100 }] }, r)
+  assert.deepEqual(o.xAxis.data, ['A', 'B'])
+  assert.deepEqual(o.series[0].data, [0, 0])
+})
+
+test('having keeps only the groups whose aggregate meets the condition', () => {
+  const r = [
+    { m: 'Jan', reg: 'N', rev: 3000, u: 10 }, { m: 'Jan', reg: 'N', rev: 2000, u: 5 },
+    { m: 'Feb', reg: 'N', rev: 1000, u: 8 },
+    { m: 'Mar', reg: 'N', rev: 4500, u: 7 },
+  ]
+  const o = buildChartOption({ chartType: 'bar', x: 'm', measure: 'u', aggregate: 'sum', filters: [{ column: 'reg', in: ['N'] }], having: { column: 'm', measure: 'rev', agg: 'sum', op: '>', value: 4000, where: { column: 'reg', in: ['N'] } } }, r)
+  assert.deepEqual(o.xAxis.data, ['Jan', 'Mar'])
+  assert.deepEqual(o.series[0].data, [15, 7])
+})
+
+test('pick with bucket:week selects the winning WEEK (by one measure) and plots another', () => {
+  const r = []
+  for (let d = 1; d <= 14; d++) {
+    const date = `2024-01-${String(d).padStart(2, '0')}`
+    r.push({ date, ch: 'A', visits: d <= 7 ? 10 : 100, signups: d })
+  }
+  const o = buildChartOption({ chartType: 'line', x: 'date', measure: 'signups', aggregate: 'sum', pick: { column: 'date', bucket: 'week', by: 'visits', extreme: 'max' } }, r)
+  assert.deepEqual(o.xAxis.data, ['2024-01-08', '2024-01-09', '2024-01-10', '2024-01-11', '2024-01-12', '2024-01-13', '2024-01-14'])
+  assert.deepEqual(o.series[0].data, [8, 9, 10, 11, 12, 13, 14])
+})
+
+test('top-N series: ranks series by total measure and keeps top N, x stays in natural order', () => {
+  const r = [
+    { month: 'Jan', region: 'N', rev: 100 }, { month: 'Feb', region: 'N', rev: 100 },
+    { month: 'Jan', region: 'S', rev: 10 }, { month: 'Feb', region: 'S', rev: 10 },
+    { month: 'Jan', region: 'E', rev: 50 }, { month: 'Feb', region: 'E', rev: 50 },
+  ]
+  const o = buildChartOption({ chartType: 'line', x: 'month', series: 'region', measure: 'rev', aggregate: 'sum', sort: 'value', order: 'desc', limit: 2 }, r)
+  assert.deepEqual(o.series.map((s) => s.name).sort(), ['E', 'N'])
+  assert.deepEqual(o.xAxis.data, ['Jan', 'Feb'])
 })
 
 test('pick: conditional argmax — month where ONE group peaks, applied to ALL groups', () => {

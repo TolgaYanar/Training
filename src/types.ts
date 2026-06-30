@@ -31,7 +31,7 @@ export interface Filter {
   notIn?: Array<string | number>
   datePart?: 'day' | 'weekday' | 'month' | 'quarter'
   op?: '>' | '>=' | '<' | '<=' | '==' | '!='
-  value?: number
+  value?: number | string
   from?: string
   to?: string
 }
@@ -45,10 +45,20 @@ export interface Derived {
 export interface Pick {
   column: string
   datePart?: 'day' | 'weekday' | 'month' | 'quarter'
+  bucket?: 'week' | 'month' | 'quarter' | 'year'
   by: string
   agg?: 'sum' | 'avg'
   where?: Filter
   extreme: 'max' | 'min'
+}
+
+export interface Having {
+  column: string
+  measure: string
+  agg: 'sum' | 'avg' | 'count' | 'min' | 'max'
+  op: '>' | '>=' | '<' | '<=' | '==' | '!='
+  value: number | string
+  where?: Filter
 }
 
 export interface DisplayOptions {
@@ -67,11 +77,14 @@ export interface ChartSpec {
   series?: string
   over?: string
   pick?: Pick
+  having?: Having
   aggregate: AggregateOp
   filter?: Filter
   filters?: Filter[]
   bucket?: 'week' | 'month' | 'quarter' | 'year'
   groupByPart?: 'day' | 'weekday' | 'month' | 'quarter'
+  groups?: Record<string, Array<string | number>>
+  window?: { anchor?: 'last' | 'first'; date?: string; count: number; unit: 'day' | 'week' }
   derived?: Derived
   title?: string
   sort?: 'value'

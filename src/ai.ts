@@ -4,9 +4,9 @@ import { MINIMAL_SPEC_SCHEMA, SYSTEM_PROMPT, buildRepairMessage, buildSpecMessag
 import { buildChartOption } from './chart'
 import { checkOption, extractJson, validateSpec } from './validate'
 import { buildTokens, detokenizeSpec, redactLiterals, tokenizeText } from './tokens'
-import { enforceArgmaxFilter, enforceDateFilters } from './guardrails'
+import { enforceNamedFilters } from './guardrails'
 
-const CLAUDE_MODEL = 'claude-haiku-4-5'
+export const CLAUDE_MODEL = 'claude-sonnet-4-6'
 
 const RETRYABLE_STATUS = new Set([429, 503, 529])
 
@@ -63,7 +63,7 @@ function buildFrom(raw: string, prompt: string, rows: Row[], toReal: Record<stri
   if (schemaError) return { error: schemaError }
   let option: EChartsOption
   try {
-    option = buildChartOption(enforceArgmaxFilter(enforceDateFilters(detokenizeSpec(parsed as ChartSpec, toReal), prompt, rows), prompt, rows), rows, allowEmpty)
+    option = buildChartOption(enforceNamedFilters(detokenizeSpec(parsed as ChartSpec, toReal), prompt, rows), rows, allowEmpty)
   } catch (e) {
     return { error: (e as Error).message }
   }

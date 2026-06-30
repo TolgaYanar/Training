@@ -1,0 +1,42 @@
+[
+  { "id": "c01", "group": "Core types", "dataset": "traffic", "prompt": "Smooth line chart of weekly total signups for the Organic and Social channels only, one line each, across the whole year.", "expect": { "typesAnyOf": ["line"], "seriesCount": 2, "xLenMin": 50, "xLenMax": 54, "yNameAnyOf": ["signups"], "smooth": true } },
+  { "id": "c02", "group": "Core types", "dataset": "sales", "prompt": "Total units by product for the West region, in March, June and September only, as a bar chart.", "expect": { "typesAnyOf": ["bar"], "xLen": 3, "seriesCount": 1, "xNameAnyOf": ["product"], "yNameAnyOf": ["units"] } },
+  { "id": "c03", "group": "Core types", "dataset": "traffic", "prompt": "Stacked area chart of daily visits broken down by channel, excluding Email, over the summer months.", "expect": { "typesAnyOf": ["line"], "seriesCount": 3, "xLenMin": 88, "xLenMax": 92, "stacked": true, "yNameAnyOf": ["visits"] } },
+  { "id": "c04", "group": "Core types", "dataset": "sales", "prompt": "Share of total revenue by region for the Gizmo product only.", "expect": { "typesAnyOf": ["pie"], "pieSlices": 4, "seriesCount": 1 } },
+  { "id": "c05", "group": "Core types", "dataset": "readings", "prompt": "Scatter of temperature versus humidity, one series per sensor, for readings after 2024-03-08.", "expect": { "typesAnyOf": ["scatter"], "seriesCount": 2 } },
+
+  { "id": "c06", "group": "Aggregation/count", "dataset": "traffic", "prompt": "Grouped bar counting, for each channel, how many days its visits exceeded 1,000 during the first quarter.", "expect": { "typesAnyOf": ["bar"], "xLen": 4, "seriesCount": 1, "xNameAnyOf": ["channel"] } },
+  { "id": "c07", "group": "Aggregation/count", "dataset": "traffic", "prompt": "Average signups by day of the week for the Paid channel, as a bar chart.", "expect": { "typesAnyOf": ["bar"], "xLen": 7, "seriesCount": 1, "yNameAnyOf": ["signups"] } },
+  { "id": "c08", "group": "Aggregation/count", "dataset": "traffic", "prompt": "How many days did each channel get more than 50 signups in the last quarter?", "expect": { "typesAnyOf": ["bar"], "xLen": 4, "seriesCount": 1, "xNameAnyOf": ["channel"] } },
+
+  { "id": "c09", "group": "Multi-measure", "dataset": "traffic", "prompt": "On a line chart with two separate y-axes, compare monthly total visits against monthly total signups for the Paid channel across the year.", "expect": { "typesAnyOf": ["line"], "seriesCount": 2, "xLen": 12, "dualAxis": true } },
+  { "id": "c10", "group": "Multi-measure", "dataset": "sales", "prompt": "Compare total units and total revenue per product as side-by-side bars.", "expect": { "typesAnyOf": ["bar"], "seriesCount": 2, "xLen": 3, "stacked": false, "xNameAnyOf": ["product"] } },
+  { "id": "c11", "group": "Multi-measure", "dataset": "traffic", "prompt": "Monthly conversion rate — signups divided by visits — for each channel as separate lines, in the second half of the year.", "expect": { "typesAnyOf": ["line"], "seriesCount": 4, "xLen": 6 } },
+
+  { "id": "c12", "group": "Time windows", "dataset": "traffic", "prompt": "Compare average visits on weekends versus weekdays across all seven days, for the Organic and Email channels.", "expect": { "typesAnyOf": ["bar"], "seriesCount": 2, "xLenMin": 2, "xLenMax": 7 }, "note": "ambiguous: 7 weekday buckets vs 2 weekend/weekday buckets" },
+  { "id": "c13", "group": "Time windows", "dataset": "traffic", "prompt": "Total signups by channel during the last week of December.", "expect": { "typesAnyOf": ["bar"], "xLen": 4, "seriesCount": 1, "xNameAnyOf": ["channel"], "yNameAnyOf": ["signups"] } },
+  { "id": "c14", "group": "Time windows", "dataset": "traffic", "prompt": "Daily visits in the first 10 days of February for the Social channel as a line.", "expect": { "typesAnyOf": ["line"], "xLen": 10, "seriesCount": 1, "yNameAnyOf": ["visits"] } },
+  { "id": "c15", "group": "Time windows", "dataset": "readings", "prompt": "Temperature for both sensors as two lines, between 2024-03-04 and 2024-03-11, day by day.", "expect": { "typesAnyOf": ["line"], "seriesCount": 2, "xLen": 8, "yNameAnyOf": ["temperature"] } },
+
+  { "id": "c16", "group": "Ranking", "dataset": "sales", "prompt": "The top 2 regions by total revenue, plotted month by month as two lines.", "expect": { "typesAnyOf": ["line"], "seriesCount": 2, "xLen": 12 } },
+  { "id": "c17", "group": "Ranking", "dataset": "sales", "prompt": "For the region that sells the most units overall, break that region's revenue down by product.", "expect": { "typesAnyOf": ["bar"], "xLen": 3, "seriesCount": 1, "xNameAnyOf": ["product"], "yNameAnyOf": ["revenue"] } },
+  { "id": "c18", "group": "Ranking", "dataset": "sales", "prompt": "Horizontal bar ranking the four regions highest-to-lowest by total revenue, for the Gizmo product only.", "expect": { "typesAnyOf": ["bar"], "xLen": 4, "seriesCount": 1, "xNameAnyOf": ["region"], "horizontal": true } },
+
+  { "id": "c19", "group": "Display toggles", "dataset": "sales", "prompt": "Stacked bar of revenue by region for each month, for the Widget and Gadget products combined.", "expect": { "typesAnyOf": ["bar"], "xLen": 12, "seriesCount": 4, "stacked": true, "xNameAnyOf": ["month"] } },
+  { "id": "c20", "group": "Display toggles", "dataset": "traffic", "prompt": "As a step line, show the Email channel's daily signups over the last 60 days of data.", "expect": { "typesAnyOf": ["line"], "xLen": 60, "seriesCount": 1, "step": true, "yNameAnyOf": ["signups"] } },
+  { "id": "c21", "group": "Display toggles", "dataset": "sales", "prompt": "Donut chart of total units by region for the Gadget product only.", "expect": { "typesAnyOf": ["pie"], "pieSlices": 4, "donut": true } },
+  { "id": "c22", "group": "Display toggles", "dataset": "sales", "prompt": "Nightingale rose chart of total units by product, for the North and South regions combined.", "expect": { "typesAnyOf": ["pie"], "pieSlices": 3, "rose": true } },
+
+  { "id": "c23", "group": "over", "dataset": "traffic", "prompt": "For every channel, show its single best day of signups, as a horizontal bar chart.", "expect": { "typesAnyOf": ["bar"], "xLen": 4, "seriesCount": 1, "xNameAnyOf": ["channel"], "horizontal": true, "yNameAnyOf": ["signups"] } },
+  { "id": "c24", "group": "over", "dataset": "sales", "prompt": "Each region's worst single month of revenue, as a bar chart.", "expect": { "typesAnyOf": ["bar"], "xLen": 4, "seriesCount": 1, "xNameAnyOf": ["region"], "yNameAnyOf": ["revenue"] } },
+  { "id": "c25", "group": "over", "dataset": "traffic", "prompt": "The average monthly visits per channel — for each channel, the mean of its monthly totals.", "expect": { "typesAnyOf": ["bar"], "xLen": 4, "seriesCount": 1, "xNameAnyOf": ["channel"], "yNameAnyOf": ["visits"] } },
+
+  { "id": "c26", "group": "pick", "dataset": "traffic", "prompt": "In the month the Paid channel's signups peak, show every channel's total visits side by side.", "expect": { "typesAnyOf": ["bar"], "xLen": 4, "seriesCount": 1, "xNameAnyOf": ["channel"], "yNameAnyOf": ["visits"] } },
+  { "id": "c27", "group": "pick", "dataset": "traffic", "prompt": "On the single day Organic had its highest visits, plot each channel's signups as bars.", "expect": { "typesAnyOf": ["bar"], "xLen": 4, "seriesCount": 1, "xNameAnyOf": ["channel"], "yNameAnyOf": ["signups"] } },
+  { "id": "c28", "group": "pick", "dataset": "sales", "prompt": "For the product with the highest total revenue, chart that product's units by region.", "expect": { "typesAnyOf": ["bar"], "xLen": 4, "seriesCount": 1, "xNameAnyOf": ["region"], "yNameAnyOf": ["units"] } },
+
+  { "id": "c29", "group": "Exclusion", "dataset": "traffic", "prompt": "Daily visits over time, one line per channel, for every channel except Email and Paid.", "expect": { "typesAnyOf": ["line"], "seriesCount": 2, "xLenMin": 360 } },
+
+  { "id": "c30", "group": "Hard edge", "dataset": "traffic", "prompt": "In the busiest single week of the year for total visits, show each channel's signups per day.", "expect": { "seriesCountMin": 1 }, "note": "compound nested pick (busiest week) then daily-by-channel; ideal xLen=7 seriesCount=4" },
+  { "id": "c31", "group": "Hard edge", "dataset": "sales", "prompt": "Only the months where the North region's revenue beat 4,000, charted as North's units those months.", "expect": { "seriesCountMin": 1 }, "note": "per-group HAVING filter not expressible by row-level filters" }
+]
