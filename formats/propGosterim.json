@@ -1,0 +1,2317 @@
+[
+  {
+    "anahtar": "stokId",
+    "baslik": "Stok Numarası",
+    "gizli": true,
+    "kolonHizalama": 2,
+    "duzenleEkBilgideGorunur": false,
+    "bilgilerdeGorunur": false,
+    "listedeGorunur": false,
+    "gosterimBilgi": {
+      "tur": "sayi",
+      "kolonTanim": {
+        "alanIsmi": "StokId",
+        "anahtar": "stokId",
+        "tipKodu": 9,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+          { "tipIsmi": "birincilAnahtarAttribute", "obje": {} },
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Stok Numarası", "aciklama": null } }
+        ],
+        "objeTipId": "coreLib_Int32",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "ondalikBasamakSayisi": 0,
+      "duzSayi": true,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "enumDepoTipi",
+    "baslik": "Depo Tipi",
+    "gizli": false,
+    "kolonHizalama": 1,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "enum",
+      "enumKeys": [
+        { "label": "Ana", "value": 1 },
+        { "label": "Arge", "value": 2 },
+        { "label": "Cari", "value": 3 },
+        { "label": "Diğer", "value": 999 }
+      ],
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "depoKodu",
+    "baslik": "Depo Kodu",
+    "siralamaAnahtar": "depoKodu",
+    "gizli": false,
+    "baglantiliAlanKey": "DepoId",
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "DepoKodu",
+        "anahtar": "depoKodu",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonKalinFontAttribute", "obje": {} },
+          { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "DepoId", "kolonAnahtar": null } },
+          { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} },
+          { "tipIsmi": "kolonExcelAlanSecimEtiketAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": true,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "depoIsmi",
+    "baslik": "Depo İsmi",
+    "siralamaAnahtar": "depoIsmi",
+    "gizli": false,
+    "baglantiliAlanKey": "DepoId",
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "DepoIsmi",
+        "anahtar": "depoIsmi",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Depo İsmi", "aciklama": null } },
+          { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "DepoId", "kolonAnahtar": null } }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "rafKodu",
+    "baslik": "Raf Kodu",
+    "siralamaAnahtar": "rafKodu",
+    "gizli": false,
+    "baglantiliAlanKey": "DepoRafId",
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "RafKodu",
+        "anahtar": "rafKodu",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonKalinFontAttribute", "obje": {} },
+          { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "DepoRafId", "kolonAnahtar": null } },
+          { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} },
+          {
+            "tipIsmi": "bagliFiltreAttribute",
+            "obje": { "propertyAnahtar": "depoId", "sorguHedefAnahtar": null, "dogrulamaKapali": false }
+          },
+          { "tipIsmi": "kolonAlanSecimEtiketAttribute", "obje": {} },
+          { "tipIsmi": "kolonExcelAlanSecimEtiketAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": true,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "rafIsmi",
+    "baslik": "Raf İsmi",
+    "siralamaAnahtar": "rafIsmi",
+    "gizli": false,
+    "baglantiliAlanKey": "DepoRafId",
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "RafIsmi",
+        "anahtar": "rafIsmi",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Raf İsmi", "aciklama": null } },
+          { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "DepoRafId", "kolonAnahtar": null } }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "enumRafTipi",
+    "baslik": "Raf Tipi",
+    "siralamaAnahtar": "enumRafTipi",
+    "gizli": false,
+    "kolonHizalama": 1,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "enum",
+      "enumKeys": [
+        { "label": "Kalite", "value": 1, "renk": 2 },
+        { "label": "Kullanılabilir", "value": 2, "renk": 1 },
+        { "label": "Bloke", "value": 3, "renk": 3 }
+      ],
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "sahipStokCariId",
+    "baslik": "Sahip Cari Numarası",
+    "gizli": true,
+    "kolonHizalama": 2,
+    "duzenleEkBilgideGorunur": false,
+    "bilgilerdeGorunur": false,
+    "listedeGorunur": false,
+    "gosterimBilgi": {
+      "tur": "sayi",
+      "kolonTanim": {
+        "alanIsmi": "SahipStokCariId",
+        "anahtar": "sahipStokCariId",
+        "tipKodu": 9,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Sahip Cari Numarası", "aciklama": null } },
+          {
+            "tipIsmi": "alanSecimCariler",
+            "obje": {
+              "sorguObje": null,
+              "sorguTipId": "ver04_Cariler",
+              "etiketAnahtarlar": null,
+              "aciklamaAnahtar": null,
+              "excelAnahtarlar": null,
+              "yalnizFiltrelerdeSecim": false,
+              "siralamaAnahtar": null,
+              "siralamaYonu": null
+            }
+          },
+          { "tipIsmi": "duzenledeAcikAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_Int32",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "ondalikBasamakSayisi": 0,
+      "duzSayi": false,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "sahipStokCariIsmi",
+    "baslik": "Sahip Cari İsmi",
+    "siralamaAnahtar": "sahipStokCariIsmi",
+    "gizli": false,
+    "baglantiliAlanKey": "SahipStokCariId",
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "SahipStokCariIsmi",
+        "anahtar": "sahipStokCariIsmi",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Sahip Cari İsmi", "aciklama": null } },
+          { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "SahipStokCariId", "kolonAnahtar": null } },
+          { "tipIsmi": "kolonExcelAlanSecimEtiketAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "siparisCariIsmi",
+    "baslik": "Tedarikçi",
+    "siralamaAnahtar": "siparisCariIsmi",
+    "gizli": false,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "SiparisCariIsmi",
+        "anahtar": "siparisCariIsmi",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Tedarikçi", "aciklama": null } },
+          {
+            "tipIsmi": "alanSecimCariler",
+            "obje": {
+              "sorguObje": null,
+              "sorguTipId": "ver04_Cariler",
+              "etiketAnahtarlar": null,
+              "aciklamaAnahtar": null,
+              "excelAnahtarlar": null,
+              "yalnizFiltrelerdeSecim": false,
+              "siralamaAnahtar": null,
+              "siralamaYonu": null
+            }
+          }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "malzemeKodu",
+    "baslik": "Malzeme Kodu",
+    "siralamaAnahtar": "malzemeKodu",
+    "gizli": false,
+    "baglantiliAlanKey": "MalzemeId",
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "MalzemeKodu",
+        "anahtar": "malzemeKodu",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonKalinFontAttribute", "obje": {} },
+          { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "MalzemeId", "kolonAnahtar": null } },
+          { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} },
+          { "tipIsmi": "kolonExcelAlanSecimEtiketAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": true,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "malzemeIsmi",
+    "baslik": "Malzeme İsmi",
+    "siralamaAnahtar": "malzemeIsmi",
+    "gizli": false,
+    "baglantiliAlanKey": "MalzemeId",
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "MalzemeIsmi",
+        "anahtar": "malzemeIsmi",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme İsmi", "aciklama": null } },
+          { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "MalzemeId", "kolonAnahtar": null } },
+          { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "malzemeTasarimKodu",
+    "baslik": "Tasarım Kodu",
+    "siralamaAnahtar": "malzemeTasarimKodu",
+    "gizli": false,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "MalzemeTasarimKodu",
+        "anahtar": "malzemeTasarimKodu",
+        "tipKodu": 18,
+        "kolonAttributelar": [{ "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Tasarım Kodu", "aciklama": null } }],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "mrpSorumlusuKullaniciId",
+    "baslik": "Mrp Sorumlusu",
+    "gizli": true,
+    "kolonHizalama": 2,
+    "duzenleEkBilgideGorunur": false,
+    "bilgilerdeGorunur": false,
+    "listedeGorunur": false,
+    "gosterimBilgi": {
+      "tur": "sayi",
+      "kolonTanim": {
+        "alanIsmi": "MrpSorumlusuKullaniciId",
+        "anahtar": "mrpSorumlusuKullaniciId",
+        "tipKodu": 9,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Mrp Sorumlusu", "aciklama": null } },
+          { "tipIsmi": "duzenledeAcikAttribute", "obje": {} },
+          {
+            "tipIsmi": "alanSecimKullanicilar",
+            "obje": {
+              "sorguObje": null,
+              "sorguTipId": "uygulama_AKullanicilar",
+              "etiketAnahtarlar": null,
+              "aciklamaAnahtar": null,
+              "excelAnahtarlar": null,
+              "yalnizFiltrelerdeSecim": false,
+              "siralamaAnahtar": "etiket",
+              "siralamaYonu": null
+            }
+          },
+          { "tipIsmi": "listedeKapaliAttribute", "obje": {} },
+          { "tipIsmi": "kolonListedeVarsayilanKapaliAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_Int32",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "ondalikBasamakSayisi": 0,
+      "duzSayi": false,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "mrpSorumlusuKullaniciAdi",
+    "baslik": "Mrp Sorumlusu",
+    "siralamaAnahtar": "mrpSorumlusuKullaniciAdi",
+    "gizli": false,
+    "baglantiliAlanKey": "MrpSorumlusuKullaniciAdi",
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": false,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "MrpSorumlusuKullaniciAdi",
+        "anahtar": "mrpSorumlusuKullaniciAdi",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Mrp Sorumlusu", "aciklama": null } },
+          { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "MrpSorumlusuKullaniciAdi", "kolonAnahtar": null } },
+          { "tipIsmi": "listedeKapaliAttribute", "obje": {} },
+          { "tipIsmi": "kolonListedeVarsayilanKapaliAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "miktar",
+    "baslik": "Miktar",
+    "siralamaAnahtar": "miktar",
+    "gizli": false,
+    "kolonHizalama": 2,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "sayi",
+      "kolonTanim": {
+        "alanIsmi": "Miktar",
+        "anahtar": "miktar",
+        "tipKodu": 15,
+        "kolonAttributelar": [{ "tipIsmi": "kolonFiltreKapaliAttribute", "obje": {} }],
+        "objeTipId": "coreLib_Decimal",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "ondalikBasamakSayisi": 4,
+      "duzSayi": false,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "miktarRezerve",
+    "baslik": "Rezerve Miktar",
+    "siralamaAnahtar": "miktarRezerve",
+    "gizli": false,
+    "kolonHizalama": 2,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "sayi",
+      "kolonTanim": {
+        "alanIsmi": "MiktarRezerve",
+        "anahtar": "miktarRezerve",
+        "tipKodu": 15,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Rezerve Miktar", "aciklama": null } },
+          { "tipIsmi": "kolonFiltreKapaliAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_Decimal",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "ondalikBasamakSayisi": 4,
+      "duzSayi": false,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "rezervesizMiktar",
+    "baslik": "Rezervesiz Miktar",
+    "siralamaAnahtar": "rezervesizMiktar",
+    "gizli": false,
+    "kolonHizalama": 2,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "sayi",
+      "kolonTanim": {
+        "alanIsmi": "RezervesizMiktar",
+        "anahtar": "rezervesizMiktar",
+        "tipKodu": 15,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Rezervesiz Miktar", "aciklama": null } },
+          { "tipIsmi": "kolonKalinFontAttribute", "obje": {} },
+          { "tipIsmi": "kolonFontRenkTuruAttribute", "obje": { "kolonFontRenk": 0 } }
+        ],
+        "objeTipId": "coreLib_Decimal",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "ondalikBasamakSayisi": 4,
+      "duzSayi": false,
+      "kolonFontRenk": 0,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": true,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "birim",
+    "baslik": "Birim",
+    "siralamaAnahtar": "birim",
+    "gizli": false,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "Birim",
+        "anahtar": "birim",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonFiltreKapaliAttribute", "obje": {} },
+          { "tipIsmi": "kolonFontRenkTuruAttribute", "obje": { "kolonFontRenk": 5 } },
+          { "tipIsmi": "kolonDahaKucukFontAttribute", "obje": {} },
+          { "tipIsmi": "kolonEgikFontAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonFontRenk": 5,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": true,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": true
+    }
+  },
+  {
+    "anahtar": "depoId",
+    "baslik": "Depo Id",
+    "gizli": true,
+    "kolonHizalama": 2,
+    "duzenleEkBilgideGorunur": false,
+    "bilgilerdeGorunur": false,
+    "listedeGorunur": false,
+    "gosterimBilgi": {
+      "tur": "sayi",
+      "kolonTanim": {
+        "alanIsmi": "DepoId",
+        "anahtar": "depoId",
+        "tipKodu": 9,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+          {
+            "tipIsmi": "alanSecimDepolar",
+            "obje": {
+              "sorguObje": null,
+              "sorguTipId": "uygulama_ADepolar",
+              "etiketAnahtarlar": null,
+              "aciklamaAnahtar": null,
+              "excelAnahtarlar": null,
+              "yalnizFiltrelerdeSecim": false,
+              "siralamaAnahtar": null,
+              "siralamaYonu": null
+            }
+          }
+        ],
+        "objeTipId": "coreLib_Int32",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "ondalikBasamakSayisi": 0,
+      "duzSayi": false,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "depoRafId",
+    "baslik": "Depo Raf Id",
+    "gizli": true,
+    "kolonHizalama": 2,
+    "duzenleEkBilgideGorunur": false,
+    "bilgilerdeGorunur": false,
+    "listedeGorunur": false,
+    "gosterimBilgi": {
+      "tur": "sayi",
+      "kolonTanim": {
+        "alanIsmi": "DepoRafId",
+        "anahtar": "depoRafId",
+        "tipKodu": 9,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+          {
+            "tipIsmi": "alanSecimARaflar",
+            "obje": {
+              "sorguObje": null,
+              "sorguTipId": "uygulama_ARaflar",
+              "etiketAnahtarlar": null,
+              "aciklamaAnahtar": null,
+              "excelAnahtarlar": null,
+              "yalnizFiltrelerdeSecim": false,
+              "siralamaAnahtar": null,
+              "siralamaYonu": null
+            }
+          }
+        ],
+        "objeTipId": "coreLib_Int32",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "ondalikBasamakSayisi": 0,
+      "duzSayi": false,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "malzemeId",
+    "baslik": "Malzeme Id",
+    "gizli": true,
+    "kolonHizalama": 2,
+    "duzenleEkBilgideGorunur": false,
+    "bilgilerdeGorunur": false,
+    "listedeGorunur": false,
+    "gosterimBilgi": {
+      "tur": "sayi",
+      "kolonTanim": {
+        "alanIsmi": "MalzemeId",
+        "anahtar": "malzemeId",
+        "tipKodu": 9,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+          {
+            "tipIsmi": "alanSecimMalzemeKartlari",
+            "obje": {
+              "sorguObje": null,
+              "sorguTipId": "mlz03_AMalzemeler",
+              "etiketAnahtarlar": null,
+              "aciklamaAnahtar": null,
+              "excelAnahtarlar": null,
+              "yalnizFiltrelerdeSecim": false,
+              "siralamaAnahtar": null,
+              "siralamaYonu": null
+            }
+          }
+        ],
+        "objeTipId": "coreLib_Int32",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "ondalikBasamakSayisi": 0,
+      "duzSayi": false,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "seriTakibi",
+    "baslik": "Seri Takibi",
+    "gizli": true,
+    "kolonHizalama": 1,
+    "duzenleEkBilgideGorunur": false,
+    "bilgilerdeGorunur": false,
+    "listedeGorunur": false,
+    "gosterimBilgi": {
+      "tur": "bit",
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "miktarRezervedekiler",
+    "baslik": "Rezerveler",
+    "gizli": false,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "liste",
+      "ogeGosterimTanim": {
+        "propGosterimTanimlar": [
+          {
+            "anahtar": "rezerveId",
+            "baslik": "Rezerve Numarası",
+            "siralamaAnahtar": "rezerveId",
+            "gizli": false,
+            "kolonHizalama": 2,
+            "duzenleEkBilgideGorunur": true,
+            "bilgilerdeGorunur": true,
+            "listedeGorunur": true,
+            "gosterimBilgi": {
+              "tur": "sayi",
+              "kolonTanim": {
+                "alanIsmi": "RezerveId",
+                "anahtar": "rezerveId",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "birincilAnahtarAttribute", "obje": {} },
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Rezerve Numarası", "aciklama": null } }
+                ],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              "ondalikBasamakSayisi": 0,
+              "duzSayi": true,
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          },
+          {
+            "anahtar": "rezerveSeriler",
+            "baslik": "Seriler",
+            "gizli": false,
+            "duzenleEkBilgideGorunur": true,
+            "bilgilerdeGorunur": true,
+            "listedeGorunur": true,
+            "gosterimBilgi": {
+              "tur": "primitive-liste",
+              "kolonIsim": "Seriler",
+              "kolonTanim": {
+                "alanIsmi": "RezerveSeriler",
+                "anahtar": "rezerveSeriler",
+                "tipKodu": 18,
+                "kolonAttributelar": [{ "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Seriler", "aciklama": null } }],
+                "objeTipId": "coreLib_String[]",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": true
+              }
+            }
+          },
+          {
+            "anahtar": "transferIstekId",
+            "baslik": "Transfer İstek Numarası",
+            "siralamaAnahtar": "transferIstekId",
+            "gizli": false,
+            "kolonHizalama": 2,
+            "duzenleEkBilgideGorunur": true,
+            "bilgilerdeGorunur": true,
+            "listedeGorunur": true,
+            "gosterimBilgi": {
+              "tur": "sayi",
+              "kolonTanim": {
+                "alanIsmi": "TransferIstekId",
+                "anahtar": "transferIstekId",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Transfer İstek Numarası", "aciklama": null } }
+                ],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              "ondalikBasamakSayisi": 0,
+              "duzSayi": false,
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          },
+          {
+            "anahtar": "hedefDepoKodu",
+            "baslik": "Hedef Depo Kodu",
+            "siralamaAnahtar": "hedefDepoKodu",
+            "gizli": false,
+            "duzenleEkBilgideGorunur": true,
+            "bilgilerdeGorunur": true,
+            "listedeGorunur": true,
+            "gosterimBilgi": {
+              "tur": "kolon-tanim",
+              "kolonTanim": {
+                "alanIsmi": "HedefDepoKodu",
+                "anahtar": "hedefDepoKodu",
+                "tipKodu": 18,
+                "kolonAttributelar": [],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          },
+          {
+            "anahtar": "durum",
+            "baslik": "Durum",
+            "siralamaAnahtar": "durum",
+            "gizli": false,
+            "kolonHizalama": 1,
+            "duzenleEkBilgideGorunur": true,
+            "bilgilerdeGorunur": true,
+            "listedeGorunur": true,
+            "gosterimBilgi": {
+              "tur": "enum",
+              "enumKeys": [
+                { "label": "Rezervasyon", "value": 0 },
+                { "label": "Teslim", "value": 1 }
+              ],
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          },
+          {
+            "anahtar": "miktar",
+            "baslik": "Miktar",
+            "siralamaAnahtar": "miktar",
+            "gizli": false,
+            "kolonHizalama": 2,
+            "duzenleEkBilgideGorunur": true,
+            "bilgilerdeGorunur": true,
+            "listedeGorunur": true,
+            "gosterimBilgi": {
+              "tur": "sayi",
+              "kolonTanim": {
+                "alanIsmi": "Miktar",
+                "anahtar": "miktar",
+                "tipKodu": 15,
+                "kolonAttributelar": [],
+                "objeTipId": "coreLib_Decimal",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              "ondalikBasamakSayisi": 4,
+              "duzSayi": false,
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          }
+        ],
+        "anahtarKolonTanim": {
+          "alanIsmi": "RezerveId",
+          "anahtar": "rezerveId",
+          "tipKodu": 9,
+          "kolonAttributelar": [
+            { "tipIsmi": "birincilAnahtarAttribute", "obje": {} },
+            { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Rezerve Numarası", "aciklama": null } }
+          ],
+          "objeTipId": "coreLib_Int32",
+          "bosOlabilir": false,
+          "enumTipi": false,
+          "diziTipi": false
+        },
+        "isim": "Rezerveler",
+        "tipTanim": {
+          "tipIsmi": "StoktanGetirMiktarRezerveBilgileri",
+          "tipId": "dep04_StoktanGetirMiktarRezerveBilgileri",
+          "nitelikTipIsmi": null,
+          "kolonTanimlar": [
+            {
+              "alanIsmi": "RezerveId",
+              "anahtar": "rezerveId",
+              "tipKodu": 9,
+              "kolonAttributelar": [
+                { "tipIsmi": "birincilAnahtarAttribute", "obje": {} },
+                { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Rezerve Numarası", "aciklama": null } }
+              ],
+              "objeTipId": "coreLib_Int32",
+              "bosOlabilir": false,
+              "enumTipi": false,
+              "diziTipi": false
+            },
+            {
+              "alanIsmi": "RezerveSeriler",
+              "anahtar": "rezerveSeriler",
+              "tipKodu": 18,
+              "kolonAttributelar": [{ "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Seriler", "aciklama": null } }],
+              "objeTipId": "coreLib_String[]",
+              "bosOlabilir": false,
+              "enumTipi": false,
+              "diziTipi": true
+            },
+            {
+              "alanIsmi": "TransferIstekId",
+              "anahtar": "transferIstekId",
+              "tipKodu": 9,
+              "kolonAttributelar": [
+                { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Transfer İstek Numarası", "aciklama": null } }
+              ],
+              "objeTipId": "coreLib_Int32",
+              "bosOlabilir": false,
+              "enumTipi": false,
+              "diziTipi": false
+            },
+            {
+              "alanIsmi": "HedefDepoKodu",
+              "anahtar": "hedefDepoKodu",
+              "tipKodu": 18,
+              "kolonAttributelar": [],
+              "objeTipId": "coreLib_String",
+              "bosOlabilir": false,
+              "enumTipi": false,
+              "diziTipi": false
+            },
+            {
+              "alanIsmi": "Durum",
+              "anahtar": "durum",
+              "tipKodu": 9,
+              "kolonAttributelar": [{ "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Durum", "aciklama": null } }],
+              "objeTipId": "dep04_StoktanGetirMiktarRezerveBilgileriRezerveDurum",
+              "bosOlabilir": false,
+              "enumTipi": true,
+              "diziTipi": false
+            },
+            {
+              "alanIsmi": "Miktar",
+              "anahtar": "miktar",
+              "tipKodu": 15,
+              "kolonAttributelar": [],
+              "objeTipId": "coreLib_Decimal",
+              "bosOlabilir": false,
+              "enumTipi": false,
+              "diziTipi": false
+            }
+          ],
+          "tabloAttributelar": []
+        }
+      }
+    }
+  },
+  {
+    "anahtar": "malzemeUreticiKodlari",
+    "baslik": "Üretici Kodları",
+    "gizli": false,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "liste",
+      "ogeGosterimTanim": {
+        "propGosterimTanimlar": [
+          {
+            "anahtar": "malzemeUreticiKoduId",
+            "baslik": "Malzeme Numarası",
+            "gizli": true,
+            "kolonHizalama": 2,
+            "duzenleEkBilgideGorunur": false,
+            "bilgilerdeGorunur": false,
+            "listedeGorunur": false,
+            "gosterimBilgi": {
+              "tur": "sayi",
+              "kolonTanim": {
+                "alanIsmi": "MalzemeUreticiKoduId",
+                "anahtar": "malzemeUreticiKoduId",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme Numarası", "aciklama": null } },
+                  { "tipIsmi": "birincilAnahtarAttribute", "obje": {} },
+                  { "tipIsmi": "duzenledeAcikAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              "ondalikBasamakSayisi": 0,
+              "duzSayi": true,
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          },
+          {
+            "anahtar": "malzemeId",
+            "baslik": "Malzeme",
+            "gizli": true,
+            "kolonHizalama": 2,
+            "duzenleEkBilgideGorunur": false,
+            "bilgilerdeGorunur": false,
+            "listedeGorunur": false,
+            "gosterimBilgi": {
+              "tur": "sayi",
+              "kolonTanim": {
+                "alanIsmi": "MalzemeId",
+                "anahtar": "malzemeId",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme", "aciklama": null } },
+                  {
+                    "tipIsmi": "alanSecimMalzemeKartlari",
+                    "obje": {
+                      "sorguObje": null,
+                      "sorguTipId": "mlz03_AMalzemeler",
+                      "etiketAnahtarlar": null,
+                      "aciklamaAnahtar": null,
+                      "excelAnahtarlar": null,
+                      "yalnizFiltrelerdeSecim": false,
+                      "siralamaAnahtar": null,
+                      "siralamaYonu": null
+                    }
+                  }
+                ],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              "ondalikBasamakSayisi": 0,
+              "duzSayi": false,
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          },
+          {
+            "anahtar": "malzemeKodu",
+            "baslik": "Malzeme",
+            "siralamaAnahtar": "malzemeKodu",
+            "gizli": false,
+            "baglantiliAlanKey": "MalzemeId",
+            "duzenleEkBilgideGorunur": true,
+            "bilgilerdeGorunur": true,
+            "listedeGorunur": true,
+            "gosterimBilgi": {
+              "tur": "kolon-tanim",
+              "kolonTanim": {
+                "alanIsmi": "MalzemeKodu",
+                "anahtar": "malzemeKodu",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme", "aciklama": null } },
+                  { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "MalzemeId", "kolonAnahtar": null } }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          },
+          {
+            "anahtar": "ureticiKodu",
+            "baslik": "Malzeme Üretici Kodu",
+            "siralamaAnahtar": "ureticiKodu",
+            "gizli": false,
+            "duzenleEkBilgideGorunur": true,
+            "bilgilerdeGorunur": true,
+            "listedeGorunur": true,
+            "gosterimBilgi": {
+              "tur": "kolon-tanim",
+              "kolonTanim": {
+                "alanIsmi": "UreticiKodu",
+                "anahtar": "ureticiKodu",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme Üretici Kodu", "aciklama": null } },
+                  { "tipIsmi": "kolonAlanSecimEtiketAttribute", "obje": {} },
+                  { "tipIsmi": "kolonExcelAlanSecimEtiketAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          },
+          {
+            "anahtar": "modelIsmi",
+            "baslik": "Model İsmi",
+            "siralamaAnahtar": "modelIsmi",
+            "gizli": false,
+            "duzenleEkBilgideGorunur": true,
+            "bilgilerdeGorunur": true,
+            "listedeGorunur": true,
+            "gosterimBilgi": {
+              "tur": "kolon-tanim",
+              "kolonTanim": {
+                "alanIsmi": "ModelIsmi",
+                "anahtar": "modelIsmi",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Model İsmi", "aciklama": null } },
+                  { "tipIsmi": "duzenledeAcikAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          },
+          {
+            "anahtar": "oncelik",
+            "baslik": "Öncelik",
+            "siralamaAnahtar": "oncelik",
+            "gizli": false,
+            "kolonHizalama": 2,
+            "duzenleEkBilgideGorunur": true,
+            "bilgilerdeGorunur": true,
+            "listedeGorunur": true,
+            "gosterimBilgi": {
+              "tur": "sayi",
+              "kolonTanim": {
+                "alanIsmi": "Oncelik",
+                "anahtar": "oncelik",
+                "tipKodu": 9,
+                "kolonAttributelar": [{ "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Öncelik", "aciklama": null } }],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              "ondalikBasamakSayisi": 0,
+              "duzSayi": false,
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          },
+          {
+            "anahtar": "malzemeUreticiKoduNot",
+            "baslik": "Malzeme Üretici Kodu Not",
+            "siralamaAnahtar": "malzemeUreticiKoduNot",
+            "gizli": false,
+            "duzenleEkBilgideGorunur": true,
+            "bilgilerdeGorunur": true,
+            "listedeGorunur": true,
+            "gosterimBilgi": {
+              "tur": "kolon-tanim",
+              "kolonTanim": {
+                "alanIsmi": "MalzemeUreticiKoduNot",
+                "anahtar": "malzemeUreticiKoduNot",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme Üretici Kodu Not", "aciklama": null } }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          },
+          {
+            "anahtar": "silinmis",
+            "baslik": "Silinmiş",
+            "siralamaAnahtar": "silinmis",
+            "gizli": true,
+            "kolonHizalama": 1,
+            "duzenleEkBilgideGorunur": false,
+            "bilgilerdeGorunur": false,
+            "listedeGorunur": false,
+            "gosterimBilgi": {
+              "tur": "bit",
+              "kolonTagGorunum": false,
+              "kolonKalinFont": false,
+              "kolonEgikFont": false,
+              "kolonDahaBuyukFont": false,
+              "kolonDahaKucukFont": false
+            }
+          }
+        ],
+        "anahtarKolonTanim": {
+          "alanIsmi": "MalzemeUreticiKoduId",
+          "anahtar": "malzemeUreticiKoduId",
+          "tipKodu": 9,
+          "kolonAttributelar": [
+            { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+            { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme Numarası", "aciklama": null } },
+            { "tipIsmi": "birincilAnahtarAttribute", "obje": {} },
+            { "tipIsmi": "duzenledeAcikAttribute", "obje": {} }
+          ],
+          "objeTipId": "coreLib_Int32",
+          "bosOlabilir": false,
+          "enumTipi": false,
+          "diziTipi": false
+        },
+        "isim": "Üretici Kodları",
+        "tipTanim": {
+          "tipIsmi": "MalzemeUreticiKoduDto",
+          "tipId": "mlz03_MalzemeUreticiKoduDto",
+          "nitelikTipIsmi": "NitelikMalzemeUreticiKodu",
+          "kolonTanimlar": [
+            {
+              "alanIsmi": "MalzemeUreticiKoduId",
+              "anahtar": "malzemeUreticiKoduId",
+              "tipKodu": 9,
+              "kolonAttributelar": [
+                { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme Numarası", "aciklama": null } },
+                { "tipIsmi": "birincilAnahtarAttribute", "obje": {} },
+                { "tipIsmi": "duzenledeAcikAttribute", "obje": {} }
+              ],
+              "objeTipId": "coreLib_Int32",
+              "bosOlabilir": false,
+              "enumTipi": false,
+              "diziTipi": false
+            },
+            {
+              "alanIsmi": "MalzemeId",
+              "anahtar": "malzemeId",
+              "tipKodu": 9,
+              "kolonAttributelar": [
+                { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme", "aciklama": null } },
+                {
+                  "tipIsmi": "alanSecimMalzemeKartlari",
+                  "obje": {
+                    "sorguObje": null,
+                    "sorguTipId": "mlz03_AMalzemeler",
+                    "etiketAnahtarlar": null,
+                    "aciklamaAnahtar": null,
+                    "excelAnahtarlar": null,
+                    "yalnizFiltrelerdeSecim": false,
+                    "siralamaAnahtar": null,
+                    "siralamaYonu": null
+                  }
+                }
+              ],
+              "objeTipId": "coreLib_Int32",
+              "bosOlabilir": false,
+              "enumTipi": false,
+              "diziTipi": false
+            },
+            {
+              "alanIsmi": "MalzemeKodu",
+              "anahtar": "malzemeKodu",
+              "tipKodu": 18,
+              "kolonAttributelar": [
+                { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme", "aciklama": null } },
+                { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "MalzemeId", "kolonAnahtar": null } }
+              ],
+              "objeTipId": "coreLib_String",
+              "bosOlabilir": false,
+              "enumTipi": false,
+              "diziTipi": false
+            },
+            {
+              "alanIsmi": "UreticiKodu",
+              "anahtar": "ureticiKodu",
+              "tipKodu": 18,
+              "kolonAttributelar": [
+                { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme Üretici Kodu", "aciklama": null } },
+                { "tipIsmi": "kolonAlanSecimEtiketAttribute", "obje": {} },
+                { "tipIsmi": "kolonExcelAlanSecimEtiketAttribute", "obje": {} }
+              ],
+              "objeTipId": "coreLib_String",
+              "bosOlabilir": false,
+              "enumTipi": false,
+              "diziTipi": false
+            },
+            {
+              "alanIsmi": "ModelIsmi",
+              "anahtar": "modelIsmi",
+              "tipKodu": 18,
+              "kolonAttributelar": [
+                { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Model İsmi", "aciklama": null } },
+                { "tipIsmi": "duzenledeAcikAttribute", "obje": {} }
+              ],
+              "objeTipId": "coreLib_String",
+              "bosOlabilir": true,
+              "enumTipi": false,
+              "diziTipi": false
+            },
+            {
+              "alanIsmi": "Oncelik",
+              "anahtar": "oncelik",
+              "tipKodu": 9,
+              "kolonAttributelar": [{ "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Öncelik", "aciklama": null } }],
+              "objeTipId": "coreLib_Int32",
+              "bosOlabilir": false,
+              "enumTipi": false,
+              "diziTipi": false
+            },
+            {
+              "alanIsmi": "MalzemeUreticiKoduNot",
+              "anahtar": "malzemeUreticiKoduNot",
+              "tipKodu": 18,
+              "kolonAttributelar": [
+                { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme Üretici Kodu Not", "aciklama": null } }
+              ],
+              "objeTipId": "coreLib_String",
+              "bosOlabilir": true,
+              "enumTipi": false,
+              "diziTipi": false
+            },
+            {
+              "alanIsmi": "Silinmis",
+              "anahtar": "silinmis",
+              "tipKodu": 3,
+              "kolonAttributelar": [
+                { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Silinmiş", "aciklama": null } },
+                { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                { "tipIsmi": "kolonSiralamaAcikAttribute", "obje": {} },
+                { "tipIsmi": "filtreNullOlamaz", "obje": {} },
+                { "tipIsmi": "filtreVarsayilanDeger", "obje": { "varsayilanDeger": false } },
+                { "tipIsmi": "kolonFiltreAcikAttribute", "obje": {} },
+                { "tipIsmi": "kolonAlanSecimSilinmisAttribute", "obje": {} },
+                { "tipIsmi": "duzenledeAcikAttribute", "obje": {} },
+                { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} }
+              ],
+              "objeTipId": "coreLib_Boolean",
+              "bosOlabilir": false,
+              "enumTipi": false,
+              "diziTipi": false
+            }
+          ],
+          "tabloAttributelar": [{ "tipIsmi": "nitelikBilgiAttribute`1", "obje": {} }]
+        }
+      }
+    }
+  },
+  {
+    "anahtar": "lot",
+    "baslik": "Lot",
+    "siralamaAnahtar": "lot",
+    "gizli": false,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "Lot",
+        "anahtar": "lot",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonKalinFontAttribute", "obje": {} },
+          { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} },
+          { "tipIsmi": "kolonAlanSecimEtiketAttribute", "obje": {} },
+          { "tipIsmi": "kolonExcelAlanSecimEtiketAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": true,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "malzemeUreticiKodu",
+    "baslik": "Lot Üretici Kodu",
+    "siralamaAnahtar": "malzemeUreticiKodu",
+    "gizli": false,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "MalzemeUreticiKodu",
+        "anahtar": "malzemeUreticiKodu",
+        "tipKodu": 18,
+        "kolonAttributelar": [{ "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Lot Üretici Kodu", "aciklama": null } }],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "revizyon",
+    "baslik": "Malzeme Revizyonu",
+    "siralamaAnahtar": "revizyon",
+    "gizli": false,
+    "baglantiliAlanKey": "MalzemeRevizyonId",
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "Revizyon",
+        "anahtar": "revizyon",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme Revizyonu", "aciklama": null } },
+          { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "MalzemeRevizyonId", "kolonAnahtar": null } }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "malzemeRevizyonId",
+    "baslik": "Malzeme Revizyonu",
+    "gizli": true,
+    "kolonHizalama": 2,
+    "duzenleEkBilgideGorunur": false,
+    "bilgilerdeGorunur": false,
+    "listedeGorunur": false,
+    "gosterimBilgi": {
+      "tur": "sayi",
+      "kolonTanim": {
+        "alanIsmi": "MalzemeRevizyonId",
+        "anahtar": "malzemeRevizyonId",
+        "tipKodu": 9,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme Revizyonu", "aciklama": null } },
+          {
+            "tipIsmi": "alanSecimAMalzemeRevizyonlar",
+            "obje": {
+              "sorguObje": null,
+              "sorguTipId": "mlz03_AMalzemeRevizyonlar",
+              "etiketAnahtarlar": null,
+              "aciklamaAnahtar": null,
+              "excelAnahtarlar": null,
+              "yalnizFiltrelerdeSecim": false,
+              "siralamaAnahtar": null,
+              "siralamaYonu": null
+            }
+          },
+          { "tipIsmi": "duzenledeAcikAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_Int32",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "ondalikBasamakSayisi": 0,
+      "duzSayi": false,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "renkGSecenekIsmi",
+    "baslik": "Renk",
+    "siralamaAnahtar": "renkGSecenekIsmi",
+    "gizli": false,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "RenkGSecenekIsmi",
+        "anahtar": "renkGSecenekIsmi",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Renk", "aciklama": null } },
+          { "tipIsmi": "kolonListedeVarsayilanKapaliAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "girisTarihi",
+    "baslik": "İlk Giriş Tarihi",
+    "siralamaAnahtar": "girisTarihi",
+    "gizli": false,
+    "kolonHizalama": 1,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "tarih",
+      "gosterimTuru": "tarih-saat",
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "agirlikOrtalama",
+    "baslik": "Ortalama Ağırlık",
+    "siralamaAnahtar": "agirlikOrtalama",
+    "gizli": false,
+    "kolonHizalama": 2,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "sayi",
+      "kolonTanim": {
+        "alanIsmi": "AgirlikOrtalama",
+        "anahtar": "agirlikOrtalama",
+        "tipKodu": 15,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonListedeVarsayilanKapaliAttribute", "obje": {} },
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Ortalama Ağırlık", "aciklama": null } },
+          { "tipIsmi": "kolonFiltreKapaliAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_Decimal",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "ondalikBasamakSayisi": 4,
+      "duzSayi": false,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "skt",
+    "baslik": "Skt",
+    "siralamaAnahtar": "skt",
+    "gizli": false,
+    "kolonHizalama": 1,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": { "tur": "tarih", "gosterimTuru": "tarih" }
+  },
+  {
+    "anahtar": "lotKaynakSecenekIsmi",
+    "baslik": "Kaynak",
+    "siralamaAnahtar": "lotKaynakSecenekIsmi",
+    "gizli": false,
+    "kolonHizalama": 1,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "enum",
+      "enumKeys": [
+        { "label": "İptal", "value": 1 },
+        { "label": "Transfer", "value": 2 },
+        { "label": "Satın Alma", "value": 3 },
+        { "label": "Malzeme Şartlı Kabul", "value": 4 },
+        { "label": "Uygunsuzluk Bildirim", "value": 5 },
+        { "label": "İş Emri", "value": 6 },
+        { "label": "Sayım", "value": 7 },
+        { "label": "Servis", "value": 8 },
+        { "label": "Manuel", "value": 9 },
+        { "label": "Kalibrasyon", "value": 10 },
+        { "label": "Tedarikçi İade", "value": 11 }
+      ],
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "enumIsEmriGirisTipi",
+    "baslik": "Is Emri Giris Tipi",
+    "gizli": true,
+    "kolonHizalama": 1,
+    "duzenleEkBilgideGorunur": false,
+    "bilgilerdeGorunur": false,
+    "listedeGorunur": false,
+    "gosterimBilgi": {
+      "tur": "enum",
+      "enumKeys": [
+        { "label": "Fire", "value": 1 },
+        { "label": "Yeni", "value": 2 },
+        { "label": "Yeniden İşlem", "value": 3 }
+      ],
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "kaynakId",
+    "baslik": "Kaynak Numarası",
+    "siralamaAnahtar": "kaynakId",
+    "gizli": false,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "kolon-tanim",
+      "kolonTanim": {
+        "alanIsmi": "KaynakId",
+        "anahtar": "kaynakId",
+        "tipKodu": 18,
+        "kolonAttributelar": [
+          { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Kaynak Numarası", "aciklama": null } },
+          { "tipIsmi": "kolonFiltreKapaliAttribute", "obje": {} },
+          { "tipIsmi": "kolonListedeVarsayilanKapaliAttribute", "obje": {} }
+        ],
+        "objeTipId": "coreLib_String",
+        "bosOlabilir": true,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "lotId",
+    "baslik": "Lot Id",
+    "gizli": true,
+    "kolonHizalama": 2,
+    "duzenleEkBilgideGorunur": false,
+    "bilgilerdeGorunur": false,
+    "listedeGorunur": false,
+    "gosterimBilgi": {
+      "tur": "sayi",
+      "kolonTanim": {
+        "alanIsmi": "LotId",
+        "anahtar": "lotId",
+        "tipKodu": 9,
+        "kolonAttributelar": [{ "tipIsmi": "kolonGizliAttribute", "obje": {} }],
+        "objeTipId": "coreLib_Int32",
+        "bosOlabilir": false,
+        "enumTipi": false,
+        "diziTipi": false
+      },
+      "ondalikBasamakSayisi": 0,
+      "duzSayi": false,
+      "kolonTagGorunum": false,
+      "kolonKalinFont": false,
+      "kolonEgikFont": false,
+      "kolonDahaBuyukFont": false,
+      "kolonDahaKucukFont": false
+    }
+  },
+  {
+    "anahtar": "seriler",
+    "baslik": "Seriler",
+    "gizli": false,
+    "duzenleEkBilgideGorunur": true,
+    "bilgilerdeGorunur": true,
+    "listedeGorunur": true,
+    "gosterimBilgi": {
+      "tur": "sorgu-liste",
+      "ondenHesaplananBilgiler": {
+        "sorgudanGetirBirincilAnahtar": "stokId",
+        "hedefBirincilAnahtar": "seriId",
+        "sorguBilgi": {
+          "link": "api/DEP/Seriler",
+          "metot": "POST",
+          "sorguIsim": "Seriler",
+          "queryable": true,
+          "dtoTipId": "dep08_SerilerDto",
+          "dtoTipTanim": {
+            "tipIsmi": "SerilerDto",
+            "tipId": "dep08_SerilerDto",
+            "nitelikTipIsmi": "NitelikSeri",
+            "kolonTanimlar": [
+              {
+                "alanIsmi": "SeriId",
+                "anahtar": "seriId",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                  { "tipIsmi": "birincilAnahtarAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "DepoId",
+                "anahtar": "depoId",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                  {
+                    "tipIsmi": "alanSecimDepolar",
+                    "obje": {
+                      "sorguObje": null,
+                      "sorguTipId": "uygulama_ADepolar",
+                      "etiketAnahtarlar": null,
+                      "aciklamaAnahtar": null,
+                      "excelAnahtarlar": null,
+                      "yalnizFiltrelerdeSecim": false,
+                      "siralamaAnahtar": null,
+                      "siralamaYonu": null
+                    }
+                  }
+                ],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "DepoKodu",
+                "anahtar": "depoKodu",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonKalinFontAttribute", "obje": {} },
+                  { "tipIsmi": "ogeDegistirilemezAttribute", "obje": {} },
+                  { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "DepoId", "kolonAnahtar": null } },
+                  { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "DepoIsmi",
+                "anahtar": "depoIsmi",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Depo İsmi", "aciklama": null } },
+                  { "tipIsmi": "ogeDegistirilemezAttribute", "obje": {} },
+                  { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "DepoId", "kolonAnahtar": null } }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "DepoRafId",
+                "anahtar": "depoRafId",
+                "tipKodu": 9,
+                "kolonAttributelar": [{ "tipIsmi": "kolonGizliAttribute", "obje": {} }],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "RafKodu",
+                "anahtar": "rafKodu",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonKalinFontAttribute", "obje": {} },
+                  { "tipIsmi": "ogeDegistirilemezAttribute", "obje": {} },
+                  { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} },
+                  {
+                    "tipIsmi": "alanSecimARaflar",
+                    "obje": {
+                      "sorguObje": null,
+                      "sorguTipId": "uygulama_ARaflar",
+                      "etiketAnahtarlar": null,
+                      "aciklamaAnahtar": null,
+                      "excelAnahtarlar": null,
+                      "yalnizFiltrelerdeSecim": false,
+                      "siralamaAnahtar": null,
+                      "siralamaYonu": null
+                    }
+                  }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "RafIsmi",
+                "anahtar": "rafIsmi",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Raf İsmi", "aciklama": null } },
+                  { "tipIsmi": "ogeDegistirilemezAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "EnumRafTipi",
+                "anahtar": "enumRafTipi",
+                "tipKodu": 9,
+                "kolonAttributelar": [{ "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Raf Tipi", "aciklama": null } }],
+                "objeTipId": "alan_DepDepoRafEnumRafTipi",
+                "bosOlabilir": true,
+                "enumTipi": true,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "Lot",
+                "anahtar": "lot",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonKalinFontAttribute", "obje": {} },
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Lot", "aciklama": null } },
+                  { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "LotId", "kolonAnahtar": null } }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "SahipStokCariId",
+                "anahtar": "sahipStokCariId",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Sahip Cari Numarası", "aciklama": null } },
+                  { "tipIsmi": "ogeDegistirilemezAttribute", "obje": {} },
+                  {
+                    "tipIsmi": "alanSecimCariler",
+                    "obje": {
+                      "sorguObje": null,
+                      "sorguTipId": "ver04_Cariler",
+                      "etiketAnahtarlar": null,
+                      "aciklamaAnahtar": null,
+                      "excelAnahtarlar": null,
+                      "yalnizFiltrelerdeSecim": false,
+                      "siralamaAnahtar": null,
+                      "siralamaYonu": null
+                    }
+                  },
+                  { "tipIsmi": "duzenledeAcikAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "SahipStokCariIsmi",
+                "anahtar": "sahipStokCariIsmi",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Sahip Cari İsmi", "aciklama": null } },
+                  { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "SahipStokCariId", "kolonAnahtar": null } }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "MalzemeKodu",
+                "anahtar": "malzemeKodu",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme Kodu", "aciklama": null } },
+                  { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "MalzemeId", "kolonAnahtar": null } },
+                  { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} },
+                  { "tipIsmi": "kolonAlanSecimEtiketAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "MalzemeIsmi",
+                "anahtar": "malzemeIsmi",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme İsmi", "aciklama": null } },
+                  { "tipIsmi": "baglantiliAlanAttribute", "obje": { "propertyIsmi": "MalzemeId", "kolonAnahtar": null } },
+                  { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "Seri",
+                "anahtar": "seri",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonFontRenkTuruAttribute", "obje": { "kolonFontRenk": 0 } },
+                  { "tipIsmi": "kolonKalinFontAttribute", "obje": {} },
+                  { "tipIsmi": "kolonAlanSecimEtiketAttribute", "obje": {} },
+                  { "tipIsmi": "kolonExcelAlanSecimEtiketAttribute", "obje": {} },
+                  { "tipIsmi": "ogeDegistirilemezAttribute", "obje": {} },
+                  { "tipIsmi": "duzenleEkBilgideAcikAttribute", "obje": {} },
+                  { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} },
+                  { "tipIsmi": "yalnizBuyukHarfAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "StokId",
+                "anahtar": "stokId",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                  { "tipIsmi": "bilgilerdeAcikAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "RezerveId",
+                "anahtar": "rezerveId",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Rezerve Numarası", "aciklama": null } },
+                  { "tipIsmi": "ogeDegistirilemezAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "MalzemeYazilimVersiyonId",
+                "anahtar": "malzemeYazilimVersiyonId",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme Yazılım Versiyonu", "aciklama": null } },
+                  {
+                    "tipIsmi": "alanSecimAMalzemeYazilimVersiyonlari",
+                    "obje": {
+                      "sorguObje": null,
+                      "sorguTipId": "mlz03_AMalzemeYazilimVersiyonlari",
+                      "etiketAnahtarlar": null,
+                      "aciklamaAnahtar": null,
+                      "excelAnahtarlar": null,
+                      "yalnizFiltrelerdeSecim": false,
+                      "siralamaAnahtar": null,
+                      "siralamaYonu": null
+                    }
+                  },
+                  { "tipIsmi": "duzenledeAcikAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "YazilimVersiyonu",
+                "anahtar": "yazilimVersiyonu",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme Yazılım Versiyonu", "aciklama": null } },
+                  {
+                    "tipIsmi": "baglantiliAlanAttribute",
+                    "obje": { "propertyIsmi": "MalzemeYazilimVersiyonId", "kolonAnahtar": null }
+                  }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "Agirlik",
+                "anahtar": "agirlik",
+                "tipKodu": 15,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Ağırlık", "aciklama": null } },
+                  { "tipIsmi": "kolonFiltreKapaliAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_Decimal",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "StoktaVarMi",
+                "anahtar": "stoktaVarMi",
+                "tipKodu": 3,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Stokta Var", "aciklama": null } },
+                  { "tipIsmi": "ogeDegistirilemezAttribute", "obje": {} },
+                  { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_Boolean",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "MalzemeId",
+                "anahtar": "malzemeId",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Malzeme", "aciklama": null } },
+                  {
+                    "tipIsmi": "alanSecimMalzemeKartlari",
+                    "obje": {
+                      "sorguObje": null,
+                      "sorguTipId": "mlz03_AMalzemeler",
+                      "etiketAnahtarlar": null,
+                      "aciklamaAnahtar": null,
+                      "excelAnahtarlar": null,
+                      "yalnizFiltrelerdeSecim": false,
+                      "siralamaAnahtar": null,
+                      "siralamaYonu": null
+                    }
+                  },
+                  { "tipIsmi": "ogeDegistirilemezAttribute", "obje": {} },
+                  { "tipIsmi": "duzenledeAcikAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "LotId",
+                "anahtar": "lotId",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Lot", "aciklama": null } },
+                  { "tipIsmi": "ogeDegistirilemezAttribute", "obje": {} },
+                  {
+                    "tipIsmi": "alanSecimLotlar",
+                    "obje": {
+                      "sorguObje": null,
+                      "sorguTipId": "dep07_Lotlar",
+                      "etiketAnahtarlar": null,
+                      "aciklamaAnahtar": null,
+                      "excelAnahtarlar": null,
+                      "yalnizFiltrelerdeSecim": false,
+                      "siralamaAnahtar": null,
+                      "siralamaYonu": null
+                    }
+                  },
+                  { "tipIsmi": "duzenledeAcikAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_Int32",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "Silinmis",
+                "anahtar": "silinmis",
+                "tipKodu": 3,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Silinmiş", "aciklama": null } },
+                  { "tipIsmi": "kolonGizliAttribute", "obje": {} },
+                  { "tipIsmi": "kolonSiralamaAcikAttribute", "obje": {} },
+                  { "tipIsmi": "filtreNullOlamaz", "obje": {} },
+                  { "tipIsmi": "filtreVarsayilanDeger", "obje": { "varsayilanDeger": false } },
+                  { "tipIsmi": "kolonFiltreAcikAttribute", "obje": {} },
+                  { "tipIsmi": "kolonAlanSecimSilinmisAttribute", "obje": {} },
+                  { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} }
+                ],
+                "objeTipId": "coreLib_Boolean",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "Pasif",
+                "anahtar": "pasif",
+                "tipKodu": 3,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Pasif", "aciklama": null } },
+                  { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} },
+                  { "tipIsmi": "kolonAlanSecimPasifAttribute", "obje": { "tersKontrol": false } }
+                ],
+                "objeTipId": "coreLib_Boolean",
+                "bosOlabilir": false,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "EnumDepoTipi",
+                "anahtar": "enumDepoTipi",
+                "tipKodu": 9,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Depo Tipi", "aciklama": null } },
+                  { "tipIsmi": "filtreVarsayilanGorunurAttribute", "obje": {} }
+                ],
+                "objeTipId": "alan_DepDepoEnumDepoTipi",
+                "bosOlabilir": true,
+                "enumTipi": true,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "TemelMalzemeKodu",
+                "anahtar": "temelMalzemeKodu",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Temel Malzeme Kodu", "aciklama": null } }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              },
+              {
+                "alanIsmi": "TemelSeriNo",
+                "anahtar": "temelSeriNo",
+                "tipKodu": 18,
+                "kolonAttributelar": [
+                  { "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Temel Malzeme Seri Numarası", "aciklama": null } }
+                ],
+                "objeTipId": "coreLib_String",
+                "bosOlabilir": true,
+                "enumTipi": false,
+                "diziTipi": false
+              }
+            ],
+            "tabloAttributelar": [{ "tipIsmi": "nitelikBilgiAttribute`1", "obje": {} }]
+          },
+          "sorguTipId": "dep08_Seriler",
+          "sorguTipTanim": {
+            "tipIsmi": "Seriler",
+            "tipId": "dep08_Seriler",
+            "nitelikTipIsmi": null,
+            "kolonTanimlar": [
+              {
+                "alanIsmi": "AramaStoktaVarMi",
+                "anahtar": "aramaStoktaVarMi",
+                "tipKodu": 9,
+                "kolonAttributelar": [{ "tipIsmi": "kolonIsmiAttribute", "obje": { "baslik": "Stok Durumu", "aciklama": null } }],
+                "objeTipId": "uygulama_StoktaVarMi[]",
+                "bosOlabilir": true,
+                "enumTipi": true,
+                "diziTipi": true
+              }
+            ],
+            "tabloAttributelar": [{ "tipIsmi": "istekIsmiAttribute", "obje": { "isim": "Seriler", "aciklama": null } }]
+          }
+        }
+      },
+      "isim": "Seriler",
+      "sorguObje": null,
+      "sorguTipId": "dep08_Seriler",
+      "birincilAnahtarKolon": null,
+      "seciliKolonlar": ["seri", "stoktaVarMi"],
+      "gizliKolonlar": null,
+      "sorguAnahtarlar": null
+    }
+  }
+]
