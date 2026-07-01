@@ -1,6 +1,5 @@
 import * as echarts from 'echarts'
 import type { EChartsOption } from './types'
-import { CHART_SPEC_SCHEMA } from './prompt.ts'
 
 export function extractJson(text: string): string {
   let t = text.trim()
@@ -56,6 +55,88 @@ function checkSchema(schema: JsonSchema, value: unknown, path: string): string |
     case 'boolean': return typeof value === 'boolean' ? null : `${path} must be a boolean`
     default: return null
   }
+}
+
+const FILTER_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    column: { type: 'string' },
+    in: { type: 'array', items: { anyOf: [{ type: 'string' }, { type: 'number' }] } },
+    notIn: { type: 'array', items: { anyOf: [{ type: 'string' }, { type: 'number' }] } },
+    op: { type: 'string', enum: ['>', '>=', '<', '<=', '==', '!='] },
+    value: { anyOf: [{ type: 'number' }, { type: 'string' }] },
+    datePart: { type: 'string', enum: ['day', 'weekday', 'month', 'quarter'] },
+  },
+  required: ['column'],
+}
+
+export const CHART_SPEC_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    chartType: { type: 'string', enum: ['line', 'bar', 'area', 'pie', 'scatter'] },
+    x: { type: 'string' },
+    measure: { type: 'string' },
+    measures: { type: 'array', items: { type: 'string' } },
+    series: { type: 'string' },
+    over: { type: 'string' },
+    pick: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        column: { type: 'string' },
+        datePart: { type: 'string', enum: ['day', 'weekday', 'month', 'quarter'] },
+        bucket: { type: 'string' },
+        by: { type: 'string' },
+        agg: { type: 'string', enum: ['sum', 'avg'] },
+        extreme: { type: 'string', enum: ['max', 'min'] },
+        where: FILTER_SCHEMA,
+      },
+      required: ['column', 'by', 'extreme'],
+    },
+    having: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        column: { type: 'string' },
+        measure: { type: 'string' },
+        agg: { type: 'string', enum: ['sum', 'avg', 'count', 'min', 'max'] },
+        op: { type: 'string', enum: ['>', '>=', '<', '<=', '==', '!='] },
+        value: { anyOf: [{ type: 'number' }, { type: 'string' }] },
+        where: FILTER_SCHEMA,
+      },
+      required: ['column', 'measure', 'op', 'value'],
+    },
+    aggregate: { type: 'string', enum: ['sum', 'avg', 'count', 'min', 'max', 'none'] },
+    filters: { type: 'array', items: FILTER_SCHEMA },
+    bucket: { type: 'string' },
+    groupByPart: { type: 'string' },
+    groups: { type: 'object' },
+    window: { type: 'object' },
+    derived: {
+      type: 'object',
+      additionalProperties: false,
+      properties: { name: { type: 'string' }, numerator: { type: 'string' }, denominator: { type: 'string' } },
+      required: ['name', 'numerator', 'denominator'],
+    },
+    title: { type: 'string' },
+    sort: { type: 'string', enum: ['value'] },
+    order: { type: 'string', enum: ['asc', 'desc'] },
+    limit: { type: 'integer' },
+    display: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        stacked: { type: 'boolean' },
+        horizontal: { type: 'boolean' },
+        step: { type: 'boolean' },
+        donut: { type: 'boolean' },
+        rose: { type: 'boolean' },
+      },
+    },
+  },
+  required: ['chartType', 'x'],
 }
 
 export function validateSpec(spec: unknown): string | null {
