@@ -38,7 +38,7 @@ test('block+ask: an unresolved name returns ask and never calls the network', as
   vi.stubGlobal('fetch', f)
   const r = await generateChartAI('Ahmet Yılmaz için miktar', index, rows, 'test-key')
   expect('ask' in r).toBe(true)
-  if ('ask' in r) expect(r.ask).toContain('Ahmet')
+  if ('ask' in r) expect(r.ask.some((u) => u.text === 'Ahmet')).toBe(true)
   expect(f).not.toHaveBeenCalled()
 })
 

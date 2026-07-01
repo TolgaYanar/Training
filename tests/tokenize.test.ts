@@ -28,14 +28,14 @@ test('a fully-marked sentence resolves with no block', () => {
 
 test('an unmarked field reference is blocked — the gate requires quoting', () => {
   const { payload, unresolved } = tok('depo ismine göre toplam miktar')
-  assert.ok(unresolved.some((u) => /depo/i.test(u)))
-  assert.ok(unresolved.includes('miktar'))
+  assert.ok(unresolved.some((u) => /depo/i.test(u.text)))
+  assert.ok(unresolved.some((u) => u.text === 'miktar'))
   assert.doesNotMatch(payload, /col_/)
 })
 
 test('an unmarked data value is blocked — the gate requires bracketing', () => {
   const { payload, unresolved } = tok('deneme bazında miktar')
-  assert.ok(unresolved.includes('deneme'))
+  assert.ok(unresolved.some((u) => u.text === 'deneme'))
   assert.doesNotMatch(payload, /deneme/)
 })
 
@@ -43,6 +43,22 @@ test('a [bracketed] value is an explicit val_ token, never raw', () => {
   const { payload, toReal } = tok('"Depo Tipi" [Ana]')
   assert.ok(Object.entries(toReal).some(([k, v]) => k.startsWith('val_') && v === 'Ana'))
   assert.doesNotMatch(payload, /Ana/)
+})
+
+test('a [bracketed] value that is not real data is asked, never tokenized', () => {
+  const { payload, toReal, unresolved } = tok('"Depo Tipi" [gtıjugjgujg]')
+  assert.ok(unresolved.some((u) => u.text === 'gtıjugjgujg'))
+  assert.ok(!Object.keys(toReal).some((k) => k.startsWith('val_')))
+  assert.doesNotMatch(payload, /gtıjugjgujg/)
+})
+
+test('unknown field/value carry a did-you-mean suggestion; gibberish carries none', () => {
+  const uf = tok('"Malzme İsmi" toplam').unresolved.find((u) => u.reason === 'unknownField')!
+  assert.ok(uf.suggestions?.includes('Malzeme İsmi'))
+  const uv = tok('"Depo Tipi" [Anaa]').unresolved.find((u) => u.reason === 'unknownValue')!
+  assert.ok(uv.suggestions?.includes('Ana'))
+  const gib = tok('"jkdehdjdjfjk" toplam').unresolved.find((u) => u.reason === 'unknownField')!
+  assert.deepEqual(gib.suggestions, [])
 })
 
 test('the intent/field collision is disambiguated by quoting', () => {
@@ -56,13 +72,13 @@ test('the intent/field collision is disambiguated by quoting', () => {
 
 test('a typed proper name is name-risk blocked (unresolved), never sent', () => {
   const { payload, unresolved } = tok('"Malzeme İsmi" Ahmet Yılmaz')
-  assert.ok(unresolved.includes('Ahmet') && unresolved.includes('Yılmaz'))
+  assert.ok(unresolved.some((u) => u.text === 'Ahmet') && unresolved.some((u) => u.text === 'Yılmaz'))
   assert.doesNotMatch(payload, /Ahmet|Yılmaz/)
 })
 
 test('a quoted field that does not exist is asked, never sent', () => {
   const { payload, unresolved } = tok('"Olmayan Alan" toplam')
-  assert.ok(unresolved.includes('Olmayan Alan'))
+  assert.ok(unresolved.some((u) => u.text === 'Olmayan Alan'))
   assert.doesNotMatch(payload, /Olmayan|Alan/)
 })
 

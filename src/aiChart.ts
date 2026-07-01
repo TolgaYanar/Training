@@ -2,7 +2,7 @@ import type { ChartSpec, EChartsOption, Row } from './types'
 import type { FieldIndex } from './fieldIndex'
 import type { FieldType } from './schema'
 import { fold } from './fieldIndex.ts'
-import { tokenizeSentence } from './tokenize.ts'
+import { tokenizeSentence, type Unresolved } from './tokenize.ts'
 import { buildDenySet, sealOutbound, type Outbound } from './tripwire.ts'
 import { detokenizeSpec } from './tokens.ts'
 import { extractJson, validateSpec } from './validate.ts'
@@ -100,7 +100,7 @@ async function claudeComplete(user: Outbound, key: string): Promise<string> {
 const TYPE_TR: Record<FieldType, string> = { number: 'sayısal', categorical: 'kategorik', date: 'tarihsel', boolean: 'mantıksal' }
 const denyCache = new WeakMap<Row[], Set<string>>()
 
-export type AiResult = { option: EChartsOption; spec: ChartSpec } | { error: string } | { ask: string[] }
+export type AiResult = { option: EChartsOption; spec: ChartSpec } | { error: string } | { ask: Unresolved[] }
 
 export async function generateChartAI(sentence: string, index: FieldIndex, rows: Row[], key: string): Promise<AiResult> {
   const { payload, toReal, unresolved } = tokenizeSentence(sentence, index, rows)
@@ -149,6 +149,6 @@ export async function generateChartAI(sentence: string, index: FieldIndex, rows:
   return { option: r.option, spec }
 }
 
-export function previewTokens(sentence: string, index: FieldIndex, rows: Row[]): { payload: string; toReal: Record<string, string>; unresolved: string[] } {
+export function previewTokens(sentence: string, index: FieldIndex, rows: Row[]): { payload: string; toReal: Record<string, string>; unresolved: Unresolved[] } {
   return tokenizeSentence(sentence, index, rows)
 }

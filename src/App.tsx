@@ -23,6 +23,20 @@ const isCat = (f: FieldMeta): boolean => f.type === 'categorical'
 const opts = (query: string, ok: (f: FieldMeta) => boolean): { value: string }[] => index.suggest(query, 30, ok).map((f) => ({ value: f.baslik }))
 const TIP_TR: Record<string, string> = { number: 'sayı', categorical: 'kategori', date: 'tarih', boolean: 'evet/hayır' }
 const ROLE_COLOR: Record<string, string> = { 'X ekseni': 'blue', 'Y ekseni': 'green', 'Seri': 'cyan', 'Filtre': 'magenta' }
+const REASON_TR: Record<string, string> = {
+  unknownField: 'böyle bir alan yok',
+  unknownValue: 'veride böyle bir değer yok',
+  field: 'alan → "tırnak" içine alın',
+  value: 'değer → [parantez] içine alın',
+  name: 'isim/serbest metin',
+}
+const REASON_COLOR: Record<string, string> = { unknownField: 'red', unknownValue: 'red', field: 'blue', value: 'geekblue', name: 'orange' }
+function unresolvedMsg(u: { reason: string; suggestions?: string[] }): string {
+  const base = REASON_TR[u.reason] ?? 'işaretlenmeli'
+  return (u.reason === 'unknownField' || u.reason === 'unknownValue') && u.suggestions?.length
+    ? `${base} — bunu mu: ${u.suggestions.join(' / ')}?`
+    : base
+}
 function roleOf(a: string, spec: ChartSpec | null): string {
   if (!spec) return ''
   if (spec.x === a) return 'X ekseni'
@@ -126,7 +140,7 @@ function Main() {
       try {
         const r = await generateChartAI(sentence, index, rows, API_KEY)
         if ('option' in r) setPending({ spec: r.spec, option: r.option })
-        else if ('ask' in r) setError(`İşaretlenmeli (gönderilmedi): ${r.ask.join(', ')} — alanları "tırnak", değerleri [parantez] içine alın.`)
+        else if ('ask' in r) setError(`Gönderilmedi — ${r.ask.map((u) => `${u.text}: ${unresolvedMsg(u)}`).join(' · ')}`)
         else setError(r.error)
       } finally {
         setLoading(false)
@@ -181,7 +195,7 @@ function Main() {
                         }
                         return <Tag key={k} color="blue">{k} · değer: {a}</Tag>
                       })}
-                      {preview.unresolved.map((u) => <Tag key={`u-${u}`} color="red">{u} · işaretlenmeli</Tag>)}
+                      {preview.unresolved.map((u) => <Tag key={`u-${u.text}-${u.reason}`} color={REASON_COLOR[u.reason] ?? 'red'}>{u.text} · {unresolvedMsg(u)}</Tag>)}
                     </Space>
                     {preview.unresolved.length > 0 ? (
                       <Text type="danger" style={{ fontSize: 11, display: 'block', marginTop: 6 }}>Bunlar işaretlenmeden gönderilmez — alanları <Text code style={{ fontSize: 11 }}>"tırnak"</Text>, değerleri <Text code style={{ fontSize: 11 }}>[parantez]</Text> içine alın.</Text>

@@ -39,10 +39,10 @@ test.skipIf(!LIVE)('basic→complex Turkish prompts: privacy + render + interpre
     const s = 'option' in r ? (r.spec as ChartSpec) : null
     const got = s
       ? `${s.chartType} · x=${title(s.x)} · ölçü=${title(s.measure)}·${s.aggregate}${s.series ? ` · seri=${title(s.series)}` : ''}${s.bucket ? ` · ${s.bucket}` : ''}${s.limit ? ` · ilk${s.limit}` : ''}`
-      : 'ask' in r ? `ASK: ${r.ask.join(',')}` : `ERR: ${r.error}`
+      : 'ask' in r ? `ASK: ${r.ask.map((u) => u.text).join(',')}` : `ERR: ${r.error}`
 
     const bad: string[] = []
-    if (unresolved.length) bad.push(`unresolved:${unresolved.join(',')}`)
+    if (unresolved.length) bad.push(`unresolved:${unresolved.map((u) => u.text).join(',')}`)
     if (leaks.length) bad.push(`LEAK:${leaks.join(',')}`)
     if (!s) bad.push('no-chart')
     if (s && c.x && s.x !== c.x) bad.push(`x=${s.x}≠${c.x}`)
